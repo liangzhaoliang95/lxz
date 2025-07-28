@@ -94,12 +94,9 @@ func (a *App) buildHeader() tview.Primitive {
 		return header
 	}
 
-	clWidth := clusterInfoWidth
-
-	slog.Info("ClusterInfo width", clWidth)
 	header.AddItem(a.UI.Status(), 0, 1, false)
 	if a.showLogo {
-		header.AddItem(a.UI.Logo(), 26, 1, false)
+		header.AddItem(a.UI.Logo(), 60, 1, false)
 	}
 	go func() {
 		for {
