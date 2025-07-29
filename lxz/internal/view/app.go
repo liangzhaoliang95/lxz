@@ -75,7 +75,7 @@ func (a *App) bindKeys() {
 		//ui.KeyShift9:       ui.NewSharedKeyAction("DumpGOR", a.dumpGOR, false),
 		//tcell.KeyCtrlE:     ui.NewSharedKeyAction("ToggleHeader", a.toggleHeaderCmd, false),
 		//tcell.KeyCtrlG:     ui.NewSharedKeyAction("toggleCrumbs", a.toggleCrumbsCmd, false),
-		//ui.KeyHelp:         ui.NewSharedKeyAction("Help", a.helpCmd, false),
+		ui.KeyHelp: ui.NewSharedKeyAction("Help", a.helpCmd, false),
 		//ui.KeyLeftBracket:  ui.NewSharedKeyAction("Go Back", a.previousCommand, false),
 		//ui.KeyRightBracket: ui.NewSharedKeyAction("Go Forward", a.nextCommand, false),
 		//ui.KeyDash:         ui.NewSharedKeyAction("Last View", a.lastCommand, false),
@@ -94,7 +94,7 @@ func (a *App) buildHeader() tview.Primitive {
 		return header
 	}
 	//
-	//header.AddItem(a.UI.Status(), 0, 1, false)
+	header.AddItem(a.UI.Menu(), 0, 1, false)
 	if a.showLogo {
 		header.AddItem(a.UI.Logo(), 60, 1, false)
 	}

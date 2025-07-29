@@ -44,6 +44,7 @@ func NewApp(cfg *config.Config) *App {
 	a.views = map[string]tview.Primitive{
 		"logo":   NewLogo(a.Styles),   // logo
 		"status": NewStatus(a.Styles), // status
+		"menu":   NewMenu(a.Styles),   // menu
 	}
 
 	return &a
@@ -60,6 +61,10 @@ func (a *App) Status() *Status {
 
 func (a *App) Logo() *Logo {
 	return a.views["logo"].(*Logo)
+}
+
+func (a *App) Menu() *Menu {
+	return a.views["menu"].(*Menu)
 }
 
 func (a *App) bindKeys() {
