@@ -14,16 +14,16 @@ import (
 	"strings"
 )
 
-type Status struct {
+type Menu struct {
 	*tview.TextView
 
 	styles *config.Styles
 	stack  *model.Stack
 }
 
-// NewStatus return a new view.
-func NewStatus(styles *config.Styles) *Status {
-	p := Status{
+// NewMenu return a new view.
+func NewMenu(styles *config.Styles) *Menu {
+	p := Menu{
 		stack:    model.NewStack(),
 		styles:   styles,
 		TextView: tview.NewTextView(),
@@ -39,29 +39,29 @@ func NewStatus(styles *config.Styles) *Status {
 }
 
 // StylesChanged notifies skin changed.
-func (c *Status) StylesChanged(s *config.Styles) {
+func (c *Menu) StylesChanged(s *config.Styles) {
 	c.styles = s
 	c.SetBackgroundColor(s.BgColor())
 	c.refresh(c.stack.Flatten())
 }
 
 // StackPushed indicates a new item was added.
-func (c *Status) StackPushed(comp model.Component) {
+func (c *Menu) StackPushed(comp model.Component) {
 	c.stack.Push(comp)
 	c.refresh(c.stack.Flatten())
 }
 
 // StackPopped indicates an item was deleted.
-func (c *Status) StackPopped(_, _ model.Component) {
+func (c *Menu) StackPopped(_, _ model.Component) {
 	c.stack.Pop()
 	c.refresh(c.stack.Flatten())
 }
 
 // StackTop indicates the top of the stack.
-func (*Status) StackTop(model.Component) {}
+func (*Menu) StackTop(model.Component) {}
 
 // Refresh updates view with new crumbs.
-func (c *Status) refresh(crumbs []string) {
+func (c *Menu) refresh(crumbs []string) {
 	c.Clear()
 	last, bgColor := len(crumbs)-1, c.styles.Frame().Crumb.BgColor
 	for i, crumb := range crumbs {

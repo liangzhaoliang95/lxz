@@ -93,8 +93,8 @@ func (a *App) buildHeader() tview.Primitive {
 	if !a.showHeader {
 		return header
 	}
-
-	header.AddItem(a.UI.Status(), 0, 1, false)
+	//
+	//header.AddItem(a.UI.Status(), 0, 1, false)
 	if a.showLogo {
 		header.AddItem(a.UI.Logo(), 60, 1, false)
 	}
@@ -132,7 +132,7 @@ func (a *App) layout(ctx context.Context) {
 	main.AddItem(a.buildHeader(), 10, 1, false)
 
 	// 状态指示器
-	main.AddItem(a.UI.Status(), 1, 1, false)
+	main.AddItem(a.UI.Status(), 5, 1, false)
 
 	// 内容区域 展示集群资源信息
 	main.AddItem(a.Content, 0, 10, true)
