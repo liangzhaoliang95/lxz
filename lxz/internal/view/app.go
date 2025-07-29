@@ -70,12 +70,22 @@ func (a *App) keyboard(evt *tcell.EventKey) *tcell.EventKey {
 	return evt
 }
 
+func (a *App) toggleHeaderCmd(evt *tcell.EventKey) *tcell.EventKey {
+
+	a.UI.QueueUpdateDraw(func() {
+		a.showHeader = !a.showHeader
+		a.toggleHeader(a.showHeader, a.showLogo)
+	})
+
+	return nil
+}
+
 func (a *App) bindKeys() {
 	a.UI.AddActions(ui.NewKeyActionsFromMap(ui.KeyMap{
 		//ui.KeyShift9:       ui.NewSharedKeyAction("DumpGOR", a.dumpGOR, false),
-		//tcell.KeyCtrlE:     ui.NewSharedKeyAction("ToggleHeader", a.toggleHeaderCmd, false),
+		tcell.KeyCtrlE: ui.NewSharedKeyAction("ToggleHeader", a.toggleHeaderCmd, false),
 		//tcell.KeyCtrlG:     ui.NewSharedKeyAction("toggleCrumbs", a.toggleCrumbsCmd, false),
-		ui.KeyHelp: ui.NewSharedKeyAction("Help", a.helpCmd, false),
+		//ui.KeyHelp: ui.NewSharedKeyAction("Help", a.helpCmd, false),
 		//ui.KeyLeftBracket:  ui.NewSharedKeyAction("Go Back", a.previousCommand, false),
 		//ui.KeyRightBracket: ui.NewSharedKeyAction("Go Forward", a.nextCommand, false),
 		//ui.KeyDash:         ui.NewSharedKeyAction("Last View", a.lastCommand, false),
@@ -117,8 +127,11 @@ func (a *App) toggleHeader(header, logo bool) {
 		slog.Error("Expecting flex view main panel. Exiting!")
 		os.Exit(1)
 	}
-
-	flex.AddItemAtIndex(0, a.buildHeader(), 7, 1, false)
+	if a.showHeader {
+		flex.AddItemAtIndex(0, a.buildHeader(), 10, 1, false)
+	} else {
+		flex.RemoveItemAtIndex(0)
+	}
 }
 
 func (a *App) layout(ctx context.Context) {
