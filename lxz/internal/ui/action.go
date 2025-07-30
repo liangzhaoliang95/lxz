@@ -202,6 +202,8 @@ func (a *KeyActions) Hints() model.MenuHints {
 	slices.Sort(kk)
 
 	hh := make(model.MenuHints, 0, len(kk))
+
+	slog.Info("Hints", slogs.Count, len(kk), slogs.Subsys, "actions", slogs.Component, "ui")
 	for _, k := range kk {
 		if name, ok := tcell.KeyNames[k]; ok {
 			hh = append(hh,
@@ -215,6 +217,5 @@ func (a *KeyActions) Hints() model.MenuHints {
 			slog.Error("Unable to locate key name", slogs.Key, k)
 		}
 	}
-
 	return hh
 }

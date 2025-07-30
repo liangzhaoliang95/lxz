@@ -121,10 +121,12 @@ func (a *App) HasAction(key tcell.Key) (KeyAction, bool) {
 
 // AsKey converts rune to keyboard key.
 func AsKey(evt *tcell.EventKey) tcell.Key {
+	// 如果按键不是字符键，则直接返回按键
 	if evt.Key() != tcell.KeyRune {
 		return evt.Key()
 	}
 	key := tcell.Key(evt.Rune())
+	// 如果按键是Alt键，则将按键值与修饰符相乘
 	if evt.Modifiers() == tcell.ModAlt {
 		key = tcell.Key(int16(evt.Rune()) * int16(evt.Modifiers()))
 	}

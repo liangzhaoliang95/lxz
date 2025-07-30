@@ -37,13 +37,14 @@ func (p *PageStack) Init(ctx context.Context) (err error) {
 
 // StackPushed notifies a new page was added.
 func (p *PageStack) StackPushed(c model.Component) {
-	slog.Info("LXZ PageStack StackPushed", "component", c.Name())
+	slog.Info("LXZ PageStack 入栈", "component", c.Name())
 	c.Start()
 	p.app.UI.SetFocus(c)
 }
 
 // StackPopped notifies a page was removed.
 func (p *PageStack) StackPopped(o, top model.Component) {
+	slog.Info("LXZ PageStack 出栈", "component", o.Name())
 	o.Stop()
 	p.StackTop(top)
 }

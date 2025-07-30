@@ -48,7 +48,7 @@ func (p *Pages) addAndShow(c model.Component) {
 
 // StackPushed notifies a new component was pushed.
 func (p *Pages) StackPushed(c model.Component) {
-	slog.Info("LXZ Pages StackPushed", slogs.Component, c.Name())
+	slog.Info("LXZ Pages 入栈", slogs.Component, c.Name())
 	p.addAndShow(c)
 }
 
@@ -59,6 +59,7 @@ func (p *Pages) delete(c model.Component) {
 
 // StackPopped notifies a component was removed.
 func (p *Pages) StackPopped(o, _ model.Component) {
+	slog.Info("LXZ Pages 出栈", slogs.Component, o.Name())
 	p.delete(o)
 }
 

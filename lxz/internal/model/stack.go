@@ -175,22 +175,22 @@ func (s *Stack) Top() Component {
 
 func (s *Stack) notify(a StackAction, c Component) {
 	slog.Info(
-		"LXZ exec notify 🚨",
+		"LXZ Stack notify 🚨",
 		"action",
-		a,
+		helper.If(a == 1, "push", "pop"),
 		"component",
 		c.Name(),
 		"listeners",
 		len(s.listeners),
 	)
 	for _, l := range s.listeners {
-		slog.Info(
-			"LXZ Notifying listener 📣",
-			"event",
-			helper.If(a == 1, "push", "pop"),
-			"listener",
-			l,
-		)
+		//slog.Info(
+		//	"LXZ Notifying listener 📣",
+		//	"event",
+		//	helper.If(a == 1, "push", "pop"),
+		//	"listener",
+		//	l,
+		//)
 		switch a {
 		case StackPush:
 			l.StackPushed(c)

@@ -33,6 +33,10 @@ func NewStatus(styles *config.Styles) *Status {
 	p.SetBackgroundColor(tcell.ColorYellow)
 	p.SetBorderColor(tcell.ColorRed)
 	p.SetBorderAttributes(tcell.AttrDim)
+	p.SetChangedFunc(func() {
+		// 每次内容发生变化后，自动滚动到底部
+		p.ScrollToEnd()
+	})
 	fmt.Fprintf(&p, "我是状态指示器")
 
 	return &p

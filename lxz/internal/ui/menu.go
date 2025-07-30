@@ -17,14 +17,7 @@ import (
 const maxRow = 7
 
 var menuKey = []string{
-	"<alt-1> | 项目release",
-	"<alt-2> | project relea",
-	"<alt-3> | project",
-	"<alt-4> | project release",
-	"<alt-5> | project release",
-	"<alt-6> | pr",
-	"<alt-7> | project release",
-	"<alt-8> | project releaseas asd",
+	"<1> | 项目release",
 }
 
 type Menu struct {
@@ -41,6 +34,7 @@ func NewMenu(styles *config.Styles) *Menu {
 	}
 	p.SetFixed(1, 1)
 	p.SetBorderPadding(0, 1, 1, 1)
+	p.SetBackgroundColor(tcell.ColorBlack)
 	//p.SetBorders(true)
 	menuKeys := make([]string, 0, len(menuKey))
 	menuNames := make([]string, 0, len(menuKey))
@@ -59,14 +53,16 @@ func NewMenu(styles *config.Styles) *Menu {
 			row = 0
 		}
 		p.SetCell(row, col, &tview.TableCell{
-			Text:  fmt.Sprintf("%s", menuKeys[i]),
-			Color: tcell.ColorFuchsia,
-			Align: tview.AlignLeft,
+			Text:            fmt.Sprintf("%s", menuKeys[i]),
+			Color:           tcell.ColorFuchsia,
+			Align:           tview.AlignLeft,
+			BackgroundColor: tcell.ColorBlack,
 		})
 		p.SetCell(row, col+1, &tview.TableCell{
-			Text:  menuNames[i],
-			Color: tcell.ColorDefault,
-			Align: tview.AlignLeft,
+			Text:            menuNames[i],
+			Color:           tcell.ColorDefault,
+			Align:           tview.AlignLeft,
+			BackgroundColor: tcell.ColorBlack,
 		})
 		row++
 	}

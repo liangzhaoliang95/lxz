@@ -64,6 +64,7 @@ func (a *App) ReloadStyles() {
 }
 
 func (a *App) keyboard(evt *tcell.EventKey) *tcell.EventKey {
+	slog.Info("LXZ App keyboard event", "key", evt.Key(), "rune", evt.Rune(), "modifiers", evt.Modifiers())
 	if k, ok := a.UI.HasAction(ui.AsKey(evt)); ok && !a.Content.IsTopDialog() {
 		return k.Action(evt)
 	}
@@ -86,6 +87,20 @@ func (a *App) testContentChange(evt *tcell.EventKey) *tcell.EventKey {
 	return nil
 }
 
+func (a *App) menuPageChange(evt *tcell.EventKey) *tcell.EventKey {
+	switch evt.Rune() {
+	case rune(ui.Key1):
+		if err := a.inject(NewProjectRelease(), true); err != nil {
+			slog.Error("Failed to inject ProjectRelease component", slogs.Error, err)
+		}
+	default:
+		slog.Warn("Unknown menu page change key", "key", evt.Rune())
+		return evt
+	}
+
+	return nil
+}
+
 // PrevCmd pops the command stack.
 func (a *App) PrevCmd(*tcell.EventKey) *tcell.EventKey {
 	if !a.Content.IsLast() {
@@ -97,12 +112,11 @@ func (a *App) PrevCmd(*tcell.EventKey) *tcell.EventKey {
 
 func (a *App) bindKeys() {
 	a.UI.AddActions(ui.NewKeyActionsFromMap(ui.KeyMap{
-		tcell.KeyEscape: ui.NewSharedKeyAction("Esc", a.PrevCmd, false),
-		//ui.KeyShift9:       ui.NewSharedKeyAction("DumpGOR", a.dumpGOR, false),
 		tcell.KeyCtrlE: ui.NewSharedKeyAction("ToggleHeader", a.toggleHeaderCmd, false),
 		//tcell.KeyCtrlG:     ui.NewSharedKeyAction("toggleCrumbs", a.toggleCrumbsCmd, false),
 		//ui.KeyHelp: ui.NewSharedKeyAction("Help", a.helpCmd, false),
 		ui.KeyHelp: ui.NewSharedKeyAction("Test", a.testContentChange, false),
+		ui.Key1:    ui.NewSharedKeyAction("projectRelease", a.menuPageChange, false),
 		//ui.KeyLeftBracket:  ui.NewSharedKeyAction("Go Back", a.previousCommand, false),
 		//ui.KeyRightBracket: ui.NewSharedKeyAction("Go Forward", a.nextCommand, false),
 		//ui.KeyDash:         ui.NewSharedKeyAction("Last View", a.lastCommand, false),
