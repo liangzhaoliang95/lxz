@@ -11,7 +11,21 @@ import (
 	"github.com/rivo/tview"
 	"lxz/internal/config"
 	"lxz/internal/model"
+	"strings"
 )
+
+const maxRow = 7
+
+var menuKey = []string{
+	"<alt-1> | 项目release",
+	"<alt-2> | project relea",
+	"<alt-3> | project",
+	"<alt-4> | project release",
+	"<alt-5> | project release",
+	"<alt-6> | pr",
+	"<alt-7> | project release",
+	"<alt-8> | project releaseas asd",
+}
 
 type Menu struct {
 	*tview.Table
@@ -26,19 +40,35 @@ func NewMenu(styles *config.Styles) *Menu {
 		Table:  tview.NewTable(),
 	}
 	p.SetFixed(1, 1)
-	p.SetBorders(true)
+	p.SetBorderPadding(0, 1, 1, 1)
+	//p.SetBorders(true)
+	menuKeys := make([]string, 0, len(menuKey))
+	menuNames := make([]string, 0, len(menuKey))
 
-	for i := 0; i < 10; i++ {
-		p.SetCell(i, 0, &tview.TableCell{
-			Text:  fmt.Sprintf("Key %d", i+1),
-			Color: tcell.ColorBlue,
+	for i := 0; i < len(menuKey); i++ {
+		m := strings.Split(menuKey[i], "|")
+		menuKeys = append(menuKeys, strings.Trim(m[0], " "))
+		menuNames = append(menuNames, strings.Trim(m[1], " "))
+	}
+
+	row, col := 0, 0
+	for i := 0; i < len(menuKeys); i++ {
+		if i > 0 && i%maxRow == 0 {
+			// 新列开头
+			col += 2 // 2列为一个组：key + value
+			row = 0
+		}
+		p.SetCell(row, col, &tview.TableCell{
+			Text:  fmt.Sprintf("%s", menuKeys[i]),
+			Color: tcell.ColorFuchsia,
 			Align: tview.AlignLeft,
 		})
-		p.SetCell(i, 1, &tview.TableCell{
-			Text:  fmt.Sprintf("Item %d", i+1),
+		p.SetCell(row, col+1, &tview.TableCell{
+			Text:  menuNames[i],
 			Color: tcell.ColorDefault,
 			Align: tview.AlignLeft,
 		})
+		row++
 	}
 
 	return &p

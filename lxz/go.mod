@@ -6,7 +6,6 @@ toolchain go1.24.4
 
 require (
 	github.com/adrg/xdg v0.5.3
-	github.com/derailed/k9s v0.50.9
 	github.com/fvbommel/sortorder v1.1.0
 	github.com/gdamore/tcell/v2 v2.8.1
 	github.com/lmittmann/tint v1.0.7

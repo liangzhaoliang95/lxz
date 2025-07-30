@@ -6,6 +6,7 @@ package model
 import (
 	"fmt"
 	"log/slog"
+	"lxz/internal/helper"
 	"sync"
 
 	"lxz/internal/slogs"
@@ -183,7 +184,13 @@ func (s *Stack) notify(a StackAction, c Component) {
 		len(s.listeners),
 	)
 	for _, l := range s.listeners {
-		slog.Info("LXZ Notifying listener 📣", "listener", l)
+		slog.Info(
+			"LXZ Notifying listener 📣",
+			"event",
+			helper.If(a == 1, "push", "pop"),
+			"listener",
+			l,
+		)
 		switch a {
 		case StackPush:
 			l.StackPushed(c)

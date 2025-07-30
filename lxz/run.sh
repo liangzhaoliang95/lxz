@@ -7,7 +7,7 @@ WATCH_DIR="./"
 GO_FILE="main.go"
 
 # 轮询时间（秒）
-INTERVAL=2
+INTERVAL=10
 
 # 存储上一次目录状态的 Hash
 PREV_HASH=""

@@ -14,6 +14,7 @@ import (
 	"lxz/internal"
 	"lxz/internal/config"
 	"lxz/internal/model"
+	"lxz/internal/slogs"
 	"lxz/internal/ui"
 	"os"
 	"os/signal"
@@ -80,12 +81,28 @@ func (a *App) toggleHeaderCmd(evt *tcell.EventKey) *tcell.EventKey {
 	return nil
 }
 
+func (a *App) testContentChange(evt *tcell.EventKey) *tcell.EventKey {
+	a.inject(ui.NewTestComp(time.Now().Format("15:04:05")), false)
+	return nil
+}
+
+// PrevCmd pops the command stack.
+func (a *App) PrevCmd(*tcell.EventKey) *tcell.EventKey {
+	if !a.Content.IsLast() {
+		a.Content.Pop()
+	}
+
+	return nil
+}
+
 func (a *App) bindKeys() {
 	a.UI.AddActions(ui.NewKeyActionsFromMap(ui.KeyMap{
+		tcell.KeyEscape: ui.NewSharedKeyAction("Esc", a.PrevCmd, false),
 		//ui.KeyShift9:       ui.NewSharedKeyAction("DumpGOR", a.dumpGOR, false),
 		tcell.KeyCtrlE: ui.NewSharedKeyAction("ToggleHeader", a.toggleHeaderCmd, false),
 		//tcell.KeyCtrlG:     ui.NewSharedKeyAction("toggleCrumbs", a.toggleCrumbsCmd, false),
 		//ui.KeyHelp: ui.NewSharedKeyAction("Help", a.helpCmd, false),
+		ui.KeyHelp: ui.NewSharedKeyAction("Test", a.testContentChange, false),
 		//ui.KeyLeftBracket:  ui.NewSharedKeyAction("Go Back", a.previousCommand, false),
 		//ui.KeyRightBracket: ui.NewSharedKeyAction("Go Forward", a.nextCommand, false),
 		//ui.KeyDash:         ui.NewSharedKeyAction("Last View", a.lastCommand, false),
@@ -106,7 +123,7 @@ func (a *App) buildHeader() tview.Primitive {
 	//
 	header.AddItem(a.UI.Menu(), 0, 1, false)
 	if a.showLogo {
-		header.AddItem(a.UI.Logo(), 60, 1, false)
+		header.AddItem(a.UI.Logo(), 24, 1, false)
 	}
 	go func() {
 		for {
@@ -145,7 +162,8 @@ func (a *App) layout(ctx context.Context) {
 	main.AddItem(a.buildHeader(), 10, 1, false)
 
 	// 状态指示器
-	main.AddItem(a.UI.Status(), 5, 1, false)
+	//main.AddItem(a.UI.Status(), 5, 1, false)
+	main.AddItem(a.UI.SubMenu(), 5, 1, false)
 
 	// 内容区域 展示集群资源信息
 	main.AddItem(a.Content, 0, 10, true)
@@ -177,7 +195,8 @@ func (a *App) Init(version string, _ int) error {
 	}
 
 	// 面包屑组件添加监听
-	a.Content.AddListener(a.UI.Status())
+	//a.Content.AddListener(a.UI.Status())
+	a.Content.AddListener(a.UI.SubMenu())
 	// 快捷键+数据初始化
 	a.UI.Init()
 
@@ -229,6 +248,26 @@ func (a *App) Run() error {
 	if err := a.UI.Application.Run(); err != nil {
 		return err
 	}
+
+	return nil
+}
+
+// 往应用中注入一个组件 一般用于激活某个页面
+func (a *App) inject(c model.Component, clearStack bool) error {
+	ctx := context.WithValue(context.Background(), internal.KeyApp, a)
+	if err := c.Init(ctx); err != nil {
+		slog.Error("Component init failed",
+			slogs.Error, err,
+			slogs.CompName, c.Name(),
+		)
+		return err
+	}
+	slog.Info("LXZ Injecting component 💉", "component", c.Name())
+	if clearStack {
+		a.Content.Clear()
+	}
+	// 将组件添加到应用的页面栈中
+	a.Content.Push(c)
 
 	return nil
 }

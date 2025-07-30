@@ -119,6 +119,7 @@ func logo() *tview.TextView {
 	v.SetWrap(false)
 	v.SetTextAlign(tview.AlignLeft)
 	v.SetDynamicColors(true)
+	//v.SetBorder(true)
 
 	return v
 }
@@ -129,6 +130,5 @@ func status() *tview.TextView {
 	v.SetWrap(false)
 	v.SetTextAlign(tview.AlignCenter)
 	v.SetDynamicColors(true)
-
 	return v
 }

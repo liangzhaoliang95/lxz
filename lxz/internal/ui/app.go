@@ -16,7 +16,7 @@ import (
 
 type App struct {
 	*tview.Application
-	Main    *Pages
+	Main    *Pages // 主页面容器（目前就两个页面，启动动画、功能页）
 	actions *KeyActions
 	views   map[string]tview.Primitive
 	running bool
@@ -42,9 +42,10 @@ func NewApp(cfg *config.Config) *App {
 
 	// 初始化应用的部分小组件
 	a.views = map[string]tview.Primitive{
-		"logo":   NewLogo(a.Styles),   // logo
-		"status": NewStatus(a.Styles), // status
-		"menu":   NewMenu(a.Styles),   // menu
+		"logo":    NewLogo(a.Styles),    // logo
+		"status":  NewStatus(a.Styles),  // status
+		"menu":    NewMenu(a.Styles),    // menu
+		"subMenu": NewSubMenu(a.Styles), // submenu
 	}
 
 	return &a
@@ -57,6 +58,15 @@ func (a *App) Views() map[string]tview.Primitive {
 
 func (a *App) Status() *Status {
 	return a.views["status"].(*Status)
+}
+
+// SubMenu 用于显示各个功能页面的快捷键描述
+func (a *App) SubMenu() *SubMenu {
+	if v, ok := a.views["subMenu"]; ok {
+		return v.(*SubMenu)
+	}
+	slog.Error("SubMenu not found", slogs.Subsys, "ui", slogs.Component, "app")
+	return nil
 }
 
 func (a *App) Logo() *Logo {
