@@ -40,10 +40,13 @@ func NewSubMenu(styles *config.Styles) *SubMenu {
 		Table:  tview.NewTable(),
 	}
 	p.SetBorder(true)
-	p.SetBorderPadding(0, 0, 1, 1)
+	p.SetBorderPadding(0, 0, 0, 0)
 	p.SetBackgroundColor(tcell.ColorBlack)
-	p.SetBorderColor(tcell.ColorRed)
+	p.SetBorderColor(tcell.ColorBlue)
 	p.SetBorderAttributes(tcell.AttrDim)
+	p.SetTitle(" Sub Menu ")
+	p.SetTitleAlign(tview.AlignCenter)
+	p.SetTitleColor(tcell.ColorAqua)
 
 	slog.Info("LXZ SubMenu NewSubMenu Done")
 	return &p
@@ -73,7 +76,11 @@ func (_this *SubMenu) hasDigits(hh model.MenuHints) bool {
 	return false
 }
 
-func (_this *SubMenu) buildMenuTable(hh model.MenuHints, table []model.MenuHints, colCount int) [][]string {
+func (_this *SubMenu) buildMenuTable(
+	hh model.MenuHints,
+	table []model.MenuHints,
+	colCount int,
+) [][]string {
 	var row, col int
 	firstCmd := true
 	maxKeys := make([]int, colCount)

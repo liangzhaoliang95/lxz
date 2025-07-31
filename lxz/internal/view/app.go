@@ -64,7 +64,15 @@ func (a *App) ReloadStyles() {
 }
 
 func (a *App) keyboard(evt *tcell.EventKey) *tcell.EventKey {
-	slog.Info("LXZ App keyboard event", "key", evt.Key(), "rune", evt.Rune(), "modifiers", evt.Modifiers())
+	slog.Info(
+		"LXZ App keyboard event",
+		"key",
+		evt.Key(),
+		"rune",
+		evt.Rune(),
+		"modifiers",
+		evt.Modifiers(),
+	)
 	if k, ok := a.UI.HasAction(ui.AsKey(evt)); ok && !a.Content.IsTopDialog() {
 		return k.Action(evt)
 	}
@@ -90,8 +98,12 @@ func (a *App) testContentChange(evt *tcell.EventKey) *tcell.EventKey {
 func (a *App) menuPageChange(evt *tcell.EventKey) *tcell.EventKey {
 	switch evt.Rune() {
 	case rune(ui.Key1):
-		if err := a.inject(NewProjectRelease(), true); err != nil {
-			slog.Error("Failed to inject ProjectRelease component", slogs.Error, err)
+		if err := a.inject(NewSshConnect(a), true); err != nil {
+			slog.Error("Failed to inject GitRelease component", slogs.Error, err)
+		}
+	case rune(ui.Key2):
+		if err := a.inject(NewGitRelease(), true); err != nil {
+			slog.Error("Failed to inject GitRelease component", slogs.Error, err)
 		}
 	default:
 		slog.Warn("Unknown menu page change key", "key", evt.Rune())
@@ -113,16 +125,9 @@ func (a *App) PrevCmd(*tcell.EventKey) *tcell.EventKey {
 func (a *App) bindKeys() {
 	a.UI.AddActions(ui.NewKeyActionsFromMap(ui.KeyMap{
 		tcell.KeyCtrlE: ui.NewSharedKeyAction("ToggleHeader", a.toggleHeaderCmd, false),
-		//tcell.KeyCtrlG:     ui.NewSharedKeyAction("toggleCrumbs", a.toggleCrumbsCmd, false),
-		//ui.KeyHelp: ui.NewSharedKeyAction("Help", a.helpCmd, false),
-		ui.KeyHelp: ui.NewSharedKeyAction("Test", a.testContentChange, false),
-		ui.Key1:    ui.NewSharedKeyAction("projectRelease", a.menuPageChange, false),
-		//ui.KeyLeftBracket:  ui.NewSharedKeyAction("Go Back", a.previousCommand, false),
-		//ui.KeyRightBracket: ui.NewSharedKeyAction("Go Forward", a.nextCommand, false),
-		//ui.KeyDash:         ui.NewSharedKeyAction("Last View", a.lastCommand, false),
-		//tcell.KeyCtrlA:     ui.NewSharedKeyAction("Aliases", a.aliasCmd, false),
-		//tcell.KeyEnter:     ui.NewKeyAction("Goto", a.gotoCmd, false),
-		//tcell.KeyCtrlC:     ui.NewKeyAction("Quit", a.quitCmd, false),
+		ui.KeyHelp:     ui.NewSharedKeyAction("Test", a.testContentChange, false),
+		ui.Key1:        ui.NewSharedKeyAction("SSH Connect", a.menuPageChange, false),
+		ui.Key2:        ui.NewSharedKeyAction("Git Release", a.menuPageChange, false),
 	}))
 }
 
@@ -247,14 +252,13 @@ func (a *App) Run() error {
 		}
 		a.UI.QueueUpdateDraw(func() {
 			a.UI.Main.SwitchToPage("main")
-			// if command bar is already active, focus it
-			//if a.CmdBuff().IsActive() {
-			//	a.SetFocus(a.Prompt())
-			//}
+
+			// 定位到第一个功能
+			a.inject(NewSshConnect(a), true)
 		})
 	}()
 
-	slog.Info("🚀 LXZ 开始运行UI-APP, 执行默认命令 defaultCmd")
+	slog.Info("🚀 LXZ 开始运行UI-APP")
 	//if err := a.command.defaultCmd(true); err != nil {
 	//	return err
 	//}

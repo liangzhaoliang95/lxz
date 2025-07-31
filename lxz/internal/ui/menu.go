@@ -17,7 +17,8 @@ import (
 const maxRow = 7
 
 var menuKey = []string{
-	"<1> | 项目release",
+	"<1> | 🖥️ SSH Connect",
+	"<2> | 🦊 Git Release",
 }
 
 type Menu struct {

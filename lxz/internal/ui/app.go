@@ -111,7 +111,7 @@ func (a *App) Init() {
 	a.bindKeys()
 	a.Styles.AddListener(a)
 	// 设置应用程序的根视图 是一个Main容器,里面存了很多个页面
-	a.SetRoot(a.Main, true).EnableMouse(true)
+	a.SetRoot(a.Main, true).EnableMouse(false)
 }
 
 // HasAction checks if key matches a registered binding.
