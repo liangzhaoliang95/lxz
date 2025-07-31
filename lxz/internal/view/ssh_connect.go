@@ -37,6 +37,8 @@ func (_this *SshConnect) bindKeys() {
 		tcell.KeyEscape: ui.NewKeyAction("Quit FullScreen", _this.toggleFullScreenCmd, false),
 		tcell.KeyTAB:    ui.NewKeyAction("Focus Change", _this.TabFocusChange, true),
 		tcell.KeyEnter:  ui.NewKeyAction("Confirm", _this.emptyKeyEvent, true),
+		tcell.KeyLeft:   ui.NewKeyAction("Focus Change", _this.TabFocusChange, false),
+		tcell.KeyRight:  ui.NewKeyAction("Focus Change", _this.TabFocusChange, false),
 	})
 }
 
@@ -190,18 +192,26 @@ func (_this *SshConnect) SetCommand(interpreter *cmd.Interpreter) {
 
 func (_this *SshConnect) TabFocusChange(event *tcell.EventKey) *tcell.EventKey {
 	if event.Key() == tcell.KeyTAB {
+
+	} else if event.Key() == tcell.KeyLeft {
 		if _this.app.UI.GetFocus() == _this.envList {
-			_this.app.UI.SetFocus(_this.hostTable)
-			_this.envList.SetBorderColor(inactiveBorderColor)
-			_this.hostTable.SetBorderColor(activeBorderColor)
-		} else {
-			_this.app.UI.SetFocus(_this.envList)
-			_this.envList.SetBorderColor(activeBorderColor)
-			_this.hostTable.SetBorderColor(inactiveBorderColor)
+			return nil // 已经在 envList 上了
 		}
-		return nil
+	} else if event.Key() == tcell.KeyRight {
+		if _this.app.UI.GetFocus() == _this.hostTable {
+			return nil // 已经在 hostTable 上了
+		}
 	}
-	return event
+	if _this.app.UI.GetFocus() == _this.envList {
+		_this.app.UI.SetFocus(_this.hostTable)
+		_this.envList.SetBorderColor(inactiveBorderColor)
+		_this.hostTable.SetBorderColor(activeBorderColor)
+	} else {
+		_this.app.UI.SetFocus(_this.envList)
+		_this.envList.SetBorderColor(activeBorderColor)
+		_this.hostTable.SetBorderColor(inactiveBorderColor)
+	}
+	return nil
 }
 
 func NewSshConnect(app *App) *SshConnect {
