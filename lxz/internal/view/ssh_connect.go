@@ -214,20 +214,6 @@ func (_this *SshConnect) TabFocusChange(event *tcell.EventKey) *tcell.EventKey {
 	return nil
 }
 
-func NewSshConnect(app *App) *SshConnect {
-	var name = "SSH Connect"
-	tc := &SshConnect{
-		BaseFlex: newBaseFlex(name),
-		app:      app,
-	}
-
-	tc.
-		SetBorder(true).
-		SetBorderAttributes(tcell.AttrBold).
-		SetTitle(fmt.Sprintf(" %s ", name))
-	return tc
-}
-
 // helpers
 
 var (
@@ -385,4 +371,18 @@ func expandIncludes(line string) []string {
 		}
 	}
 	return expanded
+}
+
+func NewSshConnect(app *App) *SshConnect {
+	var name = "SSH Connect"
+	tc := &SshConnect{
+		BaseFlex: newBaseFlex(name),
+		app:      app,
+	}
+
+	tc.
+		SetBorder(true).
+		SetBorderAttributes(tcell.AttrBold).
+		SetTitle(fmt.Sprintf(" %s ", name))
+	return tc
 }

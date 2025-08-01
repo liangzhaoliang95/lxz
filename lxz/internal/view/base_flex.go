@@ -78,6 +78,7 @@ func newBaseFlex(name string) *BaseFlex {
 		SetBorder(true).
 		SetBorderAttributes(tcell.AttrNone).
 		SetTitle(name)
+	b.SetBorderColor(tcell.ColorAqua)
 
 	return b
 }

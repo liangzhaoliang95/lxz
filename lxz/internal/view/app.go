@@ -73,7 +73,13 @@ func (a *App) keyboard(evt *tcell.EventKey) *tcell.EventKey {
 		"modifiers",
 		evt.Modifiers(),
 	)
-	if k, ok := a.UI.HasAction(ui.AsKey(evt)); ok && !a.Content.IsTopDialog() {
+	var key tcell.Key
+	if evt.Modifiers() == tcell.ModCtrl {
+		key = tcell.Key(evt.Rune())
+	} else {
+		key = ui.AsKey(evt)
+	}
+	if k, ok := a.UI.HasAction(key); ok && !a.Content.IsTopDialog() {
 		return k.Action(evt)
 	}
 
@@ -97,15 +103,15 @@ func (a *App) testContentChange(evt *tcell.EventKey) *tcell.EventKey {
 
 func (a *App) menuPageChange(evt *tcell.EventKey) *tcell.EventKey {
 	switch evt.Rune() {
-	case rune(ui.Key1):
+	case rune(ui.KeyShift1):
 		if err := a.inject(NewSshConnect(a), true); err != nil {
 			slog.Error("Failed to inject SshConnect component", slogs.Error, err)
 		}
-	case rune(ui.Key2):
+	case rune(ui.KeyShift2):
 		if err := a.inject(NewFileBrowser(a), true); err != nil {
 			slog.Error("Failed to inject FileBrowser component", slogs.Error, err)
 		}
-	case rune(ui.Key3):
+	case rune(ui.KeyShift3):
 		if err := a.inject(NewGitRelease(), true); err != nil {
 			slog.Error("Failed to inject GitRelease component", slogs.Error, err)
 		}
@@ -130,9 +136,9 @@ func (a *App) bindKeys() {
 	a.UI.AddActions(ui.NewKeyActionsFromMap(ui.KeyMap{
 		tcell.KeyCtrlE: ui.NewSharedKeyAction("ToggleHeader", a.toggleHeaderCmd, false),
 		ui.KeyHelp:     ui.NewSharedKeyAction("Test", a.testContentChange, false),
-		ui.Key1:        ui.NewSharedKeyAction("SSH Connect", a.menuPageChange, false),
-		ui.Key2:        ui.NewSharedKeyAction("File Browser", a.menuPageChange, false),
-		ui.Key3:        ui.NewSharedKeyAction("Git Release", a.menuPageChange, false),
+		ui.KeyShift1:   ui.NewSharedKeyAction("SSH Connect", a.menuPageChange, false),
+		ui.KeyShift2:   ui.NewSharedKeyAction("File Browser", a.menuPageChange, false),
+		ui.KeyShift3:   ui.NewSharedKeyAction("Git Release", a.menuPageChange, false),
 	}))
 }
 

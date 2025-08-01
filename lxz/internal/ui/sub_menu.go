@@ -42,7 +42,7 @@ func NewSubMenu(styles *config.Styles) *SubMenu {
 	p.SetBorder(true)
 	p.SetBorderPadding(0, 0, 0, 0)
 	p.SetBackgroundColor(tcell.ColorBlack)
-	p.SetBorderColor(tcell.ColorBlue)
+	p.SetBorderColor(tcell.ColorDefault)
 	p.SetBorderAttributes(tcell.AttrDim)
 	p.SetTitle(" Sub Menu ")
 	p.SetTitleAlign(tview.AlignCenter)

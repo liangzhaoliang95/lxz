@@ -10,9 +10,12 @@ import (
 	"fmt"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"log/slog"
+	"lxz/internal/config"
 	"lxz/internal/ui"
+	"lxz/internal/ui/dialog"
 	"lxz/internal/view/cmd"
 	"os"
 	"os/exec"
@@ -31,12 +34,17 @@ type FileBrowser struct {
 	lastFocusedAt    time.Time
 	debounceInterval time.Duration
 	stopDebounceCh   chan struct{}
+	createFileModel  *tview.Modal
+	deleteFileModel  *tview.Modal
+	renameFileModel  *tview.Modal
 }
 
 func (_this *FileBrowser) bindKeys() {
 	_this.Actions().Bulk(ui.KeyMap{
-		ui.KeyE:         ui.NewKeyAction("Edit", _this.editFile, true),
+		ui.KeyE:         ui.NewKeyAction("Edit", _this.fileCtrl, true),
 		ui.KeyF:         ui.NewKeyAction("FullScreen", _this.toggleFullScreenCmd, true),
+		tcell.KeyCtrlN:  ui.NewKeyAction("Create File", _this.fileCtrl, true),
+		tcell.KeyCtrlD:  ui.NewKeyAction("Delete File", _this.fileCtrl, true),
 		tcell.KeyEscape: ui.NewKeyAction("Quit FullScreen", _this.toggleFullScreenCmd, false),
 		tcell.KeyTAB:    ui.NewKeyAction("Focus Change", _this.TabFocusChange, true),
 		tcell.KeyEnter:  ui.NewKeyAction("Confirm", _this.TabFocusChange, true),
@@ -54,7 +62,7 @@ func (_this *FileBrowser) Init(ctx context.Context) error {
 	_this.initTree()
 	_this.initPreview()
 
-	_this.AddItem(_this.tree, 40, 1, true)
+	_this.AddItem(_this.tree, 30, 1, true)
 	_this.AddItem(_this.preview, 0, 2, false)
 
 	// 初始展开根目录
@@ -137,6 +145,8 @@ func (_this *FileBrowser) SetCommand(interpreter *cmd.Interpreter) {
 
 // helpers
 func (_this *FileBrowser) addChildren(node *tview.TreeNode, path string) {
+	// 清空旧的 Children
+	node.ClearChildren()
 	files, err := os.ReadDir(path)
 	if err != nil {
 		// 显示错误信息
@@ -300,22 +310,78 @@ func (_this *FileBrowser) TabFocusChange(event *tcell.EventKey) *tcell.EventKey 
 	return nil
 }
 
-// editFile
-func (_this *FileBrowser) editFile(event *tcell.EventKey) *tcell.EventKey {
+// fileCtrl
+func (_this *FileBrowser) fileCtrl(event *tcell.EventKey) *tcell.EventKey {
+	slog.Info("[fileCtrl] ", "event", event.Key())
+	node := _this.tree.GetCurrentNode()
+	if node == nil {
+		slog.Info("[fileCtrl失败] ", "err", "未选中文件或目录")
+		return nil
+	}
+	ref := node.GetReference()
+	if ref == nil {
+		slog.Info("[fileCtrl失败] ", "err", "未选中文件或目录")
+		return nil
+	}
+
+	path := ref.(string)
+	info, err := os.Stat(path)
+	if err != nil {
+		slog.Info("[fileCtrl失败] ", "err", err)
+		return nil
+	}
+
+	// 文件的新建 删除
+	if event.Key() == tcell.KeyCtrlD {
+		// 删除文件
+		slog.Info("Will delete file", "path", path)
+		if info.IsDir() {
+		}
+		return nil
+	} else if event.Key() == tcell.KeyCtrlN {
+		slog.Info("Will create a new file", "path", path)
+		// 新建文件
+		if info.IsDir() {
+			// 在此目录下新建文件
+			opts := dialog.CreateFileOpts{
+				Title:        "Create New File",
+				Message:      "Enter the name of the new file:",
+				FieldManager: "",
+				Ack: func(opts *metav1.PatchOptions) bool {
+					slog.Info("[文件新建] \n", "path", path)
+					fileName := opts.FieldManager
+					if fileName == "" {
+						slog.Info("[文件新建失败] ", "err", "文件名不能为空")
+						return false
+					}
+					newFilePath := filepath.Join(path, fileName)
+					// 检查文件是否已存在
+					if _, err := os.Stat(newFilePath); err == nil {
+						slog.Info("[文件新建失败] ", "err", "文件已存在")
+						return false
+					}
+					// 创建新文件
+					file, err := os.Create(newFilePath)
+					if err != nil {
+						slog.Error("[文件新建失败] ", "err", err)
+						return false
+					}
+					defer file.Close()
+					_this.addChildren(node, path)
+					return true
+				},
+				Cancel: func() {},
+			}
+			dialog.ShowCreateFile(&config.Dialog{}, _this.app.Content.Pages, &opts)
+		} else {
+			// TODO 使用flash组件通知不允许
+		}
+		return nil
+	}
+
 	switch event.Rune() {
 	case 'e':
-		node := _this.tree.GetCurrentNode()
-		if node == nil {
-			return nil
-		}
-		ref := node.GetReference()
-		if ref == nil {
-			return nil
-		}
-		path := ref.(string)
-
-		info, err := os.Stat(path)
-		if err != nil || info.IsDir() {
+		if info.IsDir() {
 			return nil
 		}
 
