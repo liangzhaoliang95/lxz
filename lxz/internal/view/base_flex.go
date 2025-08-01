@@ -51,7 +51,7 @@ func (_this *BaseFlex) emptyKeyEvent(evt *tcell.EventKey) *tcell.EventKey {
 
 func (_this *BaseFlex) keyboard(evt *tcell.EventKey) *tcell.EventKey {
 	slog.Info(
-		"GitRelease keyboard",
+		"BaseFlex keyboard",
 		"key",
 		evt.Key(),
 		"rune",

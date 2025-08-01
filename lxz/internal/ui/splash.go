@@ -1,6 +1,3 @@
-// SPDX-License-Identifier: Apache-2.0
-// Copyright Authors of K9s
-
 package ui
 
 import (
@@ -11,7 +8,7 @@ import (
 	"github.com/rivo/tview"
 )
 
-// LogoSmall K9s small log.
+// LogoSmall LXZ small log.
 var LogoSmall2 = []string{
 	` _     __   __ ______`,
 	`| |    \ \ / /|___  /`,
@@ -21,7 +18,7 @@ var LogoSmall2 = []string{
 	`\_____/\/   \/\_____/`,
 }
 
-// LogoBig K9s big logo for splash page.
+// LogoBig LXZ big logo for splash page.
 var LogoBig = []string{
 	` _     __   __ ______`,
 	`| |    \ \ / /|___  /`,

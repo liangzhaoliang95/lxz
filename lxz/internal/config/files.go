@@ -64,11 +64,11 @@ var (
 	// AppHotKeysFile tracks hotkeys config file.
 	AppHotKeysFile string
 
-	// AppConfigFile tracks k9s config file.
+	// AppConfigFile tracks LXZ config file.
 	AppConfigFile string
 )
 
-// InitLogLoc initializes lxz logs location.
+// InitLogLoc initializes LXZ logs location.
 func InitLogLoc() error {
 	var appLogDir string
 	switch {

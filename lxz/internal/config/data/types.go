@@ -1,6 +1,3 @@
-// SPDX-License-Identifier: Apache-2.0
-// Copyright Authors of K9s
-
 package data
 
 import (
@@ -16,10 +13,10 @@ import (
 var JSONValidator = json.NewValidator()
 
 const (
-	// DefaultDirMod default unix perms for k9s directory.
+	// DefaultDirMod default unix perms for LXZ directory.
 	DefaultDirMod os.FileMode = 0744
 
-	// DefaultFileMod default unix perms for k9s files.
+	// DefaultFileMod default unix perms for LXZ files.
 	DefaultFileMod os.FileMode = 0600
 
 	// MainConfigFile track main configuration file.

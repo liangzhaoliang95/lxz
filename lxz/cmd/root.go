@@ -87,7 +87,7 @@ func run(*cobra.Command, []string) error {
 	}()
 	defer func() {
 		if err := recover(); err != nil {
-			slog.Error("Boom!! k9s init failed", slogs.Error, err)
+			slog.Error("Boom!! LXZ init failed", slogs.Error, err)
 			slog.Error("", slogs.Stack, string(debug.Stack()))
 			printLogo(color.Red)
 			fmt.Printf("%s", color.Colorize("Boom!! ", color.Red))
@@ -161,25 +161,25 @@ func initLXZFlags() {
 		lxzFlags.Headless,
 		"headless",
 		false,
-		"Turn K9s header off",
+		"Turn LXZ header off",
 	)
 	rootCmd.Flags().BoolVar(
 		lxzFlags.Logoless,
 		"logoless",
 		false,
-		"Turn K9s logo off",
+		"Turn LXZ logo off",
 	)
 	rootCmd.Flags().BoolVar(
 		lxzFlags.Crumbsless,
 		"crumbsless",
 		false,
-		"Turn K9s crumbs off",
+		"Turn LXZ crumbs off",
 	)
 	rootCmd.Flags().BoolVar(
 		lxzFlags.Splashless,
 		"splashless",
 		false,
-		"Turn K9s splash screen off",
+		"Turn LXZ splash screen off",
 	)
 
 	rootCmd.Flags()

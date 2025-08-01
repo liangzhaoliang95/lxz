@@ -1,6 +1,3 @@
-// SPDX-License-Identifier: Apache-2.0
-// Copyright Authors of K9s
-
 package cmd
 
 import (
@@ -23,7 +20,7 @@ func versionCmd() *cobra.Command {
 	}
 
 	command.PersistentFlags().
-		BoolVarP(&short, "short", "s", false, "Prints K9s version info in short format")
+		BoolVarP(&short, "short", "s", false, "Prints LXZ version info in short format")
 
 	return &command
 }

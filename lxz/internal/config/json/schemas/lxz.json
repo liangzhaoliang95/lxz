@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "K9s config schema",
+  "title": "LXZ config schema",
   "type": "object",
   "additionalProperties": false,
   "properties": {

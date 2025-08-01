@@ -1,5 +1,5 @@
 # -----------------------------------------------------------------------------
-# K9s Nightfox Theme
+# LXZ Nightfox Theme
 # Based on the Nightfox.nvim color scheme:
 # https://github.com/EdenEast/nightfox.nvim
 # -----------------------------------------------------------------------------
@@ -18,7 +18,7 @@ blue: &blue "#719cd6"
 red: &red "#c94f6d"
 
 # Skin...
-k9s:
+lxz:
   bodys:
     fgColor: *foreground
     bgColor: *background

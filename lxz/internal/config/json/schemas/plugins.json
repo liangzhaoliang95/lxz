@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "K9s plugins schema",
+  "title": "LXZ plugins schema",
   "type": "object",
   "additionalProperties": false,
   "properties": {

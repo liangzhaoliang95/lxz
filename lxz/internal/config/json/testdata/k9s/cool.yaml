@@ -1,6 +1,6 @@
-k9s:
+lxz:
   liveViewAutoRefresh: false
-  screenDumpDir: /Users/fernand/.local/state/k9s/screen-dumps
+  screenDumpDir: /Users/fernand/.local/state/lxz/screen-dumps
   refreshRate: 2
   maxConnRetry: 5
   readOnly: false

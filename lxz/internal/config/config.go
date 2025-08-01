@@ -1,6 +1,3 @@
-// SPDX-License-Identifier: Apache-2.0
-// Copyright Authors of K9s
-
 package config
 
 import (
@@ -15,7 +12,7 @@ import (
 	"os"
 )
 
-// Config tracks K9s configuration options.
+// Config tracks LXZ configuration options.
 type Config struct {
 	LXZ *LXZ `yaml:"lxz" json:"lxz"`
 }
@@ -43,11 +40,11 @@ func (c *Config) SaveFile(path string) error {
 	}
 
 	if err := data.SaveYAML(path, c); err != nil {
-		slog.Error("Unable to save K9s config file", slogs.Error, err)
+		slog.Error("Unable to save LXZ config file", slogs.Error, err)
 		return err
 	}
 
-	slog.Info("[CONFIG] Saving K9s config to disk", slogs.Path, path)
+	slog.Info("[CONFIG] Saving LXZ config to disk", slogs.Path, path)
 	return nil
 }
 
@@ -55,7 +52,7 @@ func (c *Config) Merge(c1 *Config) {
 
 }
 
-// Load loads K9s configuration from file.
+// Load loads LXZ configuration from file.
 func (c *Config) Load(path string, force bool) error {
 	if _, err := os.Stat(path); errors.Is(err, fs.ErrNotExist) {
 		if err := c.Save(force); err != nil {

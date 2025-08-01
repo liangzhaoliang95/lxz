@@ -40,7 +40,7 @@ type App struct {
 	showLogo   bool
 }
 
-// NewApp returns a K9s app instance.
+// NewApp returns a LXZ app instance.
 func NewApp(cfg *config.Config) *App {
 	a := App{
 		// 初始化UI-APP
@@ -99,9 +99,13 @@ func (a *App) menuPageChange(evt *tcell.EventKey) *tcell.EventKey {
 	switch evt.Rune() {
 	case rune(ui.Key1):
 		if err := a.inject(NewSshConnect(a), true); err != nil {
-			slog.Error("Failed to inject GitRelease component", slogs.Error, err)
+			slog.Error("Failed to inject SshConnect component", slogs.Error, err)
 		}
 	case rune(ui.Key2):
+		if err := a.inject(NewFileBrowser(a), true); err != nil {
+			slog.Error("Failed to inject FileBrowser component", slogs.Error, err)
+		}
+	case rune(ui.Key3):
 		if err := a.inject(NewGitRelease(), true); err != nil {
 			slog.Error("Failed to inject GitRelease component", slogs.Error, err)
 		}
@@ -127,7 +131,8 @@ func (a *App) bindKeys() {
 		tcell.KeyCtrlE: ui.NewSharedKeyAction("ToggleHeader", a.toggleHeaderCmd, false),
 		ui.KeyHelp:     ui.NewSharedKeyAction("Test", a.testContentChange, false),
 		ui.Key1:        ui.NewSharedKeyAction("SSH Connect", a.menuPageChange, false),
-		ui.Key2:        ui.NewSharedKeyAction("Git Release", a.menuPageChange, false),
+		ui.Key2:        ui.NewSharedKeyAction("File Browser", a.menuPageChange, false),
+		ui.Key3:        ui.NewSharedKeyAction("Git Release", a.menuPageChange, false),
 	}))
 }
 

@@ -18,7 +18,8 @@ const maxRow = 7
 
 var menuKey = []string{
 	"<1> | 🖥️ SSH Connect",
-	"<2> | 🦊 Git Release",
+	"<2> | 🗂️ File Browser",
+	"<3> | 🦊 Git Release",
 }
 
 type Menu struct {

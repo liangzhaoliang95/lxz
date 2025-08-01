@@ -1,6 +1,3 @@
-// SPDX-License-Identifier: Apache-2.0
-// Copyright Authors of K9s
-
 package config
 
 const (
@@ -14,7 +11,7 @@ const (
 	DefaultCommand = ""
 )
 
-// Flags represents K9s configuration flags.
+// Flags represents LXZ configuration flags.
 type Flags struct {
 	RefreshRate   *int
 	LogLevel      *string

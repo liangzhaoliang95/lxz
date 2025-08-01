@@ -1,116 +1,256 @@
 package main
 
 import (
-	"io/ioutil"
-	"log"
-	"os"
-	"path/filepath"
-	"sort"
-
+	"fmt"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"time"
 )
 
+// 打开系统默认编辑器
+func openSystemEditor(path string) error {
+	editor := os.Getenv("EDITOR")
+	if editor == "" {
+		// fallback 到常见编辑器
+		for _, candidate := range []string{"nano", "vim", "vi", "code"} {
+			if _, err := exec.LookPath(candidate); err == nil {
+				editor = candidate
+				break
+			}
+		}
+	}
+	if editor == "" {
+		return fmt.Errorf("未设置 $EDITOR，且未找到可用编辑器（如 vim/nano）")
+	}
+	// 检查命令是否存在
+	if _, err := exec.LookPath(editor); err != nil {
+		return fmt.Errorf("未设置 $EDITOR，且未找到可用编辑器（如 vim/nano）")
+	}
+
+	cmd := exec.Command(editor, path)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
+}
+
 func main() {
+	var (
+		lastFocusedPath  string
+		lastFocusedAt    time.Time
+		debounceInterval = 200 * time.Millisecond
+		stopDebounceCh   = make(chan struct{})
+	)
+
+	rootDir := "/Users/liang" // 用当前路径，可以替换为"/Users/liang"等绝对路径
+
+	// 文件树节点
+	rootNode := tview.NewTreeNode(rootDir).
+		SetColor(tcell.ColorRed).
+		SetReference(rootDir)
+
+	tree := tview.NewTreeView().
+		SetRoot(rootNode).
+		SetCurrentNode(rootNode)
+
+	// 文件预览区域
+	preview := tview.NewTextView()
+	preview.
+		SetDynamicColors(false).
+		SetWordWrap(true).
+		SetBorder(true).
+		SetTitle("预览")
+
+	// 编辑区域（进入编辑模式时显示）
+	editor := tview.NewTextView().SetChangedFunc(func() {
+
+	})
+	editor.
+		SetDynamicColors(true).
+		SetBorder(true).
+		SetTitle("编辑中...(按 Esc 退出)")
+
+	// 页面布局
+	flex := tview.NewFlex().
+		AddItem(tree, 40, 1, true).
+		AddItem(preview, 0, 2, false)
+
 	app := tview.NewApplication()
-	table := tview.NewTable().SetSelectable(true, false).SetBorders(false)
 
-	currentPath := "/Users/liang"
-
-	// 外层的 frame，用于显示当前路径标题
-	frame := tview.NewFrame(table).
-		SetBorders(1, 1, 1, 1, 2, 2)
-
-	// 更新 table 的内容和路径标题
-	var updateTable func(string)
-	updateTable = func(path string) {
-		table.Clear()
-
-		files, err := ioutil.ReadDir(path)
+	// 添加节点的辅助函数
+	addChildren := func(node *tview.TreeNode, path string) {
+		files, err := os.ReadDir(path)
 		if err != nil {
-			log.Printf("读取目录失败: %v", err)
+			// 显示错误信息
+			preview.SetText(fmt.Sprintf("[red]读取目录失败: %v", err))
 			return
 		}
-
-		// 更新当前路径变量
-		currentPath = path
-
-		// 更新标题信息
-		frame.Clear()
-		frame.AddText("终端文件浏览器 - ↑↓选择, Enter进入, Backspace返回, q退出", true, tview.AlignCenter, tcell.ColorGreen).
-			AddText("当前路径: "+currentPath, false, tview.AlignLeft, tcell.ColorYellow)
-
-		// 设置 ".." 返回上级
-		table.SetCell(0, 0, tview.NewTableCell("..").
-			SetTextColor(tcell.ColorYellow).
-			SetSelectable(true))
-
-		// 排序，保持目录在上面
-		sort.SliceStable(files, func(i, j int) bool {
-			if files[i].IsDir() && !files[j].IsDir() {
-				return true
-			}
-			return files[i].Name() < files[j].Name()
-		})
-
-		for i, file := range files {
-			name := file.Name()
-			cell := tview.NewTableCell(name)
+		for _, file := range files {
+			fullPath := filepath.Join(path, file.Name())
+			child := tview.NewTreeNode(file.Name()).
+				SetReference(fullPath).
+				SetSelectable(true)
 			if file.IsDir() {
-				cell.SetTextColor(tcell.ColorSkyblue)
-			} else {
-				cell.SetTextColor(tcell.ColorWhite)
+				child.SetColor(tcell.ColorGreen)
 			}
-			table.SetCell(i+1, 0, cell)
+			node.AddChild(child)
 		}
 	}
 
-	// 初始化第一次加载
-	updateTable(currentPath)
-
-	table.SetSelectedFunc(func(row, column int) {
-		cell := table.GetCell(row, column)
-		if cell == nil {
+	// 初始展开根目录
+	addChildren(rootNode, rootDir)
+	tree.SetChangedFunc(func(node *tview.TreeNode) {
+		ref := node.GetReference()
+		if ref == nil {
 			return
 		}
-		selected := cell.Text
+		path := ref.(string)
 
-		var selectedPath string
-		if selected == ".." {
-			selectedPath = filepath.Dir(currentPath)
-		} else {
-			selectedPath = filepath.Join(currentPath, selected)
+		fi, err := os.Stat(path)
+		if err != nil || fi.IsDir() {
+			lastFocusedPath = ""
+			return
 		}
 
-		// 判断是不是目录
-		info, err := os.Stat(selectedPath)
+		// 设置当前选中和时间
+		lastFocusedPath = path
+		lastFocusedAt = time.Now()
+	})
+	// 节点选择时事件
+	tree.SetSelectedFunc(func(node *tview.TreeNode) {
+		ref := node.GetReference()
+		if ref == nil {
+			preview.SetText("[red]请选择一个文件或目录")
+			return
+		}
+		path := ref.(string)
+
+		info, err := os.Stat(path)
 		if err != nil {
-			log.Printf("无法读取 %s: %v", selectedPath, err)
+			preview.SetText(fmt.Sprintf("[red]读取失败: %v", err))
 			return
 		}
+
 		if info.IsDir() {
-			updateTable(selectedPath)
-			app.Draw()
+			if len(node.GetChildren()) == 0 {
+				addChildren(node, path)
+				node.SetExpanded(true) // ✅ 第一次加载子目录 -> 展开它
+			} else {
+				node.SetExpanded(!node.IsExpanded())
+			}
+
 		}
 	})
 
-	table.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		switch event.Key() {
-		case tcell.KeyBackspace2, tcell.KeyBackspace:
-			updateTable(filepath.Dir(currentPath))
-			app.Draw()
-			return nil
-		case tcell.KeyRune:
-			if event.Rune() == 'q' || event.Rune() == 'Q' {
-				app.Stop()
+	// 键盘事件捕获逻辑
+	tree.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Rune() {
+		case 'e':
+			node := tree.GetCurrentNode()
+			if node == nil {
 				return nil
+			}
+			ref := node.GetReference()
+			if ref == nil {
+				return nil
+			}
+			path := ref.(string)
+
+			info, err := os.Stat(path)
+			if err != nil || info.IsDir() {
+				return nil
+			}
+
+			//🟡 暂停 tview UI 进入外部编辑器（阻塞直到编辑完成）
+			app.Suspend(func() {
+				err := openSystemEditor(path)
+				if err != nil {
+					fmt.Fprintf(os.Stderr, "[编辑器打开失败] %v\n", err)
+					fmt.Println("按回车继续...")
+					fmt.Scanln()
+				}
+			})
+
+			// 🟢 回到 TUI，自动刷新预览内容
+			data, err := os.ReadFile(path)
+			if err != nil {
+				preview.SetText("[red]文件读取失败")
+			} else {
+				preview.SetTitle("预览: " + filepath.Base(path))
+				preview.SetText(string(data))
+				// 👇自动切焦点到右侧预览区域
+				app.SetFocus(preview)
 			}
 		}
 		return event
 	})
 
-	// 启动应用
-	if err := app.SetRoot(frame, true).Run(); err != nil {
+	// 编辑器按 Esc 退出编辑
+	editor.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Key() {
+		case tcell.KeyEsc:
+			app.SetRoot(flex, true).SetFocus(tree)
+			return nil
+		}
+		return event
+	})
+
+	var inPreviewFocus = false // 当前焦点标记
+
+	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyTAB {
+			if inPreviewFocus {
+				app.SetFocus(tree)
+			} else {
+				app.SetFocus(preview)
+			}
+			inPreviewFocus = !inPreviewFocus
+			return nil
+		}
+		return event
+	})
+
+	go func() {
+		ticker := time.NewTicker(100 * time.Millisecond)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ticker.C:
+				// 如果停留时间 >= debounceInterval，触发预览
+				if lastFocusedPath != "" && time.Since(lastFocusedAt) >= debounceInterval {
+					path := lastFocusedPath
+
+					// 读取和刷新 UI 必须在主线程
+					app.QueueUpdateDraw(func() {
+						fi, err := os.Stat(path)
+						if err != nil || fi.IsDir() {
+							return
+						}
+						data, err := os.ReadFile(path)
+						if err != nil {
+							preview.SetText(fmt.Sprintf("[red]无法读取文件: %v", err))
+							return
+						}
+						preview.SetTitle("预览: " + filepath.Base(path))
+						preview.SetText(string(data))
+					})
+
+					// 渲染完重置，避免重复渲染
+					lastFocusedPath = ""
+				}
+
+			case <-stopDebounceCh:
+				return
+			}
+		}
+	}()
+
+	// 启动程序
+	if err := app.SetRoot(flex, true).EnableMouse(true).Run(); err != nil {
 		panic(err)
 	}
 }

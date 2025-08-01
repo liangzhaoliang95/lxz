@@ -1,10 +1,10 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "K9s context config schema",
+  "title": "LXZ context config schema",
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "k9s": {
+    "lxz": {
       "additionalProperties": false,
       "properties": {
         "cluster": { "type": "string" },
@@ -52,5 +52,5 @@
       }
     }
   },
-  "required": ["k9s"]
+  "required": ["lxz"]
 }

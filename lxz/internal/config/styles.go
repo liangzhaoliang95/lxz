@@ -1,6 +1,3 @@
-// SPDX-License-Identifier: Apache-2.0
-// Copyright Authors of K9s
-
 package config
 
 import (
@@ -187,7 +184,7 @@ type (
 		FgColor      Color `json:"fgColor"      yaml:"fgColor"`
 		CPUColor     Color `json:"cpuColor"     yaml:"cpuColor"`
 		MEMColor     Color `json:"memColor"     yaml:"memColor"`
-		K9sRevColor  Color `json:"k9sRevColor"  yaml:"k9sRevColor"`
+		LXZRevColor  Color `json:"lxzRevColor"  yaml:"lxzRevColor"`
 	}
 
 	// Border tracks border styles.
@@ -408,7 +405,7 @@ func newInfo() Info {
 		FgColor:      "orange",
 		CPUColor:     "lawngreen",
 		MEMColor:     "darkturquoise",
-		K9sRevColor:  "aqua",
+		LXZRevColor:  "aqua",
 	}
 }
 
@@ -569,7 +566,7 @@ func (s *Styles) Views() Views {
 	return s.LXZ.Views
 }
 
-// Load K9s configuration from file.
+// Load LXZ configuration from file.
 func (s *Styles) Load(path string) error {
 	bb, err := os.ReadFile(path)
 	if err != nil {

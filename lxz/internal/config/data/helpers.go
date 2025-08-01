@@ -1,6 +1,3 @@
-// SPDX-License-Identifier: Apache-2.0
-// Copyright Authors of K9s
-
 package data
 
 import (
@@ -14,7 +11,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const envFGNodeShell = "K9S_FEATURE_GATE_NODE_SHELL"
+const envFGNodeShell = "LXZ_FEATURE_GATE_NODE_SHELL"
 
 var invalidPathCharsRX = regexp.MustCompile(`[:/]+`)
 

@@ -1,6 +1,3 @@
-// SPDX-License-Identifier: Apache-2.0
-// Copyright Authors of K9s
-
 package ui
 
 import (
@@ -13,7 +10,7 @@ import (
 	"lxz/internal/config"
 )
 
-// Logo represents a K9s logo.
+// Logo represents a LXZ logo.
 type Logo struct {
 	*tview.Flex
 

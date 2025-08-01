@@ -1,6 +1,3 @@
-// SPDX-License-Identifier: Apache-2.0
-// Copyright Authors of K9s
-
 package config
 
 const (
@@ -22,7 +19,7 @@ type UI struct {
 	// Headless toggles top header display.
 	Headless bool `json:"headless" yaml:"headless"`
 
-	// LogoLess toggles k9s logo.
+	// LogoLess toggles LXZ logo.
 	Logoless bool `json:"logoless" yaml:"logoless"`
 
 	// Crumbsless toggles nav crumb display.
@@ -37,7 +34,7 @@ type UI struct {
 	// NoIcons toggles icons display.
 	NoIcons bool `json:"noIcons" yaml:"noIcons"`
 
-	// Skin reference the general k9s skin name.
+	// Skin reference the general LXZ skin name.
 	// Can be overridden per context.
 	Skin string `json:"skin" yaml:"skin,omitempty"`
 

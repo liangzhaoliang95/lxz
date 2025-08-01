@@ -1,10 +1,10 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "K9s skin schema",
+  "title": "LXZ skin schema",
   "type": "object",
   "additionalProperties": true,
   "properties": {
-    "k9s": {
+    "lxz": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -29,7 +29,7 @@
           "properties": {
             "fgColor": {"type": "string"},
             "sectionColor": {"type": "string"},
-            "k9sRevColor": {"type": "string"},
+            "lxzRevColor": {"type": "string"},
             "cpuColor": {"type": "string"},
             "memColor": {"type": "string"}
           }

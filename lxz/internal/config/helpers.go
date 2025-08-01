@@ -1,6 +1,3 @@
-// SPDX-License-Identifier: Apache-2.0
-// Copyright Authors of K9s
-
 package config
 
 import (
@@ -12,7 +9,7 @@ import (
 )
 
 const (
-	envPFAddress          = "K9S_DEFAULT_PF_ADDRESS"
+	envPFAddress          = "LXZ_DEFAULT_PF_ADDRESS"
 	defaultPortFwdAddress = "localhost"
 )
 
@@ -48,8 +45,8 @@ func UserTmpDir() (string, error) {
 	return dir, nil
 }
 
-// MustK9sUser establishes current user identity or fail.
-func MustK9sUser() string {
+// MustLXZUser establishes current user identity or fail.
+func MustLXZUser() string {
 	usr, err := user.Current()
 	if err != nil {
 		envUsr := os.Getenv("USER")
