@@ -29,7 +29,7 @@ func NewLogo(styles *config.Styles) *Logo {
 	}
 	l.SetDirection(tview.FlexRow)
 	l.AddItem(l.logo, 0, 7, false)
-	l.AddItem(l.status, 0, 1, false)
+	//l.AddItem(l.status, 0, 1, false)
 	//	l.refreshLogo(styles.Body().LogoColor)
 	l.refreshLogo("red")
 	l.SetBackgroundColor(tcell.ColorBlue)

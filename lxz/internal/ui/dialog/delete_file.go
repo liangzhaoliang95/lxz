@@ -34,9 +34,9 @@ func ShowDeleteFile(styles *config.Dialog, pages *ui.Pages, opts *DeleteFileOpts
 
 	modal := tview.NewModalForm("<"+opts.Title+">", f)
 
-	f.AddCheckbox("Force:", false, func(v bool) {
-
-	})
+	//f.AddCheckbox("Force:", false, func(v bool) {
+	//
+	//})
 
 	f.AddButton("OK", func() {
 		if !opts.Ack() {
@@ -53,7 +53,7 @@ func ShowDeleteFile(styles *config.Dialog, pages *ui.Pages, opts *DeleteFileOpts
 		b.SetBackgroundColorActivated(tcell.ColorRed)
 		b.SetLabelColorActivated(tcell.ColorWhite)
 	}
-	f.SetFocus(1)
+	f.SetFocus(0)
 
 	message := opts.Message
 	modal.SetText(message)

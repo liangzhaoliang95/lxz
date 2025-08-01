@@ -14,11 +14,15 @@ import (
 	"strings"
 )
 
-const maxRow = 7
+const maxRow = 4
 
 var menuKey = []string{
 	"<shift-1> | 🖥️ SSH Connect",
 	"<shift-2> | 🗂️ File Browser",
+	"<shift-3> | 🦊 Git Release",
+	"<shift-3> | 🦊 Git Release",
+	"<shift-3> | 🦊 Git Release",
+	"<shift-3> | 🦊 Git Release",
 	"<shift-3> | 🦊 Git Release",
 }
 

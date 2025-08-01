@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"log/slog"
 	"lxz/internal/config"
@@ -34,9 +33,6 @@ type FileBrowser struct {
 	lastFocusedAt    time.Time
 	debounceInterval time.Duration
 	stopDebounceCh   chan struct{}
-	createFileModel  *tview.Modal
-	deleteFileModel  *tview.Modal
-	renameFileModel  *tview.Modal
 }
 
 func (_this *FileBrowser) bindKeys() {
@@ -45,6 +41,7 @@ func (_this *FileBrowser) bindKeys() {
 		ui.KeyF:         ui.NewKeyAction("FullScreen", _this.toggleFullScreenCmd, true),
 		tcell.KeyCtrlN:  ui.NewKeyAction("Create File", _this.fileCtrl, true),
 		tcell.KeyCtrlD:  ui.NewKeyAction("Delete File", _this.fileCtrl, true),
+		tcell.KeyCtrlR:  ui.NewKeyAction("Rename File", _this.fileCtrl, true),
 		tcell.KeyEscape: ui.NewKeyAction("Quit FullScreen", _this.toggleFullScreenCmd, false),
 		tcell.KeyTAB:    ui.NewKeyAction("Focus Change", _this.TabFocusChange, true),
 		tcell.KeyEnter:  ui.NewKeyAction("Confirm", _this.TabFocusChange, true),
@@ -89,7 +86,13 @@ func (_this *FileBrowser) Start() {
 					// 读取和刷新 UI 必须在主线程
 					_this.app.UI.QueueUpdateDraw(func() {
 						fi, err := os.Stat(path)
-						if err != nil || fi.IsDir() {
+						if err != nil {
+							return
+						}
+						if fi.IsDir() {
+							// 如果是目录，清空预览内容
+							_this.preview.SetText("[yellow]请选择一个文件进行预览")
+							_this.preview.SetTitle(filepath.Base(path))
 							return
 						}
 						data, err := os.ReadFile(path)
@@ -188,8 +191,8 @@ func (_this *FileBrowser) initTree() {
 		}
 		path := ref.(string)
 
-		fi, err := os.Stat(path)
-		if err != nil || fi.IsDir() {
+		_, err := os.Stat(path)
+		if err != nil {
 			_this.lastFocusedPath = ""
 			return
 		}
@@ -231,7 +234,7 @@ func (_this *FileBrowser) initPreview() {
 	// 文件预览区域
 	_this.preview = tview.NewTextView()
 	_this.preview.
-		SetDynamicColors(false).
+		SetDynamicColors(true).
 		SetWordWrap(true).
 		SetBorder(true).
 		SetTitle("")
@@ -312,7 +315,6 @@ func (_this *FileBrowser) TabFocusChange(event *tcell.EventKey) *tcell.EventKey 
 
 // fileCtrl
 func (_this *FileBrowser) fileCtrl(event *tcell.EventKey) *tcell.EventKey {
-	slog.Info("[fileCtrl] ", "event", event.Key())
 	node := _this.tree.GetCurrentNode()
 	if node == nil {
 		slog.Info("[fileCtrl失败] ", "err", "未选中文件或目录")
@@ -331,50 +333,28 @@ func (_this *FileBrowser) fileCtrl(event *tcell.EventKey) *tcell.EventKey {
 		return nil
 	}
 
-	// 文件的新建 删除
+	slog.Info("[fileCtrl] ", "path", path, "isDir", info.IsDir(), "node", node.GetText())
+
 	if event.Key() == tcell.KeyCtrlD {
-		// 删除文件
 		slog.Info("Will delete file", "path", path)
-		if info.IsDir() {
-		}
+		_this.deleteFileModel(node, path)
 		return nil
 	} else if event.Key() == tcell.KeyCtrlN {
 		slog.Info("Will create a new file", "path", path)
-		// 新建文件
 		if info.IsDir() {
 			// 在此目录下新建文件
-			opts := dialog.CreateFileOpts{
-				Title:        "Create New File",
-				Message:      "Enter the name of the new file:",
-				FieldManager: "",
-				Ack: func(opts *metav1.PatchOptions) bool {
-					slog.Info("[文件新建] \n", "path", path)
-					fileName := opts.FieldManager
-					if fileName == "" {
-						slog.Info("[文件新建失败] ", "err", "文件名不能为空")
-						return false
-					}
-					newFilePath := filepath.Join(path, fileName)
-					// 检查文件是否已存在
-					if _, err := os.Stat(newFilePath); err == nil {
-						slog.Info("[文件新建失败] ", "err", "文件已存在")
-						return false
-					}
-					// 创建新文件
-					file, err := os.Create(newFilePath)
-					if err != nil {
-						slog.Error("[文件新建失败] ", "err", err)
-						return false
-					}
-					defer file.Close()
-					_this.addChildren(node, path)
-					return true
-				},
-				Cancel: func() {},
-			}
-			dialog.ShowCreateFile(&config.Dialog{}, _this.app.Content.Pages, &opts)
+			_this.createFileModel(node, path)
 		} else {
-			// TODO 使用flash组件通知不允许
+			// 基于当前文件所在的目录新建文件
+			_this.createFileModel(node.GetParentNode(), filepath.Dir(path))
+		}
+		return nil
+	} else if event.Key() == tcell.KeyCtrlR {
+		// 文件或者文件夹改名
+		slog.Info("[fileCtrl] Rename File", "path", path, "isDir", info.IsDir(), "node", node.GetText())
+		if info.IsDir() {
+		} else {
+			_this.renameFileModel(node.GetParentNode(), path)
 		}
 		return nil
 	}
@@ -408,6 +388,107 @@ func (_this *FileBrowser) fileCtrl(event *tcell.EventKey) *tcell.EventKey {
 	return event
 }
 
+func (_this *FileBrowser) createFileModel(node *tview.TreeNode, path string) {
+	opts := dialog.CreateFileOpts{
+		Title:    "Create New File",
+		Message:  "Enter the name of the new file:",
+		FileName: "",
+		Ack: func(fileName string, isDir bool) bool {
+			slog.Info("[文件新建] ", "path", path, "fileName", fileName, "isDir", isDir)
+			if fileName == "" {
+				slog.Info("[文件新建失败] ", "err", "文件名不能为空")
+				return false
+			}
+			newFilePath := filepath.Join(path, fileName)
+			// 检查文件是否已存在
+			if _, err := os.Stat(newFilePath); err == nil {
+				slog.Info("[文件新建失败] ", "err", "文件已存在", "path", newFilePath, "fileName", fileName)
+				return false
+			}
+			if isDir {
+				// 创建新目录
+				err := os.Mkdir(newFilePath, 0755)
+				if err != nil {
+					slog.Error("[目录新建失败] ", "err", err, "path", newFilePath, "fileName", fileName)
+					return false
+				}
+			} else {
+				// 创建新文件
+				file, err := os.Create(newFilePath)
+				if err != nil {
+					slog.Error("[文件新建失败] ", "err", err, "path", newFilePath, "fileName", fileName)
+					return false
+				}
+				defer file.Close()
+			}
+
+			_this.addChildren(node, path)
+			return true
+		},
+		Cancel: func() {},
+	}
+	dialog.ShowCreateFile(&config.Dialog{}, _this.app.Content.Pages, &opts)
+}
+
+func (_this *FileBrowser) renameFileModel(node *tview.TreeNode, path string) {
+	opts := dialog.RenameFileOpts{
+		Title:    "Rename File",
+		Message:  "Rename the file to:",
+		FileName: filepath.Base(path),
+		Ack: func(newFileName string) bool {
+			fileName := newFileName
+			slog.Info("[文件名修改] ", "path", path, "fileName", fileName)
+			if fileName == "" {
+				slog.Info("[文件名修改失败] ", "err", "文件名不能为空")
+				return false
+			}
+			parentPath := filepath.Dir(path)
+			newFilePath := filepath.Join(parentPath, fileName)
+			// 检查文件是否已存在
+			if _, err := os.Stat(newFilePath); err == nil {
+				slog.Info("[文件名修改失败] ", "err", "文件已存在", "newFilePath", newFilePath)
+				// todo 使用flash提示
+				return false
+			}
+
+			err := os.Rename(path, newFilePath)
+			if err != nil {
+				slog.Error("[文件名修改失败] ", "err", err, "oldPath", path, "newFilePath", newFilePath)
+				return false
+			}
+			_this.addChildren(node, path)
+			return true
+		},
+		Cancel: func() {},
+	}
+	dialog.ShowRenameFile(&config.Dialog{}, _this.app.Content.Pages, &opts)
+}
+
+func (_this *FileBrowser) deleteFileModel(node *tview.TreeNode, path string) {
+	// 删除文件
+	opts := dialog.DeleteFileOpts{
+		Title:        "Delete File",
+		Message:      fmt.Sprintf("Are you sure you want to delete <%s> ?", filepath.Base(path)),
+		FieldManager: "",
+		Ack: func() bool {
+			slog.Info("[文件删除] ", "path", path)
+			// 删除文件
+			err := os.Remove(path)
+			if err != nil {
+				slog.Error("[文件删除失败] ", "err", err)
+				return false
+			}
+			// 获取父目录路径
+			parentPath := filepath.Dir(path)
+			slog.Info("[文件删除成功] ", "path", path, "parentPath", parentPath)
+
+			_this.addChildren(node.GetParentNode(), parentPath)
+			return true
+		},
+		Cancel: func() {},
+	}
+	dialog.ShowDeleteFile(&config.Dialog{}, _this.app.Content.Pages, &opts)
+}
 func NewFileBrowser(app *App) *FileBrowser {
 	var name = "File Browser"
 	f := &FileBrowser{

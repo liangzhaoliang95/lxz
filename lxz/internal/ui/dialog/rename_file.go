@@ -10,17 +10,16 @@ import (
 	"lxz/internal/ui"
 )
 
-type CreateFileFn func(name string, isDir bool) bool
+type RenameFn func(newFileName string) bool
 
-type CreateFileOpts struct {
+type RenameFileOpts struct {
 	Title, Message string
 	FileName       string
-	IsDir          bool
-	Ack            CreateFileFn
+	Ack            RenameFn
 	Cancel         cancelFunc
 }
 
-func ShowCreateFile(styles *config.Dialog, pages *ui.Pages, opts *CreateFileOpts) {
+func ShowRenameFile(styles *config.Dialog, pages *ui.Pages, opts *RenameFileOpts) {
 	f := tview.NewForm()
 	f.SetItemPadding(0)
 	f.SetButtonsAlign(tview.AlignCenter).
@@ -35,15 +34,12 @@ func ShowCreateFile(styles *config.Dialog, pages *ui.Pages, opts *CreateFileOpts
 
 	modal := tview.NewModalForm("<"+opts.Title+">", f)
 
-	f.AddInputField("Name:", opts.FileName, 0, nil, func(v string) {
+	f.AddInputField("FileName:", opts.FileName, 0, nil, func(v string) {
 		opts.FileName = v
-	})
-	f.AddCheckbox("IsDir:", false, func(c bool) {
-		opts.IsDir = c
 	})
 
 	f.AddButton("OK", func() {
-		if !opts.Ack(opts.FileName, opts.IsDir) {
+		if !opts.Ack(opts.FileName) {
 			return
 		}
 		dismissConfirm(pages)

@@ -7,7 +7,6 @@ package view
 
 import (
 	"context"
-	"fmt"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 	"log/slog"
@@ -146,23 +145,24 @@ func (a *App) buildHeader() tview.Primitive {
 	header := tview.NewFlex()
 	header.SetBackgroundColor(a.UI.Styles.BgColor())
 	header.SetDirection(tview.FlexColumn)
-	header.SetBorder(true)
+	header.SetBorder(false)
+	header.SetBorderPadding(0, 0, 0, 0)
 	if !a.showHeader {
 		return header
 	}
 	//
 	header.AddItem(a.UI.Menu(), 0, 1, false)
 	if a.showLogo {
-		header.AddItem(a.UI.Logo(), 24, 1, false)
+		header.AddItem(a.UI.Logo(), 17, 1, false)
 	}
-	go func() {
-		for {
-			a.UI.Logo().Status().Clear()
-			fmt.Fprint(a.UI.Logo().Status(), time.Now().Format("15:04:05"))
-			a.UI.QueueUpdateDraw(func() {})
-			time.Sleep(1 * time.Second)
-		}
-	}()
+	//go func() {
+	//	for {
+	//		a.UI.Logo().Status().Clear()
+	//		fmt.Fprint(a.UI.Logo().Status(), time.Now().Format("15:04:05"))
+	//		a.UI.QueueUpdateDraw(func() {})
+	//		time.Sleep(1 * time.Second)
+	//	}
+	//}()
 
 	return header
 }
@@ -188,8 +188,10 @@ func (a *App) layout(ctx context.Context) {
 	a.showHeader = true
 	a.showLogo = true
 
+	// message 组件 用于显示一些提示信息
+
 	// header 组件
-	main.AddItem(a.buildHeader(), 10, 1, false)
+	main.AddItem(a.buildHeader(), 5, 1, false)
 
 	// 状态指示器
 	//main.AddItem(a.UI.Status(), 5, 1, false)
