@@ -23,7 +23,7 @@ import (
 )
 
 type SshConnect struct {
-	*BaseFlex
+	*ui.BaseFlex
 	app       *App
 	envMap    map[string][]HostItem
 	envOrder  []string
@@ -33,10 +33,10 @@ type SshConnect struct {
 
 func (_this *SshConnect) bindKeys() {
 	_this.Actions().Bulk(ui.KeyMap{
-		ui.KeyF:         ui.NewKeyAction("FullScreen", _this.toggleFullScreenCmd, true),
-		tcell.KeyEscape: ui.NewKeyAction("Quit FullScreen", _this.toggleFullScreenCmd, false),
+		ui.KeyF:         ui.NewKeyAction("FullScreen", _this.ToggleFullScreenCmd, true),
+		tcell.KeyEscape: ui.NewKeyAction("Quit FullScreen", _this.ToggleFullScreenCmd, false),
 		tcell.KeyTAB:    ui.NewKeyAction("Focus Change", _this.TabFocusChange, true),
-		tcell.KeyEnter:  ui.NewKeyAction("Confirm", _this.emptyKeyEvent, true),
+		tcell.KeyEnter:  ui.NewKeyAction("Connect", _this.EmptyKeyEvent, true),
 		tcell.KeyLeft:   ui.NewKeyAction("Focus Change", _this.TabFocusChange, false),
 		tcell.KeyRight:  ui.NewKeyAction("Focus Change", _this.TabFocusChange, false),
 	})
@@ -47,11 +47,11 @@ func (_this *SshConnect) Init(ctx context.Context) error {
 	var err error
 	_this.envMap, _this.envOrder, err = loadAllHostsGrouped()
 	if err != nil {
-		slog.Error(fmt.Sprintf("%s loadAllHostsGrouped failed err => %s", _this.name, err.Error()))
+		slog.Error(fmt.Sprintf("%s loadAllHostsGrouped failed err => %s", _this.Name(), err.Error()))
 		return err
 	}
 	_this.bindKeys()
-	_this.SetInputCapture(_this.keyboard)
+	_this.SetInputCapture(_this.Keyboard)
 
 	// 初始化左侧配置来源列表
 	_this.envList = tview.NewList()
@@ -376,7 +376,7 @@ func expandIncludes(line string) []string {
 func NewSshConnect(app *App) *SshConnect {
 	var name = "SSH Connect"
 	tc := &SshConnect{
-		BaseFlex: newBaseFlex(name),
+		BaseFlex: ui.NewBaseFlex(name),
 		app:      app,
 	}
 

@@ -111,7 +111,7 @@ func (a *App) menuPageChange(evt *tcell.EventKey) *tcell.EventKey {
 			slog.Error("Failed to inject SshConnect component", slogs.Error, err)
 		} else {
 			changeSuccess = true
-			pageName = comp.name
+			pageName = comp.Name()
 		}
 	case rune(ui.KeyShift2):
 		comp := NewFileBrowser(a)
@@ -119,7 +119,7 @@ func (a *App) menuPageChange(evt *tcell.EventKey) *tcell.EventKey {
 			slog.Error("Failed to inject FileBrowser component", slogs.Error, err)
 		} else {
 			changeSuccess = true
-			pageName = comp.name
+			pageName = comp.Name()
 		}
 	case rune(ui.KeyShift3):
 		comp := NewGitRelease()
@@ -128,6 +128,14 @@ func (a *App) menuPageChange(evt *tcell.EventKey) *tcell.EventKey {
 		} else {
 			changeSuccess = true
 			pageName = comp.name
+		}
+	case rune(ui.KeyShift4):
+		comp := NewDatabaseBrowser(a)
+		if err := a.inject(comp, true); err != nil {
+			slog.Error("Failed to inject GitRelease component", slogs.Error, err)
+		} else {
+			changeSuccess = true
+			pageName = comp.Name()
 		}
 	default:
 		slog.Warn("Unknown menu page change key", "key", evt.Rune())
@@ -156,6 +164,7 @@ func (a *App) bindKeys() {
 		ui.KeyShift1:   ui.NewSharedKeyAction("SSH Connect", a.menuPageChange, false),
 		ui.KeyShift2:   ui.NewSharedKeyAction("File Browser", a.menuPageChange, false),
 		ui.KeyShift3:   ui.NewSharedKeyAction("Git Release", a.menuPageChange, false),
+		ui.KeyShift4:   ui.NewSharedKeyAction("DB Browser", a.menuPageChange, false),
 	}))
 }
 

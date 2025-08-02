@@ -56,7 +56,10 @@ func init() {
 		return flagError{err: err}
 	})
 
+	// 添加子命令
 	rootCmd.AddCommand(versionCmd(), infoCmd())
+
+	// 读取初始化终端命令
 	initLXZFlags()
 }
 
@@ -69,9 +72,12 @@ func Execute() {
 }
 
 func run(*cobra.Command, []string) error {
+	// 初始化配置文件路径所在位置
 	if err := config.InitLocs(); err != nil {
 		return err
 	}
+
+	// 获取log文件读写句柄
 	logFile, err := os.OpenFile(
 		*lxzFlags.LogFile,
 		os.O_CREATE|os.O_APPEND|os.O_WRONLY,
@@ -95,16 +101,18 @@ func run(*cobra.Command, []string) error {
 		}
 	}()
 
+	// 设置日志输出
 	slog.SetDefault(slog.New(tint.NewHandler(logFile, &tint.Options{
 		Level:      parseLevel(*lxzFlags.LogLevel),
-		TimeFormat: time.Kitchen,
+		TimeFormat: time.DateTime,
 	})))
 
+	// 读取配置文件
 	cfg, err := loadConfiguration()
 	if err != nil {
 		slog.Warn("Fail to load global/context configuration", slogs.Error, err)
 	}
-	slog.Info("🐶 lxz version", "config", cfg)
+	slog.Info(fmt.Sprintf("🐶 lxz config %s", cfg))
 
 	// 新建lxz应用实例
 	app := view.NewApp(cfg)
@@ -191,7 +199,16 @@ func loadConfiguration() (*config.Config, error) {
 	lxzCfg := config.NewConfig()
 	var errs error
 
+	// 读取配置文件中的值,序列化到配置对象中 主要是将配置文件中的配置覆盖默认配置
 	if err := lxzCfg.Load(config.AppConfigFile, false); err != nil {
+		errs = errors.Join(errs, err)
+	}
+
+	// 命令行配置优先级高
+	lxzCfg.LXZ.Override(lxzFlags)
+
+	if err := lxzCfg.Save(false); err != nil {
+		slog.Error("lxz config save failed", slogs.Error, err)
 		errs = errors.Join(errs, err)
 	}
 

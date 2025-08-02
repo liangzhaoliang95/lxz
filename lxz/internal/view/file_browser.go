@@ -24,7 +24,7 @@ import (
 )
 
 type FileBrowser struct {
-	*BaseFlex
+	*ui.BaseFlex
 	app              *App
 	rootDir          string
 	rootNode         *tview.TreeNode // 根目录节点
@@ -39,13 +39,13 @@ type FileBrowser struct {
 func (_this *FileBrowser) bindKeys() {
 	_this.Actions().Bulk(ui.KeyMap{
 		ui.KeyE:         ui.NewKeyAction("Edit", _this.fileCtrl, true),
-		ui.KeyF:         ui.NewKeyAction("FullScreen", _this.toggleFullScreenCmd, true),
+		ui.KeyF:         ui.NewKeyAction("FullScreen", _this.ToggleFullScreenCmd, true),
 		tcell.KeyCtrlN:  ui.NewKeyAction("Create File", _this.fileCtrl, true),
 		tcell.KeyCtrlD:  ui.NewKeyAction("Delete File", _this.fileCtrl, true),
 		tcell.KeyCtrlR:  ui.NewKeyAction("Rename File", _this.fileCtrl, true),
-		tcell.KeyEscape: ui.NewKeyAction("Quit FullScreen", _this.toggleFullScreenCmd, false),
+		tcell.KeyEscape: ui.NewKeyAction("Quit FullScreen", _this.ToggleFullScreenCmd, false),
 		tcell.KeyTAB:    ui.NewKeyAction("Focus Change", _this.TabFocusChange, true),
-		tcell.KeyEnter:  ui.NewKeyAction("Confirm", _this.TabFocusChange, true),
+		tcell.KeyEnter:  ui.NewKeyAction("Preview", _this.TabFocusChange, true),
 		tcell.KeyLeft:   ui.NewKeyAction("Focus Change", _this.TabFocusChange, false),
 		tcell.KeyRight:  ui.NewKeyAction("Focus Change", _this.TabFocusChange, false),
 	})
@@ -53,7 +53,7 @@ func (_this *FileBrowser) bindKeys() {
 
 func (_this *FileBrowser) Init(ctx context.Context) error {
 	_this.bindKeys()
-	_this.SetInputCapture(_this.keyboard)
+	_this.SetInputCapture(_this.Keyboard)
 
 	// 组件初始化
 	_this.initRootNode()
@@ -93,6 +93,12 @@ func (_this *FileBrowser) Start() {
 						if fi.IsDir() {
 							// 如果是目录，清空预览内容
 							_this.preview.SetText("[yellow]请选择一个文件进行预览")
+							_this.preview.SetTitle(filepath.Base(path))
+							return
+						}
+						// 读取文件大小,只预览文本文件
+						if fi.Size() > 1024*1024*100 { // 大于1MB不预览
+							_this.preview.SetText("[red]文件过大，无法预览, 仅支持预览100MB以下的文本文件")
 							_this.preview.SetTitle(filepath.Base(path))
 							return
 						}
@@ -147,7 +153,6 @@ func (_this *FileBrowser) SetCommand(interpreter *cmd.Interpreter) {
 	panic("implement me")
 }
 
-// helpers
 func (_this *FileBrowser) addChildren(node *tview.TreeNode, path string) {
 	// 清空旧的 Children
 	node.ClearChildren()
@@ -239,33 +244,6 @@ func (_this *FileBrowser) initPreview() {
 		SetWordWrap(true).
 		SetBorder(true).
 		SetTitle("")
-}
-
-// 打开系统默认编辑器
-func openSystemEditor(path string) error {
-	editor := os.Getenv("EDITOR")
-	if editor == "" {
-		// fallback 到常见编辑器
-		for _, candidate := range []string{"nano", "vim", "vi", "code"} {
-			if _, err := exec.LookPath(candidate); err == nil {
-				editor = candidate
-				break
-			}
-		}
-	}
-	if editor == "" {
-		return fmt.Errorf("未设置 $EDITOR，且未找到可用编辑器（如 vim/nano）")
-	}
-	// 检查命令是否存在
-	if _, err := exec.LookPath(editor); err != nil {
-		return fmt.Errorf("未设置 $EDITOR，且未找到可用编辑器（如 vim/nano）")
-	}
-
-	cmd := exec.Command(editor, path)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	return cmd.Run()
 }
 
 func (_this *FileBrowser) TabFocusChange(event *tcell.EventKey) *tcell.EventKey {
@@ -491,10 +469,38 @@ func (_this *FileBrowser) deleteFileModel(node *tview.TreeNode, path string) {
 	}
 	dialog.ShowDeleteFile(&config.Dialog{}, _this.app.Content.Pages, &opts)
 }
+
+// 打开系统默认编辑器
+func openSystemEditor(path string) error {
+	editor := os.Getenv("EDITOR")
+	if editor == "" {
+		// fallback 到常见编辑器
+		for _, candidate := range []string{"nano", "vim", "vi", "code"} {
+			if _, err := exec.LookPath(candidate); err == nil {
+				editor = candidate
+				break
+			}
+		}
+	}
+	if editor == "" {
+		return fmt.Errorf("未设置 $EDITOR，且未找到可用编辑器（如 vim/nano）")
+	}
+	// 检查命令是否存在
+	if _, err := exec.LookPath(editor); err != nil {
+		return fmt.Errorf("未设置 $EDITOR，且未找到可用编辑器（如 vim/nano）")
+	}
+
+	cmd := exec.Command(editor, path)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
+}
+
 func NewFileBrowser(app *App) *FileBrowser {
 	var name = "File Browser"
 	f := &FileBrowser{
-		BaseFlex:         newBaseFlex(name),
+		BaseFlex:         ui.NewBaseFlex(name),
 		app:              app,
 		debounceInterval: 200 * time.Millisecond,
 		stopDebounceCh:   make(chan struct{}),

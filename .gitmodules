@@ -1,3 +1,6 @@
 [submodule "lxz/tview"]
 	path = lxz/tview
 	url = git@github.com:liangzhaoliang95/tview.git
+[submodule "lazysql"]
+	path = lazysql
+	url = git@github.com:geekz-cn/lazysql.git

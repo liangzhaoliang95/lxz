@@ -20,6 +20,7 @@ var menuKey = []string{
 	"<shift-1> | 🖥️ SSH Connect",
 	"<shift-2> | 🗂️ File Browser",
 	"<shift-3> | 🦊 Git Release",
+	"<shift-4> | 📊 DB Browser",
 }
 
 type Menu struct {

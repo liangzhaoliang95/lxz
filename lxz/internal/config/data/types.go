@@ -20,7 +20,8 @@ const (
 	DefaultFileMod os.FileMode = 0600
 
 	// MainConfigFile track main configuration file.
-	MainConfigFile = "config.yaml"
+	MainConfigFile        = "config.yaml"
+	AppDatabaseConfigFile = "app_database_config.yaml" // 数据库应用的配置文件名称
 )
 
 // KubeSettings exposes kubeconfig context information.

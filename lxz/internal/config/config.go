@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"lxz/internal/config/data"
 	"lxz/internal/config/json"
+	"lxz/internal/helper"
 	"lxz/internal/slogs"
 	"os"
 )
@@ -80,4 +81,9 @@ func (c *Config) Load(path string, force bool) error {
 // Validate the configuration.
 func (c *Config) Validate(contextName, clusterName string) {
 
+}
+
+// string
+func (c *Config) String() string {
+	return helper.Prettify(c)
 }

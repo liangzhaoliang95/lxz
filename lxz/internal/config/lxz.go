@@ -15,11 +15,10 @@ type LXZ struct {
 // NewLXZ create a new LXZ configuration.
 func NewLXZ() *LXZ {
 	return &LXZ{
-		RefreshRate: defaultRefreshRate,
-
-		ScreenDumpDir: AppDumpsDir,
-		Logger:        NewLogger(),
-		UI:            UI{},
+		RefreshRate:   defaultRefreshRate, // 刷新率
+		ScreenDumpDir: AppDumpsDir,        // 截图目录
+		Logger:        NewLogger(),        // 日志配置
+		UI:            UI{},               // UI配置
 	}
 }
 
@@ -39,4 +38,9 @@ func (k *LXZ) IsSplashless() bool {
 	}
 
 	return k.UI.Splashless
+}
+
+// Override overrides k9s config from cli args.
+func (k *LXZ) Override(lxzFlags *Flags) {
+	// 可以使用将命令行配置覆盖到k上
 }
