@@ -7,6 +7,7 @@ package view
 
 import (
 	"context"
+	"fmt"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 	"log/slog"
@@ -101,22 +102,39 @@ func (a *App) testContentChange(evt *tcell.EventKey) *tcell.EventKey {
 }
 
 func (a *App) menuPageChange(evt *tcell.EventKey) *tcell.EventKey {
+	changeSuccess := false
+	pageName := ""
 	switch evt.Rune() {
 	case rune(ui.KeyShift1):
-		if err := a.inject(NewSshConnect(a), true); err != nil {
+		comp := NewSshConnect(a)
+		if err := a.inject(comp, true); err != nil {
 			slog.Error("Failed to inject SshConnect component", slogs.Error, err)
+		} else {
+			changeSuccess = true
+			pageName = comp.name
 		}
 	case rune(ui.KeyShift2):
-		if err := a.inject(NewFileBrowser(a), true); err != nil {
+		comp := NewFileBrowser(a)
+		if err := a.inject(comp, true); err != nil {
 			slog.Error("Failed to inject FileBrowser component", slogs.Error, err)
+		} else {
+			changeSuccess = true
+			pageName = comp.name
 		}
 	case rune(ui.KeyShift3):
-		if err := a.inject(NewGitRelease(), true); err != nil {
+		comp := NewGitRelease()
+		if err := a.inject(comp, true); err != nil {
 			slog.Error("Failed to inject GitRelease component", slogs.Error, err)
+		} else {
+			changeSuccess = true
+			pageName = comp.name
 		}
 	default:
 		slog.Warn("Unknown menu page change key", "key", evt.Rune())
 		return evt
+	}
+	if changeSuccess {
+		a.UI.Flash().Info(fmt.Sprintf("Switched to <%s> page", pageName))
 	}
 
 	return nil
@@ -146,7 +164,7 @@ func (a *App) buildHeader() tview.Primitive {
 	header.SetBackgroundColor(a.UI.Styles.BgColor())
 	header.SetDirection(tview.FlexColumn)
 	header.SetBorder(false)
-	header.SetBorderPadding(0, 0, 0, 0)
+	header.SetBorderPadding(0, 0, 0, 1)
 	if !a.showHeader {
 		return header
 	}
@@ -182,14 +200,15 @@ func (a *App) toggleHeader(header, logo bool) {
 }
 
 func (a *App) layout(ctx context.Context) {
-
+	flash := ui.NewFlash(a.UI)
+	go flash.Watch(ctx, a.UI.Flash().Channel())
 	// 主页是一个flex布局应用 方向是垂直的
 	main := tview.NewFlex().SetDirection(tview.FlexRow)
 	a.showHeader = true
 	a.showLogo = true
 
 	// message 组件 用于显示一些提示信息
-
+	main.AddItem(flash, 1, 1, false)
 	// header 组件
 	main.AddItem(a.buildHeader(), 5, 1, false)
 
@@ -252,6 +271,7 @@ func (a *App) Init(version string, _ int) error {
 	a.ReloadStyles()
 
 	slog.Info("LXZ 此时UI-APP已经初始化完成")
+	a.UI.Flash().Info("Launch LXZ done")
 
 	return nil
 }

@@ -7,6 +7,7 @@ package view
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -317,19 +318,19 @@ func (_this *FileBrowser) TabFocusChange(event *tcell.EventKey) *tcell.EventKey 
 func (_this *FileBrowser) fileCtrl(event *tcell.EventKey) *tcell.EventKey {
 	node := _this.tree.GetCurrentNode()
 	if node == nil {
-		slog.Info("[fileCtrl失败] ", "err", "未选中文件或目录")
+		_this.app.UI.Flash().Warn("请先选中文件或目录")
 		return nil
 	}
 	ref := node.GetReference()
 	if ref == nil {
-		slog.Info("[fileCtrl失败] ", "err", "未选中文件或目录")
+		_this.app.UI.Flash().Warn("请先选中文件或目录")
 		return nil
 	}
 
 	path := ref.(string)
 	info, err := os.Stat(path)
 	if err != nil {
-		slog.Info("[fileCtrl失败] ", "err", err)
+		_this.app.UI.Flash().Err(fmt.Errorf("读取文件信息失败: %v", err))
 		return nil
 	}
 
@@ -353,6 +354,7 @@ func (_this *FileBrowser) fileCtrl(event *tcell.EventKey) *tcell.EventKey {
 		// 文件或者文件夹改名
 		slog.Info("[fileCtrl] Rename File", "path", path, "isDir", info.IsDir(), "node", node.GetText())
 		if info.IsDir() {
+
 		} else {
 			_this.renameFileModel(node.GetParentNode(), path)
 		}
@@ -370,6 +372,7 @@ func (_this *FileBrowser) fileCtrl(event *tcell.EventKey) *tcell.EventKey {
 			err := openSystemEditor(path)
 			if err != nil {
 				slog.Error("[编辑器打开失败] %v\n", "err", os.Stderr)
+				_this.app.UI.Flash().Err(fmt.Errorf("open editor failed"))
 				fmt.Scanln()
 			}
 		})
@@ -396,31 +399,32 @@ func (_this *FileBrowser) createFileModel(node *tview.TreeNode, path string) {
 		Ack: func(fileName string, isDir bool) bool {
 			slog.Info("[文件新建] ", "path", path, "fileName", fileName, "isDir", isDir)
 			if fileName == "" {
-				slog.Info("[文件新建失败] ", "err", "文件名不能为空")
+				_this.app.UI.Flash().Warn("name cannot be empty")
 				return false
 			}
 			newFilePath := filepath.Join(path, fileName)
 			// 检查文件是否已存在
 			if _, err := os.Stat(newFilePath); err == nil {
-				slog.Info("[文件新建失败] ", "err", "文件已存在", "path", newFilePath, "fileName", fileName)
+				_this.app.UI.Flash().Warn(fmt.Sprintf("[red]<%s>[-] has existed", fileName))
 				return false
 			}
 			if isDir {
 				// 创建新目录
 				err := os.Mkdir(newFilePath, 0755)
 				if err != nil {
-					slog.Error("[目录新建失败] ", "err", err, "path", newFilePath, "fileName", fileName)
+					_this.app.UI.Flash().Err(fmt.Errorf("[red]<%s>[-] create failed", fileName))
 					return false
 				}
 			} else {
 				// 创建新文件
 				file, err := os.Create(newFilePath)
 				if err != nil {
-					slog.Error("[文件新建失败] ", "err", err, "path", newFilePath, "fileName", fileName)
+					_this.app.UI.Flash().Err(fmt.Errorf("[red]<%s>[-] create failed", fileName))
 					return false
 				}
 				defer file.Close()
 			}
+			_this.app.UI.Flash().Info(fmt.Sprintf("[red]<%s>[-] create success", fileName))
 
 			_this.addChildren(node, path)
 			return true
@@ -439,21 +443,20 @@ func (_this *FileBrowser) renameFileModel(node *tview.TreeNode, path string) {
 			fileName := newFileName
 			slog.Info("[文件名修改] ", "path", path, "fileName", fileName)
 			if fileName == "" {
-				slog.Info("[文件名修改失败] ", "err", "文件名不能为空")
+				_this.app.UI.Flash().Warn("文件名不能为空")
 				return false
 			}
 			parentPath := filepath.Dir(path)
 			newFilePath := filepath.Join(parentPath, fileName)
 			// 检查文件是否已存在
 			if _, err := os.Stat(newFilePath); err == nil {
-				slog.Info("[文件名修改失败] ", "err", "文件已存在", "newFilePath", newFilePath)
-				// todo 使用flash提示
+				_this.app.UI.Flash().Warn(fmt.Sprintf("[red]<%s>[-] has existed", fileName))
 				return false
 			}
 
 			err := os.Rename(path, newFilePath)
 			if err != nil {
-				slog.Error("[文件名修改失败] ", "err", err, "oldPath", path, "newFilePath", newFilePath)
+				_this.app.UI.Flash().Err(errors.New(fmt.Sprintf("[red]<%s>[-] rename failed", filepath.Base(path))))
 				return false
 			}
 			_this.addChildren(node, path)
@@ -475,13 +478,12 @@ func (_this *FileBrowser) deleteFileModel(node *tview.TreeNode, path string) {
 			// 删除文件
 			err := os.Remove(path)
 			if err != nil {
-				slog.Error("[文件删除失败] ", "err", err)
+				_this.app.UI.Flash().Err(fmt.Errorf("[red]<%s>[-] delete failed", filepath.Base(path)))
 				return false
 			}
 			// 获取父目录路径
 			parentPath := filepath.Dir(path)
-			slog.Info("[文件删除成功] ", "path", path, "parentPath", parentPath)
-
+			_this.app.UI.Flash().Info(fmt.Sprintf("[red]<%s>[-] delete success", filepath.Base(path)))
 			_this.addChildren(node.GetParentNode(), parentPath)
 			return true
 		},

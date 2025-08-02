@@ -10,6 +10,7 @@ import (
 	"github.com/rivo/tview"
 	"log/slog"
 	"lxz/internal/config"
+	"lxz/internal/model"
 	"lxz/internal/slogs"
 	"sync"
 )
@@ -17,6 +18,7 @@ import (
 type App struct {
 	*tview.Application
 	Main    *Pages // 主页面容器（目前就两个页面，启动动画、功能页）
+	flash   *model.Flash
 	actions *KeyActions
 	views   map[string]tview.Primitive
 	running bool
@@ -38,6 +40,8 @@ func NewApp(cfg *config.Config) *App {
 		Main:   NewPages(),
 		Config: cfg,
 		Styles: config.NewStyles(),
+		// 提示器
+		flash: model.NewFlash(model.DefaultFlashDelay),
 	}
 
 	// 初始化应用的部分小组件
@@ -71,6 +75,11 @@ func (a *App) SubMenu() *SubMenu {
 
 func (a *App) Logo() *Logo {
 	return a.views["logo"].(*Logo)
+}
+
+// Flash returns a flash model.
+func (a *App) Flash() *model.Flash {
+	return a.flash
 }
 
 func (a *App) Menu() *Menu {

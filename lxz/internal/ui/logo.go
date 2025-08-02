@@ -31,7 +31,7 @@ func NewLogo(styles *config.Styles) *Logo {
 	l.AddItem(l.logo, 0, 7, false)
 	//l.AddItem(l.status, 0, 1, false)
 	//	l.refreshLogo(styles.Body().LogoColor)
-	l.refreshLogo("red")
+	l.refreshLogo("dodgerblue")
 	l.SetBackgroundColor(tcell.ColorBlue)
 	styles.AddListener(&l)
 
@@ -115,7 +115,7 @@ func logo() *tview.TextView {
 	v := tview.NewTextView()
 	v.SetWordWrap(false)
 	v.SetWrap(false)
-	v.SetTextAlign(tview.AlignLeft)
+	v.SetTextAlign(tview.AlignCenter)
 	v.SetDynamicColors(true)
 	//v.SetBorder(true)
 

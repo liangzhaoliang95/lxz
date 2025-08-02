@@ -42,10 +42,12 @@ func NewSubMenu(styles *config.Styles) *SubMenu {
 	p.SetBorder(true)
 	p.SetBorderPadding(0, 0, 0, 0)
 	p.SetBackgroundColor(tcell.ColorBlack)
-	p.SetBorderColor(tcell.ColorWhite)
+	p.SetBorderColor(tcell.ColorOrange)
+	// 虚线边框
+	p.SetBorderAttributes(tcell.AttrBold)
 	p.SetTitle(" Sub Menu ")
 	p.SetTitleAlign(tview.AlignCenter)
-	p.SetTitleColor(tcell.ColorAqua)
+	p.SetTitleColor(tcell.ColorBlue)
 
 	slog.Info("LXZ SubMenu NewSubMenu Done")
 	return &p
