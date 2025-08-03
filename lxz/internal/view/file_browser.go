@@ -506,9 +506,6 @@ func NewFileBrowser(app *App) *FileBrowser {
 		stopDebounceCh:   make(chan struct{}),
 		rootDir:          ".",
 	}
-	f.SetBorder(true).
-		SetBorderAttributes(tcell.AttrBold).
-		SetTitle(fmt.Sprintf(" %s ", name))
 
 	return f
 }

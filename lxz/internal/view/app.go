@@ -159,12 +159,12 @@ func (a *App) PrevCmd(*tcell.EventKey) *tcell.EventKey {
 
 func (a *App) bindKeys() {
 	a.UI.AddActions(ui.NewKeyActionsFromMap(ui.KeyMap{
-		tcell.KeyCtrlE: ui.NewSharedKeyAction("ToggleHeader", a.toggleHeaderCmd, false),
-		ui.KeyHelp:     ui.NewSharedKeyAction("Test", a.testContentChange, false),
-		ui.KeyShift1:   ui.NewSharedKeyAction("SSH Connect", a.menuPageChange, false),
-		ui.KeyShift2:   ui.NewSharedKeyAction("File Browser", a.menuPageChange, false),
-		ui.KeyShift3:   ui.NewSharedKeyAction("Git Release", a.menuPageChange, false),
-		ui.KeyShift4:   ui.NewSharedKeyAction("DB Browser", a.menuPageChange, false),
+		//tcell.KeyCtrlE: ui.NewSharedKeyAction("ToggleHeader", a.toggleHeaderCmd, false),
+		ui.KeyHelp:   ui.NewSharedKeyAction("Test", a.testContentChange, false),
+		ui.KeyShift1: ui.NewSharedKeyAction("SSH Connect", a.menuPageChange, false),
+		ui.KeyShift2: ui.NewSharedKeyAction("File Browser", a.menuPageChange, false),
+		ui.KeyShift3: ui.NewSharedKeyAction("Git Release", a.menuPageChange, false),
+		ui.KeyShift4: ui.NewSharedKeyAction("DB Browser", a.menuPageChange, false),
 	}))
 }
 
@@ -296,7 +296,7 @@ func (a *App) Run() error {
 			a.UI.Main.SwitchToPage("main")
 
 			// 定位到第一个功能
-			a.inject(NewSshConnect(a), true)
+			a.inject(NewDatabaseBrowser(a), true)
 		})
 	}()
 

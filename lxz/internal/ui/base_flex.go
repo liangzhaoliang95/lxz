@@ -6,6 +6,7 @@
 package ui
 
 import (
+	"fmt"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 	"k8s.io/apimachinery/pkg/labels"
@@ -86,7 +87,7 @@ func (_this *BaseFlex) Keyboard(evt *tcell.EventKey) *tcell.EventKey {
 		evt.Modifiers(),
 	)
 
-	if a, ok := _this.actions.Get(AsKey(evt)); ok {
+	if a, ok := _this.Actions().Get(AsKey(evt)); ok {
 		return a.Action(evt)
 	}
 
@@ -99,11 +100,10 @@ func NewBaseFlex(name string) *BaseFlex {
 		name:    name,
 		actions: NewKeyActions(),
 	}
-
-	b.
-		SetBorder(true).
-		SetBorderAttributes(tcell.AttrNone).
-		SetTitle(name)
+	b.SetDirection(tview.FlexColumn)
+	b.SetBorder(true).
+		SetBorderAttributes(tcell.AttrBold).
+		SetTitle(fmt.Sprintf(" %s ", name))
 	b.SetBorderColor(tcell.ColorAqua)
 
 	return b

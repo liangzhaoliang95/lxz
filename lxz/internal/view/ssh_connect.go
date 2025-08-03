@@ -380,9 +380,5 @@ func NewSshConnect(app *App) *SshConnect {
 		app:      app,
 	}
 
-	tc.
-		SetBorder(true).
-		SetBorderAttributes(tcell.AttrBold).
-		SetTitle(fmt.Sprintf(" %s ", name))
 	return tc
 }

@@ -3,6 +3,7 @@ package config
 import (
 	"errors"
 	"fmt"
+	"lxz/internal/helper"
 
 	"gopkg.in/yaml.v3"
 	"io/fs"
@@ -18,11 +19,15 @@ type DBConnection struct {
 	Provider  string   `yaml:"provider" json:"provider"`
 	UserName  string   `yaml:"username" json:"username"`
 	Password  string   `yaml:"password" json:"password"`
-	HostName  string   `yaml:"hostname" json:"hostname"`
-	Port      int      `yaml:"port" json:"port"`
+	Host      string   `yaml:"host" json:"host"`
+	Port      int64    `yaml:"port" json:"port"`
 	DBName    string   `yaml:"dbname" json:"dbname"`
 	URLParams string   `yaml:"urlParams" json:"urlParams"`
 	Commands  []string `yaml:"commands" json:"commands"`
+}
+
+func (d *DBConnection) GetUniqKey() string {
+	return fmt.Sprintf("%s@%s", d.Provider, d.Name)
 }
 
 type DatabaseConfig struct {
@@ -30,10 +35,18 @@ type DatabaseConfig struct {
 	DBConnections   []*DBConnection `yaml:"dbConnections" json:"dbConnections"`
 }
 
+// String()
+func (c *DatabaseConfig) String() string {
+	return helper.Prettify(c)
+}
+
 // Save database configuration to disk.
 func (c *DatabaseConfig) Save(force bool) error {
-	if _, err := os.Stat(AppConfigFile); errors.Is(err, fs.ErrNotExist) {
-		return c.SaveFile(AppConfigFile)
+	if _, err := os.Stat(AppDatabaseConfigFile); errors.Is(err, fs.ErrNotExist) {
+		return c.SaveFile(AppDatabaseConfigFile)
+	}
+	if force {
+		return c.SaveFile(AppDatabaseConfigFile)
 	}
 
 	return nil
@@ -58,12 +71,18 @@ func (c *DatabaseConfig) Merge(c1 *DatabaseConfig) {
 	if c1.DefaultPageSize != 0 {
 		c.DefaultPageSize = c1.DefaultPageSize
 	}
+	if len(c1.DBConnections) == 0 {
+		slog.Info("[CONFIG] No database connections found in config, using default connection")
+		//c.DBConnections = append(c.DBConnections, &DBConnection{})
+	} else {
+		c.DBConnections = c1.DBConnections
+	}
 }
 
 // Load loads LXZ database configuration from file.
 func (c *DatabaseConfig) Load(path string, force bool) error {
 	if _, err := os.Stat(path); errors.Is(err, fs.ErrNotExist) {
-		if err := c.Save(force); err != nil {
+		if err = c.Save(force); err != nil {
 			return err
 		}
 	}

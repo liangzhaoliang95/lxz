@@ -10,16 +10,17 @@ import (
 	"lxz/internal/ui"
 )
 
-type DeleteFn func() bool
+type DeleteDatabaseConnectionFn func(key string) bool
 
-type DeleteFileOpts struct {
+type DeleteDatabaseConnectionOpts struct {
 	Title, Message string
-	FieldManager   string
-	Ack            DeleteFn
+	DBConnection   *config.DBConnection
+	Ack            DeleteDatabaseConnectionFn
 	Cancel         cancelFunc
+	SelectKey      string
 }
 
-func ShowDeleteFile(styles *config.Dialog, pages *ui.Pages, opts *DeleteFileOpts) {
+func ShowDeleteCreateDatabaseConnection(styles *config.Dialog, pages *ui.Pages, opts *DeleteDatabaseConnectionOpts) {
 	f := newBaseModelForm(styles)
 
 	f.AddButton("Cancel", func() {
@@ -27,15 +28,14 @@ func ShowDeleteFile(styles *config.Dialog, pages *ui.Pages, opts *DeleteFileOpts
 		opts.Cancel()
 	})
 
-	modal := tview.NewModalForm("<"+opts.Title+">", f)
-
 	f.AddButton("OK", func() {
-		if !opts.Ack() {
+		if !opts.Ack(opts.SelectKey) {
 			return
 		}
 		dismissConfirm(pages)
 		opts.Cancel()
 	})
+
 	for i := range 2 {
 		b := f.GetButton(i)
 		if b == nil {
@@ -47,6 +47,8 @@ func ShowDeleteFile(styles *config.Dialog, pages *ui.Pages, opts *DeleteFileOpts
 	f.SetFocus(0)
 
 	message := opts.Message
+
+	modal := tview.NewModalForm("<"+opts.Title+">", f)
 	modal.SetText(message)
 	modal.SetTextColor(styles.FgColor.Color())
 	modal.SetDoneFunc(func(int, string) {

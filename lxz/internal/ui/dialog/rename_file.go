@@ -20,13 +20,9 @@ type RenameFileOpts struct {
 }
 
 func ShowRenameFile(styles *config.Dialog, pages *ui.Pages, opts *RenameFileOpts) {
-	f := tview.NewForm()
+	f := newBaseModelForm(styles)
 	f.SetItemPadding(0)
-	f.SetButtonsAlign(tview.AlignCenter).
-		SetButtonBackgroundColor(tcell.ColorBlue).
-		SetButtonTextColor(tcell.ColorBlack).
-		SetLabelColor(styles.LabelFgColor.Color()).
-		SetFieldTextColor(styles.FieldFgColor.Color())
+
 	f.AddButton("Cancel", func() {
 		dismissConfirm(pages)
 		opts.Cancel()
