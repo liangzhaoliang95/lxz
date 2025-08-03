@@ -19,25 +19,22 @@ type CreateDatabaseConnectionOpts struct {
 	Title, Message string
 	DBConnection   *config.DBConnection
 	Ack            CreateDatabaseConnectionFn
+	Test           func(connection *config.DBConnection) bool
 	Cancel         cancelFunc
-}
-
-var ProviderList = []string{
-	"MySQL",
 }
 
 func ShowCreateCreateDatabaseConnection(styles *config.Dialog, pages *ui.Pages, opts *CreateDatabaseConnectionOpts) {
 	f := newBaseModelForm(styles)
 
 	providerMap := make(map[string]int)
-	for i := 0; i < len(ProviderList); i++ {
-		provider := ProviderList[i]
+	for i := 0; i < len(config.DatabaseProviderList); i++ {
+		provider := config.DatabaseProviderList[i]
 		providerMap[provider] = i
 	}
 	slog.Info("providerMap", "providerMap", providerMap)
 
 	modal := tview.NewModalForm("<"+opts.Title+">", f)
-	f.AddDropDown("Provider:", ProviderList, 0, func(s string, i int) {
+	f.AddDropDown("Provider:", config.DatabaseProviderList, providerMap[opts.DBConnection.Provider], func(s string, i int) {
 		opts.DBConnection.Provider = s
 	})
 
@@ -68,6 +65,7 @@ func ShowCreateCreateDatabaseConnection(styles *config.Dialog, pages *ui.Pages, 
 
 	f.AddButton("Test", func() {
 		// 测试数据库能否连接
+		opts.Test(opts.DBConnection)
 	})
 
 	f.AddButton("Cancel", func() {

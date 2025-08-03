@@ -8,6 +8,7 @@ import (
 	"github.com/rivo/tview"
 	"log/slog"
 	"lxz/internal/config"
+	"lxz/internal/database_drivers"
 	"lxz/internal/slogs"
 	"lxz/internal/ui"
 	"lxz/internal/ui/dialog"
@@ -118,6 +119,7 @@ func (_this *DatabaseBrowser) bindKeys() {
 	_this.Actions().Bulk(ui.KeyMap{
 		tcell.KeyCtrlN: ui.NewKeyAction("New Connect", _this.createDatabaseConnectionModel, true),
 		tcell.KeyCtrlD: ui.NewKeyAction("Delete Connect", _this.deleteDatabaseConnectionModel, true),
+		tcell.KeyCtrlT: ui.NewKeyAction("Test Connect", _this.testConnect, true),
 		ui.KeyE:        ui.NewKeyAction("Edit Connect", _this.createDatabaseConnectionModel, true),
 		tcell.KeyEnter: ui.NewKeyAction("Connect", _this.startConnect, true),
 		ui.KeyF:        ui.NewKeyAction("FullScreen", _this.ToggleFullScreenCmd, true),
@@ -174,6 +176,18 @@ func (_this *DatabaseBrowser) createDatabaseConnectionModel(evt *tcell.EventKey)
 				_this._refreshTableData()
 				return true
 			},
+			Test: func(conn *config.DBConnection) bool {
+				err := database_drivers.TestConnection(conn)
+				if err != nil {
+					slog.Error("Failed to test connection", slogs.Error, err)
+					_this.app.UI.Flash().Warn(fmt.Sprintf("Failed to connect: %s", err.Error()))
+					return false
+				} else {
+					slog.Info("Connection test successful", "connection", conn.GetUniqKey())
+					_this.app.UI.Flash().Info("Connection test successful.")
+					return true
+				}
+			},
 			DBConnection: &config.DBConnection{
 				Port: 3306,
 			},
@@ -185,6 +199,7 @@ func (_this *DatabaseBrowser) createDatabaseConnectionModel(evt *tcell.EventKey)
 	case 'e':
 		// 编辑连接
 		_this._getCurrentSelectKey()
+		slog.Info("Editing connection", "selectKey", _this.selectKey)
 		opts = dialog.CreateDatabaseConnectionOpts{
 			Title:   "Edit Connection",
 			Message: "",
@@ -218,21 +233,21 @@ func (_this *DatabaseBrowser) createDatabaseConnectionModel(evt *tcell.EventKey)
 					return false
 				}
 
-				// 删除选中的连接 根据索引的位置
-				newConnections := make([]*config.DBConnection, 0, len(_this.config.DBConnections))
-				for i := 0; i < len(_this.config.DBConnections); i++ {
-					item := _this.config.DBConnections[i]
-					if item.GetUniqKey() == _this.selectKey {
-						continue // 跳过删除的连接
-					}
-					newConnections = append(newConnections, item)
-				}
-				newConnections = append(newConnections, newConfig) // 添加新的连接
-
-				_this.config.DBConnections = newConnections
 				_this.config.Save(true)
 				_this._refreshTableData()
 				return true
+			},
+			Test: func(conn *config.DBConnection) bool {
+				err := database_drivers.TestConnection(conn)
+				if err != nil {
+					slog.Error("Failed to test connection", slogs.Error, err)
+					_this.app.UI.Flash().Warn(fmt.Sprintf("Failed to connect"))
+					return false
+				} else {
+					slog.Info("Connection test successful", "connection", conn.GetUniqKey())
+					_this.app.UI.Flash().Info("Connect success")
+					return true
+				}
 			},
 			DBConnection: _this.connMap[_this.selectKey],
 			Cancel:       func() {},
@@ -280,6 +295,20 @@ func (_this *DatabaseBrowser) _getCurrentSelectKey() {
 	currentSelectedName := _this.connList.GetCell(row, 0).Text
 	currentSelectedProvider := _this.connList.GetCell(row, 1).Text
 	_this.selectKey = fmt.Sprintf("%s@%s", currentSelectedProvider, currentSelectedName)
+}
+
+func (_this *DatabaseBrowser) testConnect(evt *tcell.EventKey) *tcell.EventKey {
+	_this._getCurrentSelectKey()
+	conn := _this.connMap[_this.selectKey]
+	err := database_drivers.TestConnection(conn)
+	if err != nil {
+		slog.Error("Failed to test connection", slogs.Error, err)
+		_this.app.UI.Flash().Warn(fmt.Sprintf("Failed to connect"))
+	} else {
+		slog.Info("Connection test successful", "connection", conn.GetUniqKey())
+		_this.app.UI.Flash().Info("Connect success")
+	}
+	return nil
 }
 
 // ------------------helpers------------------

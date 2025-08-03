@@ -103,7 +103,8 @@ func NewBaseFlex(name string) *BaseFlex {
 	b.SetDirection(tview.FlexColumn)
 	b.SetBorder(true).
 		SetBorderAttributes(tcell.AttrBold).
-		SetTitle(fmt.Sprintf(" %s ", name))
+		SetTitle(fmt.Sprintf(" %s ", name)).
+		SetTitleAlign(tview.AlignCenter)
 	b.SetBorderColor(tcell.ColorAqua)
 
 	return b

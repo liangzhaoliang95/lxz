@@ -13,6 +13,14 @@ import (
 	"os"
 )
 
+const (
+	DatabaseProviderMySQL = "MySQL"
+)
+
+var DatabaseProviderList = []string{
+	DatabaseProviderMySQL,
+}
+
 type DBConnection struct {
 	Name      string   `yaml:"name" json:"name"`
 	URL       string   `yaml:"url" json:"url"`
