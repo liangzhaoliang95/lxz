@@ -54,7 +54,6 @@ func (_this *DatabaseConn) InitConnect() error {
 		return fmt.Errorf("failed to connect to database: %w", err)
 	}
 	_this.dbConn = db
-	connMap.Store(_this.cfg.GetUniqKey(), _this)
 	return nil
 }
 

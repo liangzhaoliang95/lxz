@@ -14,6 +14,7 @@ import (
 	"lxz/internal/config"
 	"lxz/internal/database_drivers"
 	"lxz/internal/ui"
+	"lxz/internal/view/base"
 )
 
 type DatabaseDbTree struct {
@@ -29,6 +30,11 @@ type DatabaseDbTree struct {
 	selectTable  string                         // 当前选中的表
 	// UI组件
 	databaseUiTree *tview.TreeView // 用于显示数据库树
+}
+
+func (_this *DatabaseDbTree) selfFocus() {
+	// 设置当前焦点为表格组件
+	_this.app.UI.SetFocus(_this)
 }
 
 func (_this *DatabaseDbTree) Init(ctx context.Context) error {
@@ -129,7 +135,7 @@ func NewDatabaseDbTree(
 	dbCfg *config.DBConnection,
 	tableChangeChan chan tableChangeSubscribe,
 ) *DatabaseDbTree {
-	var name = "Table Browser"
+	var name = dbCfg.Name
 	lp := DatabaseDbTree{
 		BaseFlex:        ui.NewBaseFlex(name),
 		app:             a,
@@ -137,6 +143,6 @@ func NewDatabaseDbTree(
 		tableChangeChan: tableChangeChan,
 	}
 	lp.SetBorder(true)
-
+	lp.SetBorderColor(base.BoarderDefaultColor)
 	return &lp
 }

@@ -16,6 +16,7 @@ import (
 	"lxz/internal/config"
 	"lxz/internal/ui"
 	"lxz/internal/ui/dialog"
+	"lxz/internal/view/base"
 	"lxz/internal/view/cmd"
 	"os"
 	"os/exec"
@@ -71,7 +72,7 @@ func (_this *FileBrowser) Init(ctx context.Context) error {
 
 func (_this *FileBrowser) Start() {
 	// ✅ 设置默认边框颜色 + 焦点 + 强制刷新
-	_this.tree.SetBorderColor(activeBorderColor)
+	_this.tree.SetBorderColor(base.ActiveBorderColor)
 	go func(a *FileBrowser) {
 		ticker := time.NewTicker(100 * time.Millisecond)
 		defer ticker.Stop()
@@ -282,12 +283,12 @@ func (_this *FileBrowser) TabFocusChange(event *tcell.EventKey) *tcell.EventKey 
 	}
 	if _this.app.UI.GetFocus() == _this.tree {
 		_this.app.UI.SetFocus(_this.preview)
-		_this.tree.SetBorderColor(inactiveBorderColor)
-		_this.preview.SetBorderColor(activeBorderColor)
+		_this.tree.SetBorderColor(base.InactiveBorderColor)
+		_this.preview.SetBorderColor(base.ActiveBorderColor)
 	} else {
 		_this.app.UI.SetFocus(_this.tree)
-		_this.tree.SetBorderColor(activeBorderColor)
-		_this.preview.SetBorderColor(inactiveBorderColor)
+		_this.tree.SetBorderColor(base.ActiveBorderColor)
+		_this.preview.SetBorderColor(base.InactiveBorderColor)
 	}
 	return nil
 }

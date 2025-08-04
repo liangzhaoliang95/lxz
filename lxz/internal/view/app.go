@@ -104,8 +104,9 @@ func (a *App) testContentChange(evt *tcell.EventKey) *tcell.EventKey {
 func (a *App) menuPageChange(evt *tcell.EventKey) *tcell.EventKey {
 	changeSuccess := false
 	pageName := ""
-	switch evt.Rune() {
-	case rune(ui.KeyShift1):
+	slog.Info("Menu page change event", "key", evt.Key(), "rune", evt.Rune())
+	switch evt.Key() {
+	case tcell.KeyF1:
 		comp := NewSshConnect(a)
 		if err := a.inject(comp, true); err != nil {
 			slog.Error("Failed to inject SshConnect component", slogs.Error, err)
@@ -113,7 +114,7 @@ func (a *App) menuPageChange(evt *tcell.EventKey) *tcell.EventKey {
 			changeSuccess = true
 			pageName = comp.Name()
 		}
-	case rune(ui.KeyShift2):
+	case tcell.KeyF2:
 		comp := NewFileBrowser(a)
 		if err := a.inject(comp, true); err != nil {
 			slog.Error("Failed to inject FileBrowser component", slogs.Error, err)
@@ -121,7 +122,7 @@ func (a *App) menuPageChange(evt *tcell.EventKey) *tcell.EventKey {
 			changeSuccess = true
 			pageName = comp.Name()
 		}
-	case rune(ui.KeyShift3):
+	case tcell.KeyF3:
 		comp := NewGitRelease()
 		if err := a.inject(comp, true); err != nil {
 			slog.Error("Failed to inject GitRelease component", slogs.Error, err)
@@ -129,7 +130,7 @@ func (a *App) menuPageChange(evt *tcell.EventKey) *tcell.EventKey {
 			changeSuccess = true
 			pageName = comp.name
 		}
-	case rune(ui.KeyShift4):
+	case tcell.KeyF4:
 		comp := NewDatabaseBrowser(a)
 		if err := a.inject(comp, true); err != nil {
 			slog.Error("Failed to inject GitRelease component", slogs.Error, err)
@@ -160,11 +161,11 @@ func (a *App) PrevCmd(*tcell.EventKey) *tcell.EventKey {
 func (a *App) bindKeys() {
 	a.UI.AddActions(ui.NewKeyActionsFromMap(ui.KeyMap{
 		//tcell.KeyCtrlE: ui.NewSharedKeyAction("ToggleHeader", a.toggleHeaderCmd, false),
-		ui.KeyHelp:   ui.NewSharedKeyAction("Test", a.testContentChange, false),
-		ui.KeyShift1: ui.NewSharedKeyAction("SSH Connect", a.menuPageChange, false),
-		ui.KeyShift2: ui.NewSharedKeyAction("File Browser", a.menuPageChange, false),
-		ui.KeyShift3: ui.NewSharedKeyAction("Git Release", a.menuPageChange, false),
-		ui.KeyShift4: ui.NewSharedKeyAction("DB Browser", a.menuPageChange, false),
+		ui.KeyHelp:  ui.NewSharedKeyAction("Test", a.testContentChange, false),
+		tcell.KeyF1: ui.NewSharedKeyAction("SSH Connect", a.menuPageChange, false),
+		tcell.KeyF2: ui.NewSharedKeyAction("File Browser", a.menuPageChange, false),
+		tcell.KeyF3: ui.NewSharedKeyAction("Git Release", a.menuPageChange, false),
+		tcell.KeyF4: ui.NewSharedKeyAction("DB Browser", a.menuPageChange, false),
 	}))
 }
 
@@ -263,12 +264,6 @@ func (a *App) Init(version string, _ int) error {
 	a.UI.SetInputCapture(a.keyboard)
 	// 绑定快捷键
 	a.bindKeys()
-
-	// 初始化命令组件 通过命令实现页面的
-	//a.command = NewCommand(a)
-	//if err := a.command.Init(a.Config.ContextAliasesPath()); err != nil {
-	//	return err
-	//}
 
 	// 初始化布局
 	a.layout(ctx)

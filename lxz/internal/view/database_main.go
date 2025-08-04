@@ -4,6 +4,7 @@ package view
 
 import (
 	"context"
+	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 	"log/slog"
 	"lxz/internal/config"
@@ -27,7 +28,43 @@ type DatabaseMainPage struct {
 
 }
 
+func (_this *DatabaseMainPage) TabFocusChange(event *tcell.EventKey) *tcell.EventKey {
+	if _this.app.UI.GetFocus() == _this.dbTree.databaseUiTree {
+		_this.tableView.selfFocus()
+	} else {
+		_this.dbTree.selfFocus()
+	}
+	return nil
+}
+
+// ToggleSearch 触发搜索功能
+func (_this *DatabaseMainPage) ToggleSearch(evt *tcell.EventKey) *tcell.EventKey {
+	// 触发搜索功能
+	slog.Info("Search triggered", "event", evt)
+	// 将焦点定位到输入框上
+	_this.tableView.tableComponents[_this.tableView.currentPageKey].focusSearch()
+	return nil
+
+}
+
+func (_this *DatabaseMainPage) bindKeys() {
+	_this.Actions().Bulk(ui.KeyMap{
+		ui.KeyF:     ui.NewKeyAction("FullScreen", _this.ToggleFullScreenCmd, true),
+		ui.KeySlash: ui.NewKeyAction("Search", _this.ToggleSearch, true),
+		//tcell.KeyCtrlN:  ui.NewKeyAction("Create File", _this.fileCtrl, true),
+		//tcell.KeyCtrlD:  ui.NewKeyAction("Delete File", _this.fileCtrl, true),
+		//tcell.KeyCtrlR:  ui.NewKeyAction("Rename File", _this.fileCtrl, true),
+		tcell.KeyEscape: ui.NewKeyAction("Quit FullScreen", _this.ToggleFullScreenCmd, false),
+		tcell.KeyTAB:    ui.NewKeyAction("Focus Change", _this.TabFocusChange, true),
+		//tcell.KeyEnter:  ui.NewKeyAction("Preview", _this.TabFocusChange, true),
+		//tcell.KeyLeft:   ui.NewKeyAction("Focus Change", _this.TabFocusChange, false),
+		//tcell.KeyRight:  ui.NewKeyAction("Focus Change", _this.TabFocusChange, false),
+	})
+}
+
 func (_this *DatabaseMainPage) Init(ctx context.Context) error {
+	_this.bindKeys()
+	_this.SetInputCapture(_this.Keyboard)
 
 	// 左侧数据库列表
 	_this.dbTree = NewDatabaseDbTree(_this.app, _this.dbConnCfg, _this.tableChangeChan)

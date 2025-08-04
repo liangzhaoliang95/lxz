@@ -12,6 +12,7 @@ import (
 	"log/slog"
 	"lxz/internal/config"
 	"lxz/internal/ui"
+	"lxz/internal/view/base"
 )
 
 type DatabaseTableView struct {
@@ -21,6 +22,20 @@ type DatabaseTableView struct {
 	dbCfg           *config.DBConnection               // 数据库连接配置
 	tablePages      *tview.Pages                       // 表格数据页面容器
 	tableComponents map[string]*DatabaseTableComponent // 表格数据页面
+	currentPageKey  string                             // 当前页面的键，用于切换页面
+}
+
+func (_this *DatabaseTableView) selfFocus() {
+
+	comp := _this.tableComponents[_this.currentPageKey]
+	if comp == nil {
+		_this.app.UI.SetFocus(_this)
+	} else {
+		currentTable := comp.dataTable
+		// 设置当前焦点为表格组件
+		_this.app.UI.SetFocus(currentTable)
+	}
+
 }
 
 func (_this *DatabaseTableView) LunchPage(dbName, tableName string) error {
@@ -36,11 +51,14 @@ func (_this *DatabaseTableView) LunchPage(dbName, tableName string) error {
 			return err
 		}
 		_this.tableComponents[pageKey] = tableComponent
+		_this.tablePages.AddPage(pageKey, tableComponent, true, true)
 	}
 	// 当前页已存在，切换到该页面
-	//comp := _this.tableComponents[pageKey]
-	//comp.Start()
-	//_this.tablePages.SwitchToPage(pageKey)
+	_this.currentPageKey = pageKey
+	comp := _this.tableComponents[pageKey]
+	_this.tablePages.SwitchToPage(pageKey)
+	comp.Start()
+	_this.selfFocus()
 	return nil
 
 }
@@ -101,5 +119,6 @@ func NewDatabaseTableView(
 	lp.SetDirection(tview.FlexRow)
 	lp.SetBorder(true)
 
+	lp.SetBorderColor(base.BoarderDefaultColor)
 	return &lp
 }

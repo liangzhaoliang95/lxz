@@ -14,6 +14,7 @@ import (
 	"lxz/internal/config"
 	"lxz/internal/database_drivers"
 	"lxz/internal/ui"
+	"lxz/internal/view/base"
 	"strings"
 )
 
@@ -32,14 +33,25 @@ type DatabaseTableComponent struct {
 
 }
 
+func (_this *DatabaseTableComponent) focusSearch() {
+	// 设置当前焦点为搜索框
+	_this.app.UI.SetFocus(_this.filterFlex)
+	_this.filterFlex.SetBorderColor(base.ActiveBorderColor)
+}
+
+func (_this *DatabaseTableComponent) focusTable() {
+	// 设置当前焦点为搜索框
+	_this.app.UI.SetFocus(_this.dataTable)
+}
+
 func (_this *DatabaseTableComponent) Init(ctx context.Context) error {
-	slog.Info("database table component init", "tableName", _this.tableName)
-	// 初始化数据库连接 TODO 有bug
+	slog.Info("database table component init", "tableName", _this.tableName, "config", _this.dbCfg)
+	// 初始化数据库连接
 	iDatabaseConn, err := database_drivers.GetConnectOrInit(_this.dbCfg)
+	slog.Info("get database connection", "dbName", _this.dbName, "tableName", _this.tableName, "CONN", iDatabaseConn)
 	if err != nil {
 		return fmt.Errorf("failed to get database connection: %w", err)
 	}
-	slog.Info("123")
 	_this.dbConn = iDatabaseConn
 
 	// 初始化filterFlex
@@ -59,6 +71,44 @@ func (_this *DatabaseTableComponent) Init(ctx context.Context) error {
 	// 初始化filterInput
 	_this.filterInput = tview.NewInputField()
 	_this.filterInput.SetPlaceholder("Enter a WHERE clause to filter the results")
+	_this.filterInput.SetFieldBackgroundColor(tcell.ColorBlack)
+	_this.filterInput.SetFieldTextColor(tcell.ColorRed)
+	_this.filterInput.SetFocusFunc(func() {
+		_this.filterFlex.SetBorderColor(base.ActiveBorderColor)
+	})
+	_this.filterInput.SetBlurFunc(func() {
+		_this.filterFlex.SetBorderColor(base.InactiveBorderColor)
+	})
+	_this.filterInput.SetDoneFunc(func(key tcell.Key) {
+		switch key {
+		case tcell.KeyEnter:
+			whereClause := ""
+			if _this.filterInput.GetText() != "" {
+				whereClause = fmt.Sprintf("WHERE %s", _this.filterInput.GetText())
+			}
+			// 初始化表格数据
+			records, _, err := _this.dbConn.GetRecords(
+				_this.dbName,
+				_this.tableName,
+				whereClause,
+				"",
+				0,
+				0,
+			)
+			if err != nil {
+				slog.Error("Failed to get records for table", "tableName", _this.tableName, "error", err)
+				_this.app.UI.Flash().
+					Err(fmt.Errorf("%w", err))
+			} else {
+				// 渲染表格数据
+				_this.SetTableData(records)
+			}
+			// 焦点切换到表格
+			_this.focusTable()
+		case tcell.KeyEscape:
+
+		}
+	})
 	_this.filterFlex.AddItem(_this.filterInput, 0, 5, true)
 
 	_this.AddItem(_this.filterFlex, 3, 1, true)
@@ -66,7 +116,8 @@ func (_this *DatabaseTableComponent) Init(ctx context.Context) error {
 	// 初始化表格
 	_this.dataTable = tview.NewTable()
 	_this.dataTable.SetBorders(true)
-	_this.dataTable.SetBorder(true)
+	_this.dataTable.SetBorder(false)
+	_this.dataTable.SetSelectedStyle(tcell.Style{}.Background(tcell.ColorRed))
 	_this.AddItem(_this.dataTable, 0, 7, false)
 
 	return nil
@@ -103,6 +154,10 @@ func (_this *DatabaseTableComponent) AddRows(rows [][]string) {
 		for j, cell := range row {
 			tableCell := tview.NewTableCell(cell)
 			tableCell.SetTextColor(tcell.ColorBlue)
+			if i == 0 {
+				// 设置表头样式
+				tableCell.SetTextColor(tcell.ColorYellow)
+			}
 
 			if cell == "EMPTY&" || cell == "NULL&" || cell == "DEFAULT&" {
 				tableCell.SetText(strings.Replace(cell, "&", "", 1))
@@ -123,6 +178,9 @@ func (_this *DatabaseTableComponent) SetTableData(rows [][]string) {
 	// 清空旧数据
 	_this.dataTable.Clear()
 	_this.AddRows(rows)
+	// 固定表头
+	_this.dataTable.SetFixed(0, 0)
+	// 选中第一行
 	_this.dataTable.Select(1, 0)
 	_this.app.UI.QueueUpdateDraw(func() {})
 }
@@ -133,7 +191,7 @@ func NewDatabaseTableComponent(
 	tableName string,
 	dbCfg *config.DBConnection,
 ) *DatabaseTableComponent {
-	var name = "Table View"
+	var name = ""
 	lp := DatabaseTableComponent{
 		BaseFlex:  ui.NewBaseFlex(name),
 		app:       a,

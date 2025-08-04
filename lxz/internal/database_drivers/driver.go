@@ -2,6 +2,7 @@ package database_drivers
 
 import (
 	"fmt"
+	"log/slog"
 	"lxz/internal/config"
 	"sync"
 )
@@ -46,16 +47,31 @@ func GetConnect(cfg *config.DBConnection) (IDatabaseConn, error) {
 }
 
 func GetConnectOrInit(cfg *config.DBConnection) (IDatabaseConn, error) {
-	if db, exists := connMap.Load(cfg.GetUniqKey()); exists {
-		return db.(IDatabaseConn), nil
-	} else {
-		iDriver, err := _initDriver(cfg)
-		if err != nil {
-			return nil, fmt.Errorf("failed to initialize database driver: %w", err)
+	defer func() {
+		if r := recover(); r != nil {
+			slog.Error("panic in GetConnectOrInit", "error", r)
 		}
-		connMap.Store(cfg.GetUniqKey(), iDriver)
-		return GetConnect(cfg)
+	}()
+
+	key := cfg.GetUniqKey()
+	slog.Debug("attempting to load DB connection", "key", key)
+
+	if db, exists := connMap.Load(key); exists {
+		if conn, ok := db.(IDatabaseConn); ok {
+			slog.Info("reusing existing database connection", "key", key)
+			return conn, nil
+		} else {
+			return nil, fmt.Errorf("invalid type stored in connMap for key %s", key)
+		}
 	}
+
+	iDriver, err := _initDriver(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize database driver: %w", err)
+	}
+	connMap.Store(key, iDriver)
+
+	return GetConnect(cfg)
 }
 
 func TestConnection(cfg *config.DBConnection) error {

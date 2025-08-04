@@ -12,6 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"log/slog"
 	"lxz/internal/model"
+	"lxz/internal/view/base"
 	"lxz/internal/view/cmd"
 )
 
@@ -105,7 +106,16 @@ func NewBaseFlex(name string) *BaseFlex {
 		SetBorderAttributes(tcell.AttrBold).
 		SetTitle(fmt.Sprintf(" %s ", name)).
 		SetTitleAlign(tview.AlignCenter)
-	b.SetBorderColor(tcell.ColorAqua)
-
+	//b.SetFocusFunc(func() {
+	//	// 上焦时
+	//	slog.Info("BaseFlex focus", "name", b.name)
+	//	b.SetBorderColor(base.InactiveBorderColor)
+	//})
+	//b.SetBlurFunc(func() {
+	//	// 失焦时
+	//	slog.Info("BaseFlex blur", "name", b.name)
+	//	b.SetBorderColor(base.ActiveBorderColor)
+	//})
+	b.SetBorderColor(base.FlexBorderColor)
 	return b
 }

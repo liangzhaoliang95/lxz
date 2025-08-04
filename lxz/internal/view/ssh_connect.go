@@ -14,6 +14,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"log/slog"
 	"lxz/internal/ui"
+	"lxz/internal/view/base"
 	"lxz/internal/view/cmd"
 	"os"
 	"os/exec"
@@ -122,8 +123,8 @@ func (_this *SshConnect) Start() {
 	// 回车时只做焦点切换
 	_this.envList.SetSelectedFunc(func(index int, name string, _ string, _ rune) {
 		_this.app.UI.SetFocus(_this.hostTable)
-		_this.envList.SetBorderColor(inactiveBorderColor)
-		_this.hostTable.SetBorderColor(activeBorderColor)
+		_this.envList.SetBorderColor(base.InactiveBorderColor)
+		_this.hostTable.SetBorderColor(base.ActiveBorderColor)
 	})
 
 	_this.AddItem(_this.envList, 30, 1, true)   // 左侧环境宽 30 字符
@@ -141,8 +142,8 @@ func (_this *SshConnect) Start() {
 	}
 
 	// ✅ 设置默认边框颜色 + 焦点 + 强制刷新
-	_this.envList.SetBorderColor(activeBorderColor)
-	_this.hostTable.SetBorderColor(inactiveBorderColor)
+	_this.envList.SetBorderColor(base.ActiveBorderColor)
+	_this.hostTable.SetBorderColor(base.InactiveBorderColor)
 
 	// ✅ 设置 table 的回车行为，ssh 连接
 	_this.hostTable.SetSelectedFunc(func(row, _ int) {
@@ -206,22 +207,17 @@ func (_this *SshConnect) TabFocusChange(event *tcell.EventKey) *tcell.EventKey {
 	}
 	if _this.app.UI.GetFocus() == _this.envList {
 		_this.app.UI.SetFocus(_this.hostTable)
-		_this.envList.SetBorderColor(inactiveBorderColor)
-		_this.hostTable.SetBorderColor(activeBorderColor)
+		_this.envList.SetBorderColor(base.InactiveBorderColor)
+		_this.hostTable.SetBorderColor(base.ActiveBorderColor)
 	} else {
 		_this.app.UI.SetFocus(_this.envList)
-		_this.envList.SetBorderColor(activeBorderColor)
-		_this.hostTable.SetBorderColor(inactiveBorderColor)
+		_this.envList.SetBorderColor(base.ActiveBorderColor)
+		_this.hostTable.SetBorderColor(base.InactiveBorderColor)
 	}
 	return nil
 }
 
 // helpers
-
-var (
-	activeBorderColor   = tcell.ColorGreenYellow // ✅ 获得焦点
-	inactiveBorderColor = tcell.ColorGray        // ❌ 非焦点
-)
 
 type HostItem struct {
 	Host         string
