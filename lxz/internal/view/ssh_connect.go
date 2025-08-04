@@ -47,7 +47,9 @@ func (_this *SshConnect) Init(ctx context.Context) error {
 	var err error
 	_this.envMap, _this.envOrder, err = loadAllHostsGrouped()
 	if err != nil {
-		slog.Error(fmt.Sprintf("%s loadAllHostsGrouped failed err => %s", _this.Name(), err.Error()))
+		slog.Error(
+			fmt.Sprintf("%s loadAllHostsGrouped failed err => %s", _this.Name(), err.Error()),
+		)
 		return err
 	}
 	_this.bindKeys()

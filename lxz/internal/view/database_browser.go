@@ -61,11 +61,51 @@ func (_this *DatabaseBrowser) Init(ctx context.Context) error {
 
 func (_this *DatabaseBrowser) _initConfigTableHeader() {
 	// 给列表设置列表头 name provider
-	_this.connList.SetCell(0, 0, tview.NewTableCell("Name").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft).SetExpansion(1).SetSelectable(false))
-	_this.connList.SetCell(0, 1, tview.NewTableCell("Provider").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft).SetExpansion(1).SetSelectable(false))
-	_this.connList.SetCell(0, 2, tview.NewTableCell("Host").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft).SetExpansion(1).SetSelectable(false))
-	_this.connList.SetCell(0, 3, tview.NewTableCell("UserName").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft).SetExpansion(1).SetSelectable(false))
-	_this.connList.SetCell(0, 4, tview.NewTableCell("Port").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft).SetExpansion(1).SetSelectable(false))
+	_this.connList.SetCell(
+		0,
+		0,
+		tview.NewTableCell("Name").
+			SetTextColor(tcell.ColorYellow).
+			SetAlign(tview.AlignLeft).
+			SetExpansion(1).
+			SetSelectable(false),
+	)
+	_this.connList.SetCell(
+		0,
+		1,
+		tview.NewTableCell("Provider").
+			SetTextColor(tcell.ColorYellow).
+			SetAlign(tview.AlignLeft).
+			SetExpansion(1).
+			SetSelectable(false),
+	)
+	_this.connList.SetCell(
+		0,
+		2,
+		tview.NewTableCell("Host").
+			SetTextColor(tcell.ColorYellow).
+			SetAlign(tview.AlignLeft).
+			SetExpansion(1).
+			SetSelectable(false),
+	)
+	_this.connList.SetCell(
+		0,
+		3,
+		tview.NewTableCell("UserName").
+			SetTextColor(tcell.ColorYellow).
+			SetAlign(tview.AlignLeft).
+			SetExpansion(1).
+			SetSelectable(false),
+	)
+	_this.connList.SetCell(
+		0,
+		4,
+		tview.NewTableCell("Port").
+			SetTextColor(tcell.ColorYellow).
+			SetAlign(tview.AlignLeft).
+			SetExpansion(1).
+			SetSelectable(false),
+	)
 }
 
 func (_this *DatabaseBrowser) _refreshTableData() {
@@ -81,11 +121,46 @@ func (_this *DatabaseBrowser) _refreshTableData() {
 		_this._initConfigTableHeader()
 		// 设置数据
 		for i, connection := range _this.config.DBConnections {
-			_this.connList.SetCell(i+1, 0, tview.NewTableCell(connection.Name).SetTextColor(tcell.ColorWhite).SetAlign(tview.AlignLeft).SetExpansion(1))
-			_this.connList.SetCell(i+1, 1, tview.NewTableCell(connection.Provider).SetTextColor(tcell.ColorWhite).SetAlign(tview.AlignLeft).SetExpansion(1))
-			_this.connList.SetCell(i+1, 2, tview.NewTableCell(connection.Host).SetTextColor(tcell.ColorWhite).SetAlign(tview.AlignLeft).SetExpansion(1))
-			_this.connList.SetCell(i+1, 3, tview.NewTableCell(connection.UserName).SetTextColor(tcell.ColorWhite).SetAlign(tview.AlignLeft).SetExpansion(1))
-			_this.connList.SetCell(i+1, 4, tview.NewTableCell(strconv.FormatInt(connection.Port, 10)).SetTextColor(tcell.ColorWhite).SetAlign(tview.AlignLeft).SetExpansion(1))
+			_this.connList.SetCell(
+				i+1,
+				0,
+				tview.NewTableCell(connection.Name).
+					SetTextColor(tcell.ColorWhite).
+					SetAlign(tview.AlignLeft).
+					SetExpansion(1),
+			)
+			_this.connList.SetCell(
+				i+1,
+				1,
+				tview.NewTableCell(connection.Provider).
+					SetTextColor(tcell.ColorWhite).
+					SetAlign(tview.AlignLeft).
+					SetExpansion(1),
+			)
+			_this.connList.SetCell(
+				i+1,
+				2,
+				tview.NewTableCell(connection.Host).
+					SetTextColor(tcell.ColorWhite).
+					SetAlign(tview.AlignLeft).
+					SetExpansion(1),
+			)
+			_this.connList.SetCell(
+				i+1,
+				3,
+				tview.NewTableCell(connection.UserName).
+					SetTextColor(tcell.ColorWhite).
+					SetAlign(tview.AlignLeft).
+					SetExpansion(1),
+			)
+			_this.connList.SetCell(
+				i+1,
+				4,
+				tview.NewTableCell(strconv.FormatInt(connection.Port, 10)).
+					SetTextColor(tcell.ColorWhite).
+					SetAlign(tview.AlignLeft).
+					SetExpansion(1),
+			)
 		}
 	})
 }
@@ -118,7 +193,11 @@ func (_this *DatabaseBrowser) Stop() {
 func (_this *DatabaseBrowser) bindKeys() {
 	_this.Actions().Bulk(ui.KeyMap{
 		tcell.KeyCtrlN: ui.NewKeyAction("New Connect", _this.createDatabaseConnectionModel, true),
-		tcell.KeyCtrlD: ui.NewKeyAction("Delete Connect", _this.deleteDatabaseConnectionModel, true),
+		tcell.KeyCtrlD: ui.NewKeyAction(
+			"Delete Connect",
+			_this.deleteDatabaseConnectionModel,
+			true,
+		),
 		tcell.KeyCtrlT: ui.NewKeyAction("Test Connect", _this.testConnect, true),
 		ui.KeyE:        ui.NewKeyAction("Edit Connect", _this.createDatabaseConnectionModel, true),
 		tcell.KeyEnter: ui.NewKeyAction("Connect", _this.startConnect, true),
@@ -129,8 +208,10 @@ func (_this *DatabaseBrowser) bindKeys() {
 // startConnect 处理连接事件
 func (_this *DatabaseBrowser) startConnect(evt *tcell.EventKey) *tcell.EventKey {
 	slog.Info("Starting connection...")
-
+	_this._getCurrentSelectKey()
 	// 初始化main页面
+	mainPage := NewDatabaseMainPage(_this.app, _this.connMap[_this.selectKey])
+	_this.app.inject(mainPage, false)
 	// 注入跳过去
 	return nil
 }
@@ -151,7 +232,8 @@ func (_this *DatabaseBrowser) createDatabaseConnectionModel(evt *tcell.EventKey)
 				slog.Info("Creating new connection", "key", key)
 				if _, exists := _this.connMap[key]; exists {
 					slog.Warn("Connection already exists", "key", key)
-					_this.app.UI.Flash().Warn("Connection already exists. Please choose a different name.")
+					_this.app.UI.Flash().
+						Warn("Connection already exists. Please choose a different name.")
 					return false
 				}
 				if opts.Host == "" {
@@ -211,7 +293,8 @@ func (_this *DatabaseBrowser) createDatabaseConnectionModel(evt *tcell.EventKey)
 				key := newConfig.GetUniqKey()
 				if key != _this.selectKey {
 					if _, exists := _this.connMap[key]; exists {
-						_this.app.UI.Flash().Warn("Connection already exists. Please choose a different name.")
+						_this.app.UI.Flash().
+							Warn("Connection already exists. Please choose a different name.")
 						return false
 					}
 				}

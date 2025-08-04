@@ -434,7 +434,8 @@ func (_this *FileBrowser) renameFileModel(node *tview.TreeNode, path string) {
 
 			err := os.Rename(path, newFilePath)
 			if err != nil {
-				_this.app.UI.Flash().Err(errors.New(fmt.Sprintf("[red]<%s>[-] rename failed", filepath.Base(path))))
+				_this.app.UI.Flash().
+					Err(errors.New(fmt.Sprintf("[red]<%s>[-] rename failed", filepath.Base(path))))
 				return false
 			}
 			_this.addChildren(node, path)
@@ -456,12 +457,14 @@ func (_this *FileBrowser) deleteFileModel(node *tview.TreeNode, path string) {
 			// 删除文件
 			err := os.Remove(path)
 			if err != nil {
-				_this.app.UI.Flash().Err(fmt.Errorf("[red]<%s>[-] delete failed", filepath.Base(path)))
+				_this.app.UI.Flash().
+					Err(fmt.Errorf("[red]<%s>[-] delete failed", filepath.Base(path)))
 				return false
 			}
 			// 获取父目录路径
 			parentPath := filepath.Dir(path)
-			_this.app.UI.Flash().Info(fmt.Sprintf("[red]<%s>[-] delete success", filepath.Base(path)))
+			_this.app.UI.Flash().
+				Info(fmt.Sprintf("[red]<%s>[-] delete success", filepath.Base(path)))
 			_this.addChildren(node.GetParentNode(), parentPath)
 			return true
 		},
