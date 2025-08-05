@@ -377,6 +377,7 @@ func NewSshConnect(app *App) *SshConnect {
 		BaseFlex: ui.NewBaseFlex(name),
 		app:      app,
 	}
+	tc.SetIdentifier(ui.SSH_CONNECT_ID)
 
 	return tc
 }

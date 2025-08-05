@@ -19,7 +19,7 @@ import (
 
 // GitRelease 项目Release视图
 type GitRelease struct {
-	*tview.Flex
+	*ui.BaseFlex
 	actions    *ui.KeyActions
 	name       string
 	fullScreen bool
@@ -120,9 +120,9 @@ func (p *GitRelease) toggleFullScreenCmd(evt *tcell.EventKey) *tcell.EventKey {
 func NewGitRelease() *GitRelease {
 	var name = "Git Release"
 	tc := &GitRelease{
-		Flex:    tview.NewFlex(),
-		name:    name,
-		actions: ui.NewKeyActions(),
+		BaseFlex: ui.NewBaseFlex(name),
+		name:     name,
+		actions:  ui.NewKeyActions(),
 	}
 
 	tc.
@@ -130,5 +130,7 @@ func NewGitRelease() *GitRelease {
 		SetBorderAttributes(tcell.AttrBold).
 		SetTitle(fmt.Sprintf(" %s ", name))
 	tc.AddItem(tview.NewTextView().SetText(name), 0, 1, false)
+
+	tc.SetIdentifier(ui.GIT_RELEASE_ID)
 	return tc
 }

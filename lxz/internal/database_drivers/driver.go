@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	DefaultRowLimit = 300
+	DefaultRowLimit = 100
 )
 
 var connMap sync.Map

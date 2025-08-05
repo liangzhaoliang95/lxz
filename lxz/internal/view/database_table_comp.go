@@ -114,7 +114,6 @@ func (_this *DatabaseTableComponent) Init(ctx context.Context) error {
 				_this.app.UI.Flash().
 					Err(fmt.Errorf("%w", err))
 			} else {
-				// 渲染表格数据
 				_this.SetTableData(records)
 			}
 			// 焦点切换到表格
@@ -124,21 +123,25 @@ func (_this *DatabaseTableComponent) Init(ctx context.Context) error {
 		}
 	})
 	_this.filterFlex.AddItem(_this.filterInput, 0, 5, true)
-
-	_this.AddItem(_this.filterFlex, 3, 1, true)
+	_this.AddItem(_this.filterFlex, 3, 1, false)
 
 	// 初始化表格
 	_this.dataTable = tview.NewTable()
 	_this.dataTable.SetBorders(true)
 	_this.dataTable.SetBorder(false)
-	_this.dataTable.SetSelectedStyle(tcell.Style{}.Background(tcell.ColorRed))
+	_this.dataTable.SetSeparator(tview.Borders.Vertical)
+	_this.dataTable.SetSelectedStyle(
+		tcell.StyleDefault.Background(tcell.ColorRed).
+			Foreground(tview.Styles.ContrastSecondaryTextColor),
+	)
 	_this.dataTable.SetSelectable(true, false)
-	_this.AddItem(_this.dataTable, 0, 7, false)
-
+	_this.dataTable.SetFixed(1, 0)
+	_this.AddItem(_this.dataTable, 0, 7, true)
 	return nil
 }
 
 func (_this *DatabaseTableComponent) Start() {
+
 	// 初始化表格数据
 	records, _, err := _this.dbConn.GetRecords(
 		_this.dbName,
@@ -153,7 +156,9 @@ func (_this *DatabaseTableComponent) Start() {
 			Err(fmt.Errorf("failed to get records for table %s: %w", _this.tableName, err))
 		return
 	}
-	// 渲染表格数据
+
+	// 渲染表格数据 不知道为什么，就是需要刷两遍才能定位到第一行
+	_this.SetTableData(records)
 	_this.SetTableData(records)
 
 }
@@ -193,11 +198,8 @@ func (_this *DatabaseTableComponent) SetTableData(rows [][]string) {
 	// 清空旧数据
 	_this.dataTable.Clear()
 	_this.AddRows(rows)
-	// 固定表头
-	_this.dataTable.SetFixed(0, 0)
-	// 选中第一行
-	_this.dataTable.Select(1, 0)
-	_this.app.UI.QueueUpdateDraw(func() {})
+	_this.dataTable.Select(1, 1)
+	_this.app.UI.ForceDraw()
 }
 
 func NewDatabaseTableComponent(

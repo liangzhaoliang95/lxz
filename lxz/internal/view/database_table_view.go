@@ -12,6 +12,7 @@ import (
 	"log/slog"
 	"lxz/internal/config"
 	"lxz/internal/ui"
+	"lxz/internal/ui/dialog"
 	"lxz/internal/view/base"
 )
 
@@ -31,15 +32,20 @@ func (_this *DatabaseTableView) selfFocus() {
 	if comp == nil {
 		_this.app.UI.SetFocus(_this)
 	} else {
-		currentTable := comp.dataTable
 		// 设置当前焦点为表格组件
-		_this.app.UI.SetFocus(currentTable)
+		_this.app.UI.SetFocus(comp.dataTable)
 	}
 
 }
 
 func (_this *DatabaseTableView) LunchPage(dbName, tableName string) error {
 	slog.Info("Launching page for table", "tableName", tableName, "dbName", dbName)
+
+	loading := dialog.ShowLoadingDialog(
+		appInstance.Content.Pages,
+		"",
+		appInstance.UI.ForceDraw,
+	)
 	pageKey := fmt.Sprintf("%s-%s", dbName, tableName)
 	if _, ok := _this.tableComponents[pageKey]; !ok {
 		// 当前页不存在，创建一个新的表格组件
@@ -55,10 +61,14 @@ func (_this *DatabaseTableView) LunchPage(dbName, tableName string) error {
 	}
 	// 当前页已存在，切换到该页面
 	_this.currentPageKey = pageKey
-	comp := _this.tableComponents[pageKey]
 	_this.tablePages.SwitchToPage(pageKey)
+
+	comp := _this.tableComponents[pageKey]
 	comp.Start()
+
+	loading.Hide()
 	_this.selfFocus()
+	appInstance.UI.ForceDraw()
 	return nil
 
 }

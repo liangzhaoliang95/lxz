@@ -22,16 +22,16 @@ var DatabaseProviderList = []string{
 }
 
 type DBConnection struct {
-	Name      string   `yaml:"name" json:"name"`
-	URL       string   `yaml:"url" json:"url"`
-	Provider  string   `yaml:"provider" json:"provider"`
-	UserName  string   `yaml:"username" json:"username"`
-	Password  string   `yaml:"password" json:"password"`
-	Host      string   `yaml:"host" json:"host"`
-	Port      int64    `yaml:"port" json:"port"`
-	DBName    string   `yaml:"dbname" json:"dbname"`
+	Name      string   `yaml:"name"      json:"name"`
+	URL       string   `yaml:"url"       json:"url"`
+	Provider  string   `yaml:"provider"  json:"provider"`
+	UserName  string   `yaml:"username"  json:"username"`
+	Password  string   `yaml:"password"  json:"password"`
+	Host      string   `yaml:"host"      json:"host"`
+	Port      int64    `yaml:"port"      json:"port"`
+	DBName    string   `yaml:"dbname"    json:"dbname"`
 	URLParams string   `yaml:"urlParams" json:"urlParams"`
-	Commands  []string `yaml:"commands" json:"commands"`
+	Commands  []string `yaml:"commands"  json:"commands"`
 }
 
 func (d *DBConnection) GetUniqKey() string {
@@ -40,7 +40,7 @@ func (d *DBConnection) GetUniqKey() string {
 
 type DatabaseConfig struct {
 	DefaultPageSize int             `yaml:"defaultPageSize" json:"defaultPageSize"`
-	DBConnections   []*DBConnection `yaml:"dbConnections" json:"dbConnections"`
+	DBConnections   []*DBConnection `yaml:"dbConnections"   json:"dbConnections"`
 }
 
 // String()
@@ -111,6 +111,6 @@ func (c *DatabaseConfig) Load(path string, force bool) error {
 
 func NewDatabaseConfig() *DatabaseConfig {
 	return &DatabaseConfig{
-		DefaultPageSize: 300,
+		DefaultPageSize: 100,
 	}
 }

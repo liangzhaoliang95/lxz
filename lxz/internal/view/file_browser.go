@@ -510,6 +510,6 @@ func NewFileBrowser(app *App) *FileBrowser {
 		stopDebounceCh:   make(chan struct{}),
 		rootDir:          ".",
 	}
-
+	f.SetIdentifier(ui.FILE_BROWSER_ID)
 	return f
 }

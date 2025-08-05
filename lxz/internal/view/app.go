@@ -29,6 +29,8 @@ const (
 	clusterInfoPad   = 15
 )
 
+var appInstance *App
+
 // App represents the application view layer.
 type App struct {
 	version string
@@ -54,7 +56,7 @@ func NewApp(cfg *config.Config) *App {
 	// 集群信息组件
 	//a.UI.Views()["clusterInfo"] = NewClusterInfo(&a)
 	slog.Info("LXZ 目前只完成了实例的初始化")
-
+	appInstance = &a
 	return &a
 }
 
@@ -93,11 +95,6 @@ func (a *App) toggleHeaderCmd(evt *tcell.EventKey) *tcell.EventKey {
 		a.toggleHeader(a.showHeader, a.showLogo)
 	})
 
-	return nil
-}
-
-func (a *App) testContentChange(evt *tcell.EventKey) *tcell.EventKey {
-	a.inject(ui.NewTestComp(time.Now().Format("15:04:05")), false)
 	return nil
 }
 
@@ -161,7 +158,6 @@ func (a *App) PrevCmd(*tcell.EventKey) *tcell.EventKey {
 func (a *App) bindKeys() {
 	a.UI.AddActions(ui.NewKeyActionsFromMap(ui.KeyMap{
 		//tcell.KeyCtrlE: ui.NewSharedKeyAction("ToggleHeader", a.toggleHeaderCmd, false),
-		ui.KeyHelp:      ui.NewSharedKeyAction("Test", a.testContentChange, false),
 		tcell.KeyEscape: ui.NewSharedKeyAction("Go Back", a.PrevCmd, false),
 		tcell.KeyF1:     ui.NewSharedKeyAction("SSH Connect", a.menuPageChange, false),
 		tcell.KeyF2:     ui.NewSharedKeyAction("File Browser", a.menuPageChange, false),
@@ -257,7 +253,7 @@ func (a *App) Init(version string, _ int) error {
 	}
 
 	// 面包屑组件添加监听
-	//a.Content.AddListener(a.UI.Status())
+	a.Content.AddListener(a.UI.Menu())
 	a.Content.AddListener(a.UI.SubMenu())
 	// 快捷键+数据初始化
 	a.UI.Init()

@@ -19,6 +19,7 @@ import (
 type BaseFlex struct {
 	*tview.Flex
 	actions    *KeyActions
+	identity   string // 用于标识该Flex的唯一性
 	name       string
 	fullScreen bool
 }
@@ -95,6 +96,14 @@ func (_this *BaseFlex) Keyboard(evt *tcell.EventKey) *tcell.EventKey {
 	return evt
 }
 
+func (_this *BaseFlex) SetIdentifier(identity string) {
+	_this.identity = identity
+}
+
+func (_this *BaseFlex) GetIdentifier() string {
+	return _this.identity
+}
+
 func NewBaseFlex(name string) *BaseFlex {
 	b := &BaseFlex{
 		Flex:    tview.NewFlex(),
@@ -106,16 +115,6 @@ func NewBaseFlex(name string) *BaseFlex {
 		SetBorderAttributes(tcell.AttrBold).
 		SetTitle(fmt.Sprintf(" %s ", name)).
 		SetTitleAlign(tview.AlignCenter)
-	//b.SetFocusFunc(func() {
-	//	// 上焦时
-	//	slog.Info("BaseFlex focus", "name", b.name)
-	//	b.SetBorderColor(base.InactiveBorderColor)
-	//})
-	//b.SetBlurFunc(func() {
-	//	// 失焦时
-	//	slog.Info("BaseFlex blur", "name", b.name)
-	//	b.SetBorderColor(base.ActiveBorderColor)
-	//})
 	b.SetBorderColor(base.FlexBorderColor)
 	return b
 }

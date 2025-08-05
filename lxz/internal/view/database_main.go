@@ -78,6 +78,7 @@ func (_this *DatabaseMainPage) Init(ctx context.Context) error {
 
 func (_this *DatabaseMainPage) Start() {
 	slog.Info("DatabaseMainPage Start")
+
 	// 启动数据库树的初始化
 	err := _this.dbTree.Init(context.Background())
 	if err != nil {

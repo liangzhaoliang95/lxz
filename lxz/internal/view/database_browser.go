@@ -25,6 +25,9 @@ type DatabaseBrowser struct {
 }
 
 func (_this *DatabaseBrowser) Init(ctx context.Context) error {
+	_this.bindKeys()
+	_this.SetInputCapture(_this.Keyboard)
+
 	// 组件初始化
 	// 连接列表
 	_this.connList = tview.NewTable()
@@ -60,9 +63,7 @@ func (_this *DatabaseBrowser) Init(ctx context.Context) error {
 	_this.AddItem(tview.NewBox(), 3, 0, false)
 	middlerFlex := tview.NewFlex().
 		SetDirection(tview.FlexColumn)
-	middlerFlex.AddItem(tview.NewBox(), 10, 0, false) // 左边的Box
 	middlerFlex.AddItem(_this.connList, 0, 1, true)
-	middlerFlex.AddItem(tview.NewBox(), 10, 0, false) // 右边的Box
 	_this.AddItem(middlerFlex, 0, 1, true)
 
 	return nil
@@ -207,8 +208,9 @@ func (_this *DatabaseBrowser) startConnect(evt *tcell.EventKey) *tcell.EventKey 
 	_this._getCurrentSelectKey()
 	// 初始化main页面
 	mainPage := NewDatabaseMainPage(_this.app, _this.connMap[_this.selectKey])
+	loading := dialog.ShowLoadingDialog(appInstance.Content.Pages, "", appInstance.UI.ForceDraw)
 	_this.app.inject(mainPage, false)
-	// 注入跳过去
+	loading.Hide()
 	return nil
 }
 
@@ -429,14 +431,12 @@ func NewDatabaseBrowser(app *App) *DatabaseBrowser {
 		connMap[conn.GetUniqKey()] = conn
 	}
 	db := DatabaseBrowser{
-		BaseFlex: ui.NewBaseFlex("DB Browser"),
+		BaseFlex: ui.NewBaseFlex("DB Connections"),
 		app:      app,
 		config:   databaseConfig,
 		connMap:  connMap,
 	}
 
-	//db.SetDirection(tview.FlexRow)
-	db.bindKeys()
-	db.SetInputCapture(db.Keyboard)
+	db.SetIdentifier(ui.DB_BROWSER_ID)
 	return &db
 }

@@ -58,6 +58,11 @@ type Filterer interface {
 	SetLabelSelector(labels.Selector)
 }
 
+type Identifier interface {
+	SetIdentifier(string)
+	GetIdentifier() string
+}
+
 // Component represents a ui component.
 type Component interface {
 	Primitive
@@ -66,4 +71,5 @@ type Component interface {
 	Commander
 	Filterer
 	Viewer
+	Identifier
 }
