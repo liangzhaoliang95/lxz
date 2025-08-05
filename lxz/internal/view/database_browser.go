@@ -56,6 +56,15 @@ func (_this *DatabaseBrowser) Init(ctx context.Context) error {
 		}
 	})
 
+	// 设置布局 将连接列表居中
+	_this.AddItem(tview.NewBox(), 3, 0, false)
+	middlerFlex := tview.NewFlex().
+		SetDirection(tview.FlexColumn)
+	middlerFlex.AddItem(tview.NewBox(), 10, 0, false) // 左边的Box
+	middlerFlex.AddItem(_this.connList, 0, 1, true)
+	middlerFlex.AddItem(tview.NewBox(), 10, 0, false) // 右边的Box
+	_this.AddItem(middlerFlex, 0, 1, true)
+
 	return nil
 }
 
@@ -166,21 +175,8 @@ func (_this *DatabaseBrowser) _refreshTableData() {
 }
 
 func (_this *DatabaseBrowser) Start() {
-	// 设置布局 将连接列表居中
-	// top box
-	_this.AddItem(tview.NewBox(), 3, 0, false)
-	// 设置中部空间 是一个flex布局 左边1个Box 中间table 右边1个Box
-	middlerFlex := tview.NewFlex().
-		SetDirection(tview.FlexColumn)
-	middlerFlex.AddItem(tview.NewBox(), 10, 0, false) // 左边的Box
-
 	// 设置数据
 	_this._refreshTableData()
-
-	middlerFlex.AddItem(_this.connList, 0, 1, true)
-	middlerFlex.AddItem(tview.NewBox(), 10, 0, false) // 右边的Box
-	// 将中部flex布局添加到主布局
-	_this.AddItem(middlerFlex, 0, 1, true)
 
 }
 
@@ -433,7 +429,7 @@ func NewDatabaseBrowser(app *App) *DatabaseBrowser {
 		connMap[conn.GetUniqKey()] = conn
 	}
 	db := DatabaseBrowser{
-		BaseFlex: ui.NewBaseFlex("Database Browser"),
+		BaseFlex: ui.NewBaseFlex("DB Browser"),
 		app:      app,
 		config:   databaseConfig,
 		connMap:  connMap,

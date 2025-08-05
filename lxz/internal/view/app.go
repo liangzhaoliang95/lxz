@@ -161,11 +161,12 @@ func (a *App) PrevCmd(*tcell.EventKey) *tcell.EventKey {
 func (a *App) bindKeys() {
 	a.UI.AddActions(ui.NewKeyActionsFromMap(ui.KeyMap{
 		//tcell.KeyCtrlE: ui.NewSharedKeyAction("ToggleHeader", a.toggleHeaderCmd, false),
-		ui.KeyHelp:  ui.NewSharedKeyAction("Test", a.testContentChange, false),
-		tcell.KeyF1: ui.NewSharedKeyAction("SSH Connect", a.menuPageChange, false),
-		tcell.KeyF2: ui.NewSharedKeyAction("File Browser", a.menuPageChange, false),
-		tcell.KeyF3: ui.NewSharedKeyAction("Git Release", a.menuPageChange, false),
-		tcell.KeyF4: ui.NewSharedKeyAction("DB Browser", a.menuPageChange, false),
+		ui.KeyHelp:      ui.NewSharedKeyAction("Test", a.testContentChange, false),
+		tcell.KeyEscape: ui.NewSharedKeyAction("Go Back", a.PrevCmd, false),
+		tcell.KeyF1:     ui.NewSharedKeyAction("SSH Connect", a.menuPageChange, false),
+		tcell.KeyF2:     ui.NewSharedKeyAction("File Browser", a.menuPageChange, false),
+		tcell.KeyF3:     ui.NewSharedKeyAction("Git Release", a.menuPageChange, false),
+		tcell.KeyF4:     ui.NewSharedKeyAction("DB Browser", a.menuPageChange, false),
 	}))
 }
 

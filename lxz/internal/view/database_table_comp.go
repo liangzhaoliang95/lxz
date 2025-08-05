@@ -48,7 +48,15 @@ func (_this *DatabaseTableComponent) Init(ctx context.Context) error {
 	slog.Info("database table component init", "tableName", _this.tableName, "config", _this.dbCfg)
 	// 初始化数据库连接
 	iDatabaseConn, err := database_drivers.GetConnectOrInit(_this.dbCfg)
-	slog.Info("get database connection", "dbName", _this.dbName, "tableName", _this.tableName, "CONN", iDatabaseConn)
+	slog.Info(
+		"get database connection",
+		"dbName",
+		_this.dbName,
+		"tableName",
+		_this.tableName,
+		"CONN",
+		iDatabaseConn,
+	)
 	if err != nil {
 		return fmt.Errorf("failed to get database connection: %w", err)
 	}
@@ -96,7 +104,13 @@ func (_this *DatabaseTableComponent) Init(ctx context.Context) error {
 				0,
 			)
 			if err != nil {
-				slog.Error("Failed to get records for table", "tableName", _this.tableName, "error", err)
+				slog.Error(
+					"Failed to get records for table",
+					"tableName",
+					_this.tableName,
+					"error",
+					err,
+				)
 				_this.app.UI.Flash().
 					Err(fmt.Errorf("%w", err))
 			} else {
@@ -118,6 +132,7 @@ func (_this *DatabaseTableComponent) Init(ctx context.Context) error {
 	_this.dataTable.SetBorders(true)
 	_this.dataTable.SetBorder(false)
 	_this.dataTable.SetSelectedStyle(tcell.Style{}.Background(tcell.ColorRed))
+	_this.dataTable.SetSelectable(true, false)
 	_this.AddItem(_this.dataTable, 0, 7, false)
 
 	return nil

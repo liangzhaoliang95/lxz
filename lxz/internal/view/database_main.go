@@ -100,7 +100,7 @@ func (_this *DatabaseMainPage) Stop() {
 }
 
 func NewDatabaseMainPage(a *App, dbConnCfg *config.DBConnection) *DatabaseMainPage {
-	var name = "DB Browser"
+	var name = "Table View"
 	lp := DatabaseMainPage{
 		BaseFlex:        ui.NewBaseFlex(name),
 		app:             a,
