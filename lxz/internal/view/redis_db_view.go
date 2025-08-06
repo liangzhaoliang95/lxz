@@ -43,7 +43,7 @@ func (_this *RedisDbListView) Init(ctx context.Context) error {
 	_this.rdbClient = rdbClient
 
 	// 初始化tree view
-	//_this.dbListUI = tview.NewTable()
+	_this.dbListUI = tview.NewTable()
 	//_this.dbListUI.SetBorder(false)
 	//_this.dbListUI.SetSelectedFunc(func(row, col int) {
 	//	slog.Info("Selected Node is a table node")
@@ -62,17 +62,10 @@ func (_this *RedisDbListView) Init(ctx context.Context) error {
 	//		SetSelectable(false))
 	//_this.AddItem(_this.dbListUI, 0, 1, false)
 
-	return nil
-}
-
-func (_this *RedisDbListView) Start() {
-	// TODO 此处可能有Bug 会导致页面卡
-	slog.Info("DatabaseDbTree Start", "redis", _this.connConfig.Name)
-
 	// 获取当前连接下的数据库列表
 	dbNum, err := _this.rdbClient.ListDB()
 	if err != nil {
-		return
+		return err
 	}
 
 	for i := 0; i < dbNum; i++ {
@@ -85,8 +78,16 @@ func (_this *RedisDbListView) Start() {
 		//		SetExpansion(1).
 		//		SetSelectable(true))
 	}
-	slog.Info("dbList", "list", _this.dbList)
+	return nil
+}
 
+func (_this *RedisDbListView) Start() {
+	// TODO 此处可能有Bug 会导致页面卡
+	slog.Info("DatabaseDbTree Start", "redis", _this.connConfig.Name)
+	for i := 0; i < len(_this.dbList); i++ {
+		_this.dbListUI.SetCell(i+1, 0,
+			tview.NewTableCell(_this.dbList[i]))
+	}
 }
 
 func (_this *RedisDbListView) Stop() {
