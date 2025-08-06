@@ -23,16 +23,16 @@ type RedisMainPage struct {
 	// 数据库连接配置
 	redisConnConfig *config.RedisConnConfig
 	// UI组件
-	dbListUI    *RedisDbListView // 库列表, 用于显示db列表
-	tableViewUI *RedisDataView   // 数据库表格视图，用于显示表数据
+	dbListViewUI *RedisDbListView // 库列表, 用于显示db列表
+	dataViewUI   *RedisDataView   // 数据库表格视图，用于显示表数据
 
 }
 
 func (_this *RedisMainPage) TabFocusChange(event *tcell.EventKey) *tcell.EventKey {
-	if _this.app.UI.GetFocus() == _this.dbListUI.dbListUI {
-		_this.tableViewUI.selfFocus()
+	if _this.app.UI.GetFocus() == _this.dbListViewUI.dbListUI || _this.app.UI.GetFocus() == _this.dbListViewUI {
+		_this.dataViewUI.selfFocus()
 	} else {
-		_this.dbListUI.selfFocus()
+		_this.dbListViewUI.selfFocus()
 	}
 	return nil
 }
@@ -41,12 +41,12 @@ func (_this *RedisMainPage) TabFocusChange(event *tcell.EventKey) *tcell.EventKe
 func (_this *RedisMainPage) ToggleSearch(evt *tcell.EventKey) *tcell.EventKey {
 	// 触发搜索功能
 	slog.Info("Search triggered", "event", evt)
-	currentPage := _this.tableViewUI.redisDataComponents[_this.tableViewUI.currentPageKey]
+	currentPage := _this.dataViewUI.redisDataComponents[_this.dataViewUI.currentPageKey]
 	if currentPage == nil {
 		appUiInstance.Flash().Err(fmt.Errorf("select one table first"))
 	} else {
 		// 将焦点定位到输入框上
-		_this.tableViewUI.redisDataComponents[_this.tableViewUI.currentPageKey].focusSearch()
+		_this.dataViewUI.redisDataComponents[_this.dataViewUI.currentPageKey].focusSearch()
 	}
 	return nil
 
@@ -67,33 +67,34 @@ func (_this *RedisMainPage) Init(ctx context.Context) error {
 	_this.SetInputCapture(_this.Keyboard)
 
 	// 左侧数据库列表
-	_this.dbListUI = NewRedisDbTree(_this.app, _this.redisConnConfig, _this.redisDbChangeChan)
-	err := _this.dbListUI.Init(context.Background())
+	_this.dbListViewUI = NewRedisDbTree(_this.app, _this.redisConnConfig, _this.redisDbChangeChan)
+	err := _this.dbListViewUI.Init(context.Background())
 	if err != nil {
 		_this.app.UI.Flash().Err(err)
 		return err
 	}
-	_this.AddItem(_this.dbListUI, 20, 0, true)
-	//
+	_this.AddItem(_this.dbListViewUI, 20, 0, true)
+
 	// 初始化右侧的表格视图
-	_this.tableViewUI = NewRedisDataView(_this.app, _this.redisConnConfig, _this.redisDbChangeChan)
-	err = _this.tableViewUI.Init(context.Background())
+	_this.dataViewUI = NewRedisDataView(_this.app, _this.redisConnConfig, _this.redisDbChangeChan)
+	err = _this.dataViewUI.Init(context.Background())
 	if err != nil {
 		_this.app.UI.Flash().Err(err)
 		return err
 	}
-	_this.AddItem(_this.tableViewUI, 0, 10, false)
+	_this.AddItem(_this.dataViewUI, 0, 10, false)
 	return nil
 }
 
 func (_this *RedisMainPage) Start() {
 	slog.Info("RedisMainPage Start")
 
-	//// 启动数据库树的初始化
-	_this.dbListUI.Start()
-	//
-	//// 启动表格视图的初始化
-	_this.tableViewUI.Start()
+	// 启动数据库树的初始化
+	_this.dbListViewUI.Start()
+
+	// 启动表格视图的初始化
+	_this.dataViewUI.Start()
+
 }
 
 func (_this *RedisMainPage) Stop() {

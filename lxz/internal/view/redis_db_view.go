@@ -8,11 +8,14 @@ package view
 import (
 	"context"
 	"fmt"
+	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 	"log/slog"
 	"lxz/internal/config"
+	"lxz/internal/helper"
 	"lxz/internal/redis_drivers"
 	"lxz/internal/view/base"
+	"sync"
 )
 
 type RedisDbListView struct {
@@ -20,73 +23,122 @@ type RedisDbListView struct {
 	app               *App
 	redisDbChangeChan chan redisDbChangeSubscribe // 用于订阅表变化的通道
 	// 数据库
-	connConfig *config.RedisConnConfig    // redis连接配置
-	rdbClient  *redis_drivers.RedisClient // redis连接
-	dbList     []string                   // 当前连接下的数据库列表
-	selectDB   string                     // 当前选中的数据库
+	dbNum       int                     // 数据库数量
+	connConfig  *config.RedisConnConfig // redis连接配置
+	dbKeyNumMap map[string]int64        // 用于存储数据库名称和对应的索引
+	dbKeyMu     sync.Mutex              // 键数量映射的互斥锁，确保线程安全
+	selectDB    string                  // 当前选中的数据库
 	// UI组件
 	dbListUI *tview.Table // 用于显示库列表
 }
 
 func (_this *RedisDbListView) selfFocus() {
 	// 设置当前焦点为表格组件
-	_this.app.UI.SetFocus(_this)
+	_this.app.UI.SetFocus(_this.dbListUI)
+}
+
+func (_this *RedisDbListView) _setDbKeyNumMap(db string, num int64) {
+	// 安全设置数据库键数量映射
+	_this.dbKeyMu.Lock()
+	defer _this.dbKeyMu.Unlock()
+	_this.dbKeyNumMap[db] = num
 }
 
 func (_this *RedisDbListView) Init(ctx context.Context) error {
 	// 获取数据库连接配置
 	// 初始化数据库连接
-	rdbClient, err := redis_drivers.GetConnectOrInit(_this.connConfig)
+	rdbClient, err := redis_drivers.GetConnectOrInit(_this.connConfig, 0)
 	if err != nil {
 		return fmt.Errorf("failed to get redis connection: %w", err)
 	}
-	_this.rdbClient = rdbClient
-
-	// 初始化tree view
-	_this.dbListUI = tview.NewTable()
-	//_this.dbListUI.SetBorder(false)
-	//_this.dbListUI.SetSelectedFunc(func(row, col int) {
-	//	slog.Info("Selected Node is a table node")
-	//	// 启动表视图 发送表变化订阅
-	//	dbChangeChan := redisDbChangeSubscribe{
-	//		dbNum: row - 1,
-	//	}
-	//	_this.redisDbChangeChan <- dbChangeChan
-	//})
-	// 设置头
-	//_this.dbListUI.SetCell(0, 0,
-	//	tview.NewTableCell("DB NUM").
-	//		SetTextColor(tcell.ColorYellow).
-	//		SetAlign(tview.AlignCenter).
-	//		SetExpansion(1).
-	//		SetSelectable(false))
-	//_this.AddItem(_this.dbListUI, 0, 1, false)
-
 	// 获取当前连接下的数据库列表
-	dbNum, err := _this.rdbClient.ListDB()
+	dbNum, err := rdbClient.ListDB()
 	if err != nil {
 		return err
 	}
+	_this.dbNum = dbNum
+
+	// 使用并发处理
+	wg := sync.WaitGroup{}
 
 	for i := 0; i < dbNum; i++ {
-		_this.dbList = append(_this.dbList, fmt.Sprintf("db%d", i))
-
-		//_this.dbListUI.SetCell(i+1, 0,
-		//	tview.NewTableCell(fmt.Sprintf("%d", i)).
-		//		SetTextColor(tcell.ColorYellow).
-		//		SetAlign(tview.AlignLeft).
-		//		SetExpansion(1).
-		//		SetSelectable(true))
+		wg.Add(1)
+		go func(dbIndex int) {
+			defer wg.Done()
+			var dbSize int64
+			// 初始化数据库连接
+			conn, err := redis_drivers.GetConnectOrInit(_this.connConfig, i)
+			if err != nil {
+				dbSize = 0
+			} else {
+				dbSize, err = conn.GetDBKeyNum()
+			}
+			_this._setDbKeyNumMap(fmt.Sprintf("%d", i), dbSize)
+		}(i)
 	}
+	wg.Wait()
+
+	// 初始化tree view
+	_this.dbListUI = tview.NewTable()
+	_this.dbListUI.SetBorder(false)
+	_this.dbListUI.SetFixed(0, 0)
+	_this.dbListUI.SetFixed(0, 1)
+	_this.dbListUI.Select(1, 0) // 默认选中第一个数据库
+	_this.dbListUI.SetSelectable(true, true)
+
+	// 设置表格的选择模式
+	_this.dbListUI.SetSelectionChangedFunc(func(row, column int) {
+		slog.Info("Selection changed", "row", row, "col", column)
+		if row < 1 || row >= _this.dbListUI.GetRowCount() {
+			slog.Warn("Selection changed row is out of range", "row", row)
+			_this.app.UI.Flash().Warn("Please select a valid connection.")
+			return
+		}
+	})
+
+	_this.dbListUI.SetSelectedFunc(func(row, col int) {
+		slog.Info("Selected Node is a table node")
+		// 启动表视图 发送表变化订阅
+		dbChangeChan := redisDbChangeSubscribe{
+			dbNum: row - 1,
+		}
+		_this.redisDbChangeChan <- dbChangeChan
+	})
+	// 设置头
+	_this.dbListUI.SetCell(0, 0,
+		tview.NewTableCell("DB").
+			SetTextColor(tcell.ColorYellow).
+			SetAlign(tview.AlignCenter).
+			SetExpansion(1).
+			SetSelectable(false))
+	_this.dbListUI.SetCell(0, 1,
+		tview.NewTableCell("Size").
+			SetTextColor(tcell.ColorYellow).
+			SetAlign(tview.AlignCenter).
+			SetExpansion(1).
+			SetSelectable(false))
+
+	_this.AddItem(_this.dbListUI, 0, 1, true)
+
 	return nil
 }
 
 func (_this *RedisDbListView) Start() {
-	// TODO 此处可能有Bug 会导致页面卡
 	slog.Info("DatabaseDbTree Start", "redis", _this.connConfig.Name)
-	for i := 0; i < len(_this.dbList); i++ {
+	for i := 0; i < _this.dbNum; i++ {
 		_this.dbListUI.SetCell(i+1, 0,
-			tview.NewTableCell(_this.dbList[i]))
+			tview.NewTableCell(fmt.Sprintf("%d", i)).
+				SetTextColor(tcell.ColorBlue).
+				SetAlign(tview.AlignCenter).
+				SetExpansion(1).
+				SetSelectable(true))
+		keySize := _this.dbKeyNumMap[fmt.Sprintf("%d", i)]
+		_this.dbListUI.SetCell(i+1, 1,
+			tview.NewTableCell(fmt.Sprintf("%d", keySize)).
+				SetTextColor(helper.If(keySize > 0, tcell.ColorRed, tcell.ColorGreen)).
+				SetAlign(tview.AlignCenter).
+				SetExpansion(1).
+				SetSelectable(true))
 	}
 }
 
@@ -105,7 +157,8 @@ func NewRedisDbTree(
 		app:               a,
 		connConfig:        dbCfg,
 		redisDbChangeChan: redisDbChangeChan,
-		dbList:            make([]string, 0),
+		dbNum:             0,
+		dbKeyNumMap:       make(map[string]int64),
 	}
 	lp.SetBorder(true)
 	lp.SetBorderColor(base.BoarderDefaultColor)

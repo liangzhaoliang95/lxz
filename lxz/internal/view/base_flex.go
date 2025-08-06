@@ -62,6 +62,7 @@ func (_this *BaseFlex) SetCommand(interpreter *cmd.Interpreter) {
 
 func (_this *BaseFlex) ToggleFullScreenCmd(evt *tcell.EventKey) *tcell.EventKey {
 	if ui.IsInputPrimitive(appUiInstance.GetFocus()) {
+		slog.Info("BaseFlex ToggleFullScreenCmd", "name", _this.name, "key", evt.Key(), "rune", evt.Rune(), "modifiers", evt.Modifiers())
 		return evt
 	}
 

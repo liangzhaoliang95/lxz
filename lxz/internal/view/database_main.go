@@ -60,9 +60,6 @@ func (_this *DatabaseMainPage) bindKeys() {
 		tcell.KeyCtrlO:  ui.NewKeyAction("Open Query Page", _this.goToQueryPage, true),
 		tcell.KeyEscape: ui.NewKeyAction("Last Page", _this.EmptyKeyEvent, true),
 		tcell.KeyTAB:    ui.NewKeyAction("Focus Change", _this.TabFocusChange, true),
-		//tcell.KeyEnter:  ui.NewKeyAction("Preview", _this.TabFocusChange, true),
-		//tcell.KeyLeft:   ui.NewKeyAction("Focus Change", _this.TabFocusChange, false),
-		//tcell.KeyRight:  ui.NewKeyAction("Focus Change", _this.TabFocusChange, false),
 	})
 }
 

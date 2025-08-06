@@ -93,10 +93,13 @@ func (_this *DatabaseTableView) Start() {
 				continue // 无效的变更通知
 			}
 			if err := _this.LunchPage(change.dbName, change.tableName); err != nil {
-				fmt.Printf(
-					"Error launching page for %s.%s: %v\n",
+				slog.Error(
+					"Error launching page ",
+					"dbName",
 					change.dbName,
+					"tableName",
 					change.tableName,
+					"err",
 					err,
 				)
 			}

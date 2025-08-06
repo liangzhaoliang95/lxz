@@ -32,7 +32,7 @@ func (_this *RedisDataView) selfFocus() {
 		_this.app.UI.SetFocus(_this)
 	} else {
 		// 设置当前焦点为表格组件
-		_this.app.UI.SetFocus(comp.dataTable)
+		_this.app.UI.SetFocus(comp.keyGroupTree)
 	}
 
 }
@@ -88,11 +88,7 @@ func (_this *RedisDataView) Start() {
 				change.dbNum,
 			)
 			if err := _this.LunchPage(change.dbNum); err != nil {
-				fmt.Printf(
-					"Error launching page for %d: %v\n",
-					change.dbNum,
-					err,
-				)
+				slog.Info("Failed to launch page for dbNum", "dbNum", change.dbNum, "error", err)
 			}
 		}
 		slog.Info("886")
