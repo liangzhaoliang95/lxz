@@ -32,6 +32,7 @@ func printInfo(*cobra.Command, []string) error {
 	printTuple(fmat, "Skins", config.AppSkinsDir, color.Cyan)
 	printTuple(fmat, "Logs", config.AppLogFile, color.Cyan)
 	printTuple(fmat, "DatabaseConfig", config.AppDatabaseConfigFile, color.Cyan)
+	printTuple(fmat, "RedisConfig", config.AppRedisConfigFile, color.Cyan)
 
 	return nil
 }

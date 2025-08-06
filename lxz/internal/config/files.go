@@ -69,6 +69,9 @@ var (
 
 	// AppDatabaseConfigFile tracks LXZ database config file.
 	AppDatabaseConfigFile string
+
+	// AppRedisConfigFile tracks LXZ redis config file.
+	AppRedisConfigFile string
 )
 
 // InitLogLoc initializes LXZ logs location.
@@ -132,6 +135,7 @@ func initLxzEnvLocs() error {
 	}
 	AppConfigFile = filepath.Join(AppConfigDir, data.MainConfigFile)
 	AppDatabaseConfigFile = filepath.Join(AppConfigDir, data.AppDatabaseConfigFile)
+	AppRedisConfigFile = filepath.Join(AppConfigDir, data.AppRedisConfigFile)
 	AppHotKeysFile = filepath.Join(AppConfigDir, "hotkeys.yaml")
 	AppAliasesFile = filepath.Join(AppConfigDir, "aliases.yaml")
 	AppPluginsFile = filepath.Join(AppConfigDir, "plugins.yaml")
@@ -174,8 +178,12 @@ func initXDGLocs() error {
 	}
 
 	// --- 以下是具体应用的相关配置
+
 	// 数据库管理配置文件路径
 	AppDatabaseConfigFile = filepath.Join(AppConfigDir, data.AppDatabaseConfigFile)
+
+	// Redis配置文件路径
+	AppRedisConfigFile = filepath.Join(AppConfigDir, data.AppRedisConfigFile)
 
 	// 检查配置文件夹
 	_, err = xdg.DataFile(AppName)

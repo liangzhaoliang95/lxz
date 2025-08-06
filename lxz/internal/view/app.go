@@ -122,7 +122,7 @@ func (a *App) menuPageChange(evt *tcell.EventKey) *tcell.EventKey {
 			pageName = comp.Name()
 		}
 	case tcell.KeyF3:
-		comp := NewRedisBrowser()
+		comp := NewRedisBrowser(a)
 		if err := a.inject(comp, true); err != nil {
 			slog.Error("Failed to inject Redis component", slogs.Error, err)
 		} else {
@@ -290,7 +290,7 @@ func (a *App) Run() error {
 			a.UI.Main.SwitchToPage("main")
 
 			// 定位到第一个功能
-			a.inject(NewDatabaseBrowser(a), true)
+			a.inject(NewRedisBrowser(a), true)
 		})
 	}()
 

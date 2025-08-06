@@ -22,6 +22,7 @@ const (
 	// MainConfigFile track main configuration file.
 	MainConfigFile        = "config.yaml"
 	AppDatabaseConfigFile = "app_database_config.yaml" // 数据库应用的配置文件名称
+	AppRedisConfigFile    = "app_redis_config.yaml"    // Redis应用的配置文件名称
 )
 
 // KubeSettings exposes kubeconfig context information.

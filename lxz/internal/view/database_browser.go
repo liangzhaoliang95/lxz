@@ -207,8 +207,9 @@ func (_this *DatabaseBrowser) startConnect(evt *tcell.EventKey) *tcell.EventKey 
 	slog.Info("Starting connection...")
 	_this._getCurrentSelectKey()
 	// 初始化main页面
-	mainPage := NewDatabaseMainPage(_this.app, _this.connMap[_this.selectKey])
 	loading := dialog.ShowLoadingDialog(appViewInstance.Content.Pages, "", appUiInstance.ForceDraw)
+
+	mainPage := NewDatabaseMainPage(_this.app, _this.connMap[_this.selectKey])
 	_this.app.inject(mainPage, false)
 	loading.Hide()
 	return nil

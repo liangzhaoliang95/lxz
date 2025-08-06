@@ -55,11 +55,8 @@ func GetConnectOrInit(cfg *config.DBConnection) (IDatabaseConn, error) {
 	}()
 
 	key := cfg.GetUniqKey()
-	slog.Debug("attempting to load DB connection", "key", key)
-
 	if db, exists := connMap.Load(key); exists {
 		if conn, ok := db.(IDatabaseConn); ok {
-			slog.Info("reusing existing database connection", "key", key)
 			return conn, nil
 		} else {
 			return nil, fmt.Errorf("invalid type stored in connMap for key %s", key)

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright Authors of K9s
+
 package dialog
 
 import (
@@ -7,20 +10,20 @@ import (
 	"lxz/internal/ui"
 )
 
-type DeleteDatabaseConnectionFn func(key string) bool
+type DeleteRedisConnectionFn func(key string) bool
 
-type DeleteDatabaseConnectionOpts struct {
+type DeleteRedisConnectionOpts struct {
 	Title, Message string
-	DBConnection   *config.DBConnection
+	Config         *config.RedisConnConfig
 	Ack            DeleteDatabaseConnectionFn
 	Cancel         cancelFunc
 	SelectKey      string
 }
 
-func ShowDeleteCreateDatabaseConnection(
+func ShowDeleteRedisConnection(
 	styles *config.Dialog,
 	pages *ui.Pages,
-	opts *DeleteDatabaseConnectionOpts,
+	opts *DeleteRedisConnectionOpts,
 ) {
 	f := newBaseModelForm(styles)
 
