@@ -87,14 +87,7 @@ func (a *App) Menu() *Menu {
 }
 
 func (a *App) bindKeys() {
-	a.actions = NewKeyActionsFromMap(KeyMap{
-		// 激活命令行模式
-		//KeyColon:       NewKeyAction("Cmd", a.activateCmd, false),
-		//tcell.KeyCtrlR: NewKeyAction("Redraw", a.redrawCmd, false),
-		//tcell.KeyCtrlP: NewKeyAction("Persist", a.saveCmd, false),
-		//tcell.KeyCtrlU: NewSharedKeyAction("Clear Filter", a.clearCmd, false),
-		//tcell.KeyCtrlQ: NewSharedKeyAction("Clear Filter", a.clearCmd, false),
-	})
+	a.actions = NewKeyActionsFromMap(KeyMap{})
 }
 
 // StylesChanged notifies the skin changed.

@@ -18,10 +18,10 @@ import (
 const maxRow = 4
 
 const (
-	SSH_CONNECT_ID  = "SSH_CONNECT"
-	FILE_BROWSER_ID = "FILE_BROWSER"
-	GIT_RELEASE_ID  = "GIT_RELEASE"
-	DB_BROWSER_ID   = "DB_BROWSER"
+	SSH_CONNECT_ID   = "SSH_CONNECT"
+	FILE_BROWSER_ID  = "FILE_BROWSER"
+	DB_BROWSER_ID    = "DB_BROWSER"
+	REDIS_BROWSER_ID = "REDIS_BROWSER"
 )
 
 var menuMap = map[string]map[string]string{
@@ -36,8 +36,8 @@ var menuMap = map[string]map[string]string{
 		"sort": "2",
 	},
 	"<F3>": {
-		"name": "🦊 Git Release",
-		"id":   GIT_RELEASE_ID,
+		"name": "🎯 Redis Browser",
+		"id":   REDIS_BROWSER_ID,
 		"sort": "3",
 	},
 	"<F4>": {

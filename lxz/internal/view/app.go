@@ -122,9 +122,9 @@ func (a *App) menuPageChange(evt *tcell.EventKey) *tcell.EventKey {
 			pageName = comp.Name()
 		}
 	case tcell.KeyF3:
-		comp := NewGitRelease()
+		comp := NewRedisBrowser()
 		if err := a.inject(comp, true); err != nil {
-			slog.Error("Failed to inject GitRelease component", slogs.Error, err)
+			slog.Error("Failed to inject Redis component", slogs.Error, err)
 		} else {
 			changeSuccess = true
 			pageName = comp.name
@@ -132,7 +132,7 @@ func (a *App) menuPageChange(evt *tcell.EventKey) *tcell.EventKey {
 	case tcell.KeyF4:
 		comp := NewDatabaseBrowser(a)
 		if err := a.inject(comp, true); err != nil {
-			slog.Error("Failed to inject GitRelease component", slogs.Error, err)
+			slog.Error("Failed to inject RedisBrowser component", slogs.Error, err)
 		} else {
 			changeSuccess = true
 			pageName = comp.Name()
@@ -163,7 +163,7 @@ func (a *App) bindKeys() {
 		tcell.KeyEscape: ui.NewSharedKeyAction("Go Back", a.PrevCmd, false),
 		tcell.KeyF1:     ui.NewSharedKeyAction("SSH Connect", a.menuPageChange, false),
 		tcell.KeyF2:     ui.NewSharedKeyAction("File Browser", a.menuPageChange, false),
-		tcell.KeyF3:     ui.NewSharedKeyAction("Git Release", a.menuPageChange, false),
+		tcell.KeyF3:     ui.NewSharedKeyAction("Redis Browser", a.menuPageChange, false),
 		tcell.KeyF4:     ui.NewSharedKeyAction("DB Browser", a.menuPageChange, false),
 	}))
 }
