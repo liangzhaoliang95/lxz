@@ -190,3 +190,57 @@ func (_this *MySQLDriver) GetRecords(
 
 	return paginatedResults, totalRecords, nil
 }
+
+func (_this *MySQLDriver) ExecuteQuery(query string) ([][]string, int, error) {
+
+	if _this.dbConn == nil {
+		err := _this.InitConnect()
+		if err != nil {
+			return nil, 0, err
+		}
+	}
+
+	sqlDB, err := _this.dbConn.DB()
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to get sql.DB from gorm.DB: %w", err)
+	}
+
+	rows, err := sqlDB.Query(query)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	columns, err := rows.Columns()
+	if err != nil {
+		return nil, 0, err
+	}
+
+	records := make([][]string, 0)
+	for rows.Next() {
+		rowValues := make([]interface{}, len(columns))
+		for i := range columns {
+			rowValues[i] = new(sql.RawBytes)
+		}
+
+		err = rows.Scan(rowValues...)
+		if err != nil {
+			return nil, 0, err
+		}
+
+		var row []string
+		for _, col := range rowValues {
+			row = append(row, string(*col.(*sql.RawBytes)))
+		}
+
+		records = append(records, row)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, 0, err
+	}
+
+	// Prepend the columns to the records.
+	results := append([][]string{columns}, records...)
+
+	return results, len(records), nil
+}

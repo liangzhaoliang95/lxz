@@ -24,7 +24,7 @@ import (
 )
 
 type SshConnect struct {
-	*ui.BaseFlex
+	*BaseFlex
 	app       *App
 	envMap    map[string][]HostItem
 	envOrder  []string
@@ -374,7 +374,7 @@ func expandIncludes(line string) []string {
 func NewSshConnect(app *App) *SshConnect {
 	var name = "SSH Connect"
 	tc := &SshConnect{
-		BaseFlex: ui.NewBaseFlex(name),
+		BaseFlex: NewBaseFlex(name),
 		app:      app,
 	}
 	tc.SetIdentifier(ui.SSH_CONNECT_ID)

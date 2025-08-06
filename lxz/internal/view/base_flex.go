@@ -3,7 +3,7 @@
  * @date  2025/7/31 16:23
  */
 
-package ui
+package view
 
 import (
 	"fmt"
@@ -12,13 +12,14 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"log/slog"
 	"lxz/internal/model"
+	"lxz/internal/ui"
 	"lxz/internal/view/base"
 	"lxz/internal/view/cmd"
 )
 
 type BaseFlex struct {
 	*tview.Flex
-	actions    *KeyActions
+	actions    *ui.KeyActions
 	identity   string // 用于标识该Flex的唯一性
 	name       string
 	fullScreen bool
@@ -28,7 +29,7 @@ func (_this *BaseFlex) Name() string {
 	return _this.name
 }
 
-func (_this *BaseFlex) Actions() *KeyActions {
+func (_this *BaseFlex) Actions() *ui.KeyActions {
 	return _this.actions
 }
 
@@ -60,6 +61,10 @@ func (_this *BaseFlex) SetCommand(interpreter *cmd.Interpreter) {
 }
 
 func (_this *BaseFlex) ToggleFullScreenCmd(evt *tcell.EventKey) *tcell.EventKey {
+	if ui.IsInputPrimitive(appUiInstance.GetFocus()) {
+		return evt
+	}
+
 	if evt.Key() == tcell.KeyEscape {
 		if _this.fullScreen {
 			_this.fullScreen = false
@@ -69,7 +74,7 @@ func (_this *BaseFlex) ToggleFullScreenCmd(evt *tcell.EventKey) *tcell.EventKey 
 		_this.fullScreen = !_this.fullScreen
 		_this.SetFullScreen(_this.fullScreen)
 	}
-	return evt
+	return nil
 }
 
 func (_this *BaseFlex) EmptyKeyEvent(evt *tcell.EventKey) *tcell.EventKey {
@@ -89,7 +94,7 @@ func (_this *BaseFlex) Keyboard(evt *tcell.EventKey) *tcell.EventKey {
 		evt.Modifiers(),
 	)
 
-	if a, ok := _this.Actions().Get(AsKey(evt)); ok {
+	if a, ok := _this.Actions().Get(ui.AsKey(evt)); ok {
 		return a.Action(evt)
 	}
 
@@ -108,7 +113,7 @@ func NewBaseFlex(name string) *BaseFlex {
 	b := &BaseFlex{
 		Flex:    tview.NewFlex(),
 		name:    name,
-		actions: NewKeyActions(),
+		actions: ui.NewKeyActions(),
 	}
 	b.SetDirection(tview.FlexColumn)
 	b.SetBorder(true).

@@ -4,6 +4,7 @@ package view
 
 import (
 	"context"
+	"fmt"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 	"log/slog"
@@ -17,7 +18,7 @@ type tableChangeSubscribe struct {
 }
 
 type DatabaseMainPage struct {
-	*ui.BaseFlex
+	*BaseFlex
 	app             *App                      // 应用实例
 	tableChangeChan chan tableChangeSubscribe // 用于接收表数据变更的消息
 	// 数据库连接配置
@@ -41,20 +42,23 @@ func (_this *DatabaseMainPage) TabFocusChange(event *tcell.EventKey) *tcell.Even
 func (_this *DatabaseMainPage) ToggleSearch(evt *tcell.EventKey) *tcell.EventKey {
 	// 触发搜索功能
 	slog.Info("Search triggered", "event", evt)
-	// 将焦点定位到输入框上
-	_this.tableView.tableComponents[_this.tableView.currentPageKey].focusSearch()
+	currentPage := _this.tableView.tableComponents[_this.tableView.currentPageKey]
+	if currentPage == nil {
+		appUiInstance.Flash().Err(fmt.Errorf("select one table first"))
+	} else {
+		// 将焦点定位到输入框上
+		_this.tableView.tableComponents[_this.tableView.currentPageKey].focusSearch()
+	}
 	return nil
 
 }
 
 func (_this *DatabaseMainPage) bindKeys() {
 	_this.Actions().Bulk(ui.KeyMap{
-		ui.KeyF:     ui.NewKeyAction("FullScreen", _this.ToggleFullScreenCmd, true),
-		ui.KeySlash: ui.NewKeyAction("Search", _this.ToggleSearch, true),
-		//tcell.KeyCtrlN:  ui.NewKeyAction("Create File", _this.fileCtrl, true),
-		//tcell.KeyCtrlD:  ui.NewKeyAction("Delete File", _this.fileCtrl, true),
-		//tcell.KeyCtrlR:  ui.NewKeyAction("Rename File", _this.fileCtrl, true),
-		tcell.KeyEscape: ui.NewKeyAction("Quit FullScreen", _this.ToggleFullScreenCmd, false),
+		ui.KeyF:         ui.NewKeyAction("FullScreen", _this.ToggleFullScreenCmd, true),
+		ui.KeySlash:     ui.NewKeyAction("Search", _this.ToggleSearch, true),
+		tcell.KeyCtrlO:  ui.NewKeyAction("Open Query Page", _this.goToQueryPage, true),
+		tcell.KeyEscape: ui.NewKeyAction("Last Page", _this.EmptyKeyEvent, true),
 		tcell.KeyTAB:    ui.NewKeyAction("Focus Change", _this.TabFocusChange, true),
 		//tcell.KeyEnter:  ui.NewKeyAction("Preview", _this.TabFocusChange, true),
 		//tcell.KeyLeft:   ui.NewKeyAction("Focus Change", _this.TabFocusChange, false),
@@ -62,16 +66,34 @@ func (_this *DatabaseMainPage) bindKeys() {
 	})
 }
 
+func (_this *DatabaseMainPage) goToQueryPage(evt *tcell.EventKey) *tcell.EventKey {
+
+	// 跳到手动查询页面
+	_this.app.inject(NewDatabaseQueryView(_this.app, _this.dbConnCfg), false)
+	return nil
+}
+
 func (_this *DatabaseMainPage) Init(ctx context.Context) error {
+	slog.Info("DatabaseMainPage Init")
 	_this.bindKeys()
 	_this.SetInputCapture(_this.Keyboard)
 
 	// 左侧数据库列表
 	_this.dbTree = NewDatabaseDbTree(_this.app, _this.dbConnCfg, _this.tableChangeChan)
+	err := _this.dbTree.Init(context.Background())
+	if err != nil {
+		_this.app.UI.Flash().Err(err)
+		return err
+	}
 	_this.AddItem(_this.dbTree, 0, 3, true)
 
 	// 初始化右侧的表格视图
 	_this.tableView = NewDatabaseTableView(_this.app, _this.dbConnCfg, _this.tableChangeChan)
+	err = _this.tableView.Init(context.Background())
+	if err != nil {
+		_this.app.UI.Flash().Err(err)
+		return err
+	}
 	_this.AddItem(_this.tableView, 0, 10, false)
 	return nil
 }
@@ -80,20 +102,10 @@ func (_this *DatabaseMainPage) Start() {
 	slog.Info("DatabaseMainPage Start")
 
 	// 启动数据库树的初始化
-	err := _this.dbTree.Init(context.Background())
-	if err != nil {
-		_this.app.UI.Flash().Err(err)
-	} else {
-		_this.dbTree.Start()
-	}
+	_this.dbTree.Start()
 
 	// 启动表格视图的初始化
-	err = _this.tableView.Init(context.Background())
-	if err != nil {
-		_this.app.UI.Flash().Err(err)
-	} else {
-		_this.tableView.Start()
-	}
+	_this.tableView.Start()
 }
 
 func (_this *DatabaseMainPage) Stop() {
@@ -103,7 +115,7 @@ func (_this *DatabaseMainPage) Stop() {
 func NewDatabaseMainPage(a *App, dbConnCfg *config.DBConnection) *DatabaseMainPage {
 	var name = "Table View"
 	lp := DatabaseMainPage{
-		BaseFlex:        ui.NewBaseFlex(name),
+		BaseFlex:        NewBaseFlex(name),
 		app:             a,
 		dbConnCfg:       dbConnCfg,
 		tableChangeChan: make(chan tableChangeSubscribe, 10), // 初始化消息通道

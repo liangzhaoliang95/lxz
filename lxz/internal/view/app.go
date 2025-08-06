@@ -29,7 +29,8 @@ const (
 	clusterInfoPad   = 15
 )
 
-var appInstance *App
+var appViewInstance *App
+var appUiInstance *ui.App
 
 // App represents the application view layer.
 type App struct {
@@ -56,7 +57,8 @@ func NewApp(cfg *config.Config) *App {
 	// 集群信息组件
 	//a.UI.Views()["clusterInfo"] = NewClusterInfo(&a)
 	slog.Info("LXZ 目前只完成了实例的初始化")
-	appInstance = &a
+	appViewInstance = &a
+	appUiInstance = a.UI
 	return &a
 }
 

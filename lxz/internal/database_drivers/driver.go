@@ -18,6 +18,7 @@ type IDatabaseConn interface {
 	GetDbList() ([]string, error)
 	GetTableList(dbName string) ([]string, error)
 	GetRecords(database, table, where, sort string, offset, limit int) ([][]string, int, error)
+	ExecuteQuery(query string) ([][]string, int, error)
 }
 
 // ---helpers

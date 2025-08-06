@@ -19,7 +19,7 @@ import (
 
 // GitRelease 项目Release视图
 type GitRelease struct {
-	*ui.BaseFlex
+	*BaseFlex
 	actions    *ui.KeyActions
 	name       string
 	fullScreen bool
@@ -120,7 +120,7 @@ func (p *GitRelease) toggleFullScreenCmd(evt *tcell.EventKey) *tcell.EventKey {
 func NewGitRelease() *GitRelease {
 	var name = "Git Release"
 	tc := &GitRelease{
-		BaseFlex: ui.NewBaseFlex(name),
+		BaseFlex: NewBaseFlex(name),
 		name:     name,
 		actions:  ui.NewKeyActions(),
 	}

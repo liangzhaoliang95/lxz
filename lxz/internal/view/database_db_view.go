@@ -13,12 +13,11 @@ import (
 	"log/slog"
 	"lxz/internal/config"
 	"lxz/internal/database_drivers"
-	"lxz/internal/ui"
 	"lxz/internal/view/base"
 )
 
 type DatabaseDbTree struct {
-	*ui.BaseFlex
+	*BaseFlex
 	app             *App
 	tableChangeChan chan tableChangeSubscribe // 用于订阅表变化的通道
 	// 数据库
@@ -137,7 +136,7 @@ func NewDatabaseDbTree(
 ) *DatabaseDbTree {
 	var name = dbCfg.Name
 	lp := DatabaseDbTree{
-		BaseFlex:        ui.NewBaseFlex(name),
+		BaseFlex:        NewBaseFlex(name),
 		app:             a,
 		dbCfg:           dbCfg,
 		tableChangeChan: tableChangeChan,

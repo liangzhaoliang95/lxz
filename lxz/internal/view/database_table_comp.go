@@ -13,13 +13,12 @@ import (
 	"log/slog"
 	"lxz/internal/config"
 	"lxz/internal/database_drivers"
-	"lxz/internal/ui"
 	"lxz/internal/view/base"
 	"strings"
 )
 
 type DatabaseTableComponent struct {
-	*ui.BaseFlex
+	*BaseFlex
 	app       *App
 	dbName    string // 数据库名称
 	tableName string // 表名称
@@ -113,11 +112,15 @@ func (_this *DatabaseTableComponent) Init(ctx context.Context) error {
 				)
 				_this.app.UI.Flash().
 					Err(fmt.Errorf("%w", err))
+
+				// 焦点切换到表格
+				_this.focusSearch()
 			} else {
 				_this.SetTableData(records)
+
+				// 焦点切换到表格
+				_this.focusTable()
 			}
-			// 焦点切换到表格
-			_this.focusTable()
 		case tcell.KeyEscape:
 
 		}
@@ -169,7 +172,7 @@ func (_this *DatabaseTableComponent) Stop() {
 
 // --- data helpers ---
 
-func (_this *DatabaseTableComponent) AddRows(rows [][]string) {
+func TableAddRows(tableView *tview.Table, rows [][]string) {
 	for i, row := range rows {
 		for j, cell := range row {
 			tableCell := tview.NewTableCell(cell)
@@ -188,7 +191,7 @@ func (_this *DatabaseTableComponent) AddRows(rows [][]string) {
 			tableCell.SetSelectable(i > 0)
 			tableCell.SetExpansion(1)
 
-			_this.dataTable.SetCell(i, j, tableCell)
+			tableView.SetCell(i, j, tableCell)
 		}
 	}
 }
@@ -197,9 +200,8 @@ func (_this *DatabaseTableComponent) AddRows(rows [][]string) {
 func (_this *DatabaseTableComponent) SetTableData(rows [][]string) {
 	// 清空旧数据
 	_this.dataTable.Clear()
-	_this.AddRows(rows)
+	TableAddRows(_this.dataTable, rows)
 	_this.dataTable.Select(1, 1)
-	_this.app.UI.ForceDraw()
 }
 
 func NewDatabaseTableComponent(
@@ -210,7 +212,7 @@ func NewDatabaseTableComponent(
 ) *DatabaseTableComponent {
 	var name = ""
 	lp := DatabaseTableComponent{
-		BaseFlex:  ui.NewBaseFlex(name),
+		BaseFlex:  NewBaseFlex(name),
 		app:       a,
 		dbName:    dbName,
 		tableName: tableName,

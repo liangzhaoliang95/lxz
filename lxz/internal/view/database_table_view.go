@@ -11,13 +11,12 @@ import (
 	"github.com/rivo/tview"
 	"log/slog"
 	"lxz/internal/config"
-	"lxz/internal/ui"
 	"lxz/internal/ui/dialog"
 	"lxz/internal/view/base"
 )
 
 type DatabaseTableView struct {
-	*ui.BaseFlex
+	*BaseFlex
 	tableChangeChan chan tableChangeSubscribe // 表格数据变更订阅通道
 	app             *App
 	dbCfg           *config.DBConnection               // 数据库连接配置
@@ -42,9 +41,9 @@ func (_this *DatabaseTableView) LunchPage(dbName, tableName string) error {
 	slog.Info("Launching page for table", "tableName", tableName, "dbName", dbName)
 
 	loading := dialog.ShowLoadingDialog(
-		appInstance.Content.Pages,
+		appViewInstance.Content.Pages,
 		"",
-		appInstance.UI.ForceDraw,
+		appUiInstance.ForceDraw,
 	)
 	pageKey := fmt.Sprintf("%s-%s", dbName, tableName)
 	if _, ok := _this.tableComponents[pageKey]; !ok {
@@ -68,7 +67,7 @@ func (_this *DatabaseTableView) LunchPage(dbName, tableName string) error {
 
 	loading.Hide()
 	_this.selfFocus()
-	appInstance.UI.ForceDraw()
+	appUiInstance.ForceDraw()
 	return nil
 
 }
@@ -119,7 +118,7 @@ func NewDatabaseTableView(
 ) *DatabaseTableView {
 	var name = "Table View"
 	lp := DatabaseTableView{
-		BaseFlex:        ui.NewBaseFlex(name),
+		BaseFlex:        NewBaseFlex(name),
 		app:             a,
 		tablePages:      tview.NewPages(),
 		tableComponents: make(map[string]*DatabaseTableComponent),

@@ -25,7 +25,7 @@ import (
 )
 
 type FileBrowser struct {
-	*ui.BaseFlex
+	*BaseFlex
 	app              *App
 	rootDir          string
 	rootNode         *tview.TreeNode // 根目录节点
@@ -504,7 +504,7 @@ func openSystemEditor(path string) error {
 func NewFileBrowser(app *App) *FileBrowser {
 	var name = "File Browser"
 	f := &FileBrowser{
-		BaseFlex:         ui.NewBaseFlex(name),
+		BaseFlex:         NewBaseFlex(name),
 		app:              app,
 		debounceInterval: 200 * time.Millisecond,
 		stopDebounceCh:   make(chan struct{}),

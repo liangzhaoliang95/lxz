@@ -16,7 +16,7 @@ import (
 )
 
 type DatabaseBrowser struct {
-	*ui.BaseFlex
+	*BaseFlex
 	app       *App
 	config    *config.DatabaseConfig
 	connList  *tview.Table                    // connList 用于显示连接列表
@@ -208,7 +208,7 @@ func (_this *DatabaseBrowser) startConnect(evt *tcell.EventKey) *tcell.EventKey 
 	_this._getCurrentSelectKey()
 	// 初始化main页面
 	mainPage := NewDatabaseMainPage(_this.app, _this.connMap[_this.selectKey])
-	loading := dialog.ShowLoadingDialog(appInstance.Content.Pages, "", appInstance.UI.ForceDraw)
+	loading := dialog.ShowLoadingDialog(appViewInstance.Content.Pages, "", appUiInstance.ForceDraw)
 	_this.app.inject(mainPage, false)
 	loading.Hide()
 	return nil
@@ -431,7 +431,7 @@ func NewDatabaseBrowser(app *App) *DatabaseBrowser {
 		connMap[conn.GetUniqKey()] = conn
 	}
 	db := DatabaseBrowser{
-		BaseFlex: ui.NewBaseFlex("DB Connections"),
+		BaseFlex: NewBaseFlex("DB Connections"),
 		app:      app,
 		config:   databaseConfig,
 		connMap:  connMap,
