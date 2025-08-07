@@ -14,6 +14,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/go-redis/redis/v8"
 )
@@ -21,7 +22,7 @@ import (
 type RedisData struct {
 	KeyName  string
 	KetType  string
-	KeyTTL   int
+	KeyTTL   int64
 	KeyValue string
 }
 
@@ -227,4 +228,78 @@ func (_this *RedisClient) DeleteKey(key string) {
 			_this.rdb.Del(context.Background(), keys[i])
 		}
 	}
+}
+
+// GetKeyData 获取指定键的详细数据
+func (_this *RedisClient) GetKeyData(key string) (*RedisData, error) {
+	if key == "" {
+		return nil, fmt.Errorf("key cannot be empty")
+	}
+
+	keyValue, err := _this.GetKeyValue(key)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get key value: %w", err)
+	}
+
+	keyType, err := _this.GetKeyType(key)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get key type: %w", err)
+	}
+
+	keyTTL, err := _this.GetKeyTTL(key)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get key TTL: %w", err)
+	}
+
+	return &RedisData{
+		KeyName:  key,
+		KetType:  keyType,
+		KeyTTL:   keyTTL,
+		KeyValue: keyValue,
+	}, nil
+}
+
+// EditKeyData 编辑指定键的数据
+func (_this *RedisClient) EditKeyData(key string, data *RedisData) error {
+	slog.Info("Editing key data", "key", key, "data", data)
+	if key == "" || data == nil {
+		return fmt.Errorf("key and data cannot be empty")
+	}
+
+	// 设置键的值
+	if err := _this.rdb.Set(context.Background(), key, data.KeyValue, 0).Err(); err != nil {
+		return fmt.Errorf("failed to set key value: %w", err)
+	}
+
+	// 设置键的过期时间
+	if data.KeyTTL > 0 {
+		if err := _this.rdb.Expire(context.Background(), key, time.Duration(data.KeyTTL*1000*1000*1000)).Err(); err != nil {
+			return fmt.Errorf("failed to set key TTL: %w", err)
+		}
+	}
+
+	slog.Info("Key data edited successfully", "key", key, "data", data)
+	return nil
+}
+
+// CreateKeyData 创建新的键数据
+func (_this *RedisClient) CreateKeyData(data *RedisData) error {
+	if data == nil || data.KeyName == "" {
+		return fmt.Errorf("data and key name cannot be empty")
+	}
+
+	// 设置键的值
+	if err := _this.rdb.Set(context.Background(), data.KeyName, data.KeyValue, 0).Err(); err != nil {
+		return fmt.Errorf("failed to set key value: %w", err)
+	}
+
+	// 设置键的过期时间
+	if data.KeyTTL > 0 {
+		if err := _this.rdb.Expire(context.Background(), data.KeyName, time.Duration(data.KeyTTL*1000*1000*1000)).Err(); err != nil {
+			return fmt.Errorf("failed to set key TTL: %w", err)
+		}
+	}
+
+	slog.Info("Key data created successfully", "key", data.KeyName, "data", data)
+	return nil
 }

@@ -35,7 +35,54 @@ func (_this *RedisMainPage) bindKeys() {
 		tcell.KeyEscape: ui.NewKeyAction("Last Page", _this.EmptyKeyEvent, true),
 		tcell.KeyTAB:    ui.NewKeyAction("Focus Change", _this.TabFocusChange, true),
 		tcell.KeyCtrlD:  ui.NewKeyAction("Delete Key", _this.DeleteKey, true),
+		tcell.KeyCtrlN:  ui.NewKeyAction("Delete Key", _this.NewKey, true),
+		tcell.KeyCtrlR:  ui.NewKeyAction("Refresh", _this.Refresh, true),
+		ui.KeyE:         ui.NewKeyAction("Edit Key", _this.EditKey, true),
 	})
+}
+
+// Refresh 刷新当前页面
+func (_this *RedisMainPage) Refresh(event *tcell.EventKey) *tcell.EventKey {
+	slog.Info("Refreshing RedisMainPage")
+	// 刷新当前页面
+	currentCompPage := _this.dataViewUI.redisDataComponents[_this.dataViewUI.currentPageKey]
+	if currentCompPage == nil {
+		_this.app.UI.Flash().Err(fmt.Errorf("select one table first"))
+		return nil
+	}
+	// 刷新当前页面的表格数据
+	err := currentCompPage.refreshData()
+	if err != nil {
+		_this.app.UI.Flash().Err(err)
+		return nil
+	}
+	return event
+}
+
+// NewKey 创建一个新的键
+func (_this *RedisMainPage) NewKey(event *tcell.EventKey) *tcell.EventKey {
+	currentCompPage := _this.dataViewUI.redisDataComponents[_this.dataViewUI.currentPageKey]
+	if _this.app.UI.GetFocus() != currentCompPage.keyGroupTree {
+		_this.app.UI.Flash().Err(fmt.Errorf("please select a key first"))
+		return nil
+	}
+	// 当前焦点在键列表上，可以执行新建操作
+	// 给keyGroupTree组件发送新建键的命令
+	currentCompPage.newKey()
+	return nil
+}
+
+// EditKey 编辑当前选中的键
+func (_this *RedisMainPage) EditKey(event *tcell.EventKey) *tcell.EventKey {
+	currentCompPage := _this.dataViewUI.redisDataComponents[_this.dataViewUI.currentPageKey]
+	if _this.app.UI.GetFocus() != currentCompPage.keyGroupTree {
+		_this.app.UI.Flash().Err(fmt.Errorf("please select a key first"))
+		return nil
+	}
+	// 当前焦点在键列表上，可以执行编辑操作
+	// 给keyGroupTree组件发送编辑键的命令
+	currentCompPage.editKey()
+	return nil
 }
 
 // DeleteKey 删除当前选中的键

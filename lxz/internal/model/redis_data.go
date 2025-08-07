@@ -1,9 +1,6 @@
 package model
 
 import (
-	"fmt"
-	"log/slog"
-	"lxz/internal/helper"
 	"strings"
 )
 
@@ -51,7 +48,6 @@ func (_this *RedisData) GroupKeys() {
 		//curr.Type = typ
 	}
 	_this.Tree = root
-	slog.Info(fmt.Sprintf("RedisData GroupKeys:\n %s", helper.Prettify(_this.Tree)))
 }
 
 func NewRedisData(keys []string) *RedisData {

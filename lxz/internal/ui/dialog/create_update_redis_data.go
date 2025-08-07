@@ -14,7 +14,7 @@ import (
 	"strconv"
 )
 
-type CreateUpdateRedisDataFn func(connection *config.RedisConnConfig) bool
+type CreateUpdateRedisDataFn func(data *redis_drivers.RedisData) bool
 
 type CreateUpdateRedisDataOpts struct {
 	Title, Message string
@@ -30,7 +30,10 @@ func ShowCreateUpdateRedisData(
 ) {
 	f := newBaseModelForm(styles)
 
-	f.AddTextView("Type:", opts.Data.KetType, 0, 0, true, false)
+	f.AddTextArea("Key:", opts.Data.KeyName, 0, 2, 0, func(text string) {
+		opts.Data.KeyName = text
+	})
+	f.AddTextView("Type:", opts.Data.KetType, 0, 1, true, false)
 
 	f.AddInputField(
 		"TTL:",
@@ -38,39 +41,17 @@ func ShowCreateUpdateRedisData(
 		0,
 		tview.InputFieldInteger,
 		func(v string) {
-			opts.Config.Host = v
-		},
-	)
-
-	f.AddTextView("Value:", opts.Data.KeyValue, 0, nil, func(v string) {
-		opts.Config.Host = v
-	})
-
-	f.AddInputField(
-		"Port:",
-		fmt.Sprintf("%d", opts.Config.Port),
-		0,
-		tview.InputFieldInteger,
-		func(v string) {
-			port, err := strconv.Atoi(v)
+			ttl, err := strconv.ParseInt(v, 10, 64)
 			if err != nil {
 				slog.Error("Invalid port number", "port", v, "error", err)
+				return
 			}
-			opts.Config.Port = int64(port)
+			opts.Data.KeyTTL = ttl
 		},
 	)
 
-	f.AddInputField("UserName:", opts.Config.UserName, 0, nil, func(v string) {
-		opts.Config.UserName = v
-	})
-
-	f.AddInputField("Password:", opts.Config.Password, 0, nil, func(v string) {
-		opts.Config.Password = v
-	})
-
-	f.AddButton("Test", func() {
-		// 测试数据库能否连接
-		opts.Test(opts.Config)
+	f.AddTextArea("Value:", opts.Data.KeyValue, 0, 3, 0, func(v string) {
+		opts.Data.KeyValue = v
 	})
 
 	f.AddButton("Cancel", func() {
@@ -79,13 +60,13 @@ func ShowCreateUpdateRedisData(
 	})
 
 	f.AddButton("OK", func() {
-		if !opts.Ack(opts.Config) {
+		if !opts.Ack(opts.Data) {
 			return
 		}
 		dismissConfirm(pages)
 		opts.Cancel()
 	})
-	for i := range 3 {
+	for i := range 2 {
 		b := f.GetButton(i)
 		if b == nil {
 			continue
