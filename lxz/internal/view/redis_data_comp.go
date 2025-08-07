@@ -12,9 +12,9 @@ import (
 	"github.com/rivo/tview"
 	"log/slog"
 	"lxz/internal/config"
+	"lxz/internal/drivers/redis_drivers"
 	"lxz/internal/helper"
 	"lxz/internal/model"
-	"lxz/internal/redis_drivers"
 	"lxz/internal/ui/dialog"
 	"lxz/internal/view/base"
 )

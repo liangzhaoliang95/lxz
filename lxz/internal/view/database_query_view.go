@@ -12,7 +12,7 @@ import (
 	"github.com/rivo/tview"
 	"log/slog"
 	"lxz/internal/config"
-	"lxz/internal/database_drivers"
+	"lxz/internal/drivers/database_drivers"
 	"lxz/internal/ui"
 	"lxz/internal/view/base"
 )

@@ -8,7 +8,7 @@ import (
 	"github.com/rivo/tview"
 	"log/slog"
 	"lxz/internal/config"
-	"lxz/internal/database_drivers"
+	"lxz/internal/drivers/database_drivers"
 	"lxz/internal/slogs"
 	"lxz/internal/ui"
 	"lxz/internal/ui/dialog"
