@@ -42,7 +42,6 @@ func (_this *DatabaseBrowser) Init(ctx context.Context) error {
 		// 获取选中的连接信息
 		if row < 1 || row >= _this.connList.GetRowCount() {
 			slog.Warn("Selected row is out of range", "row", row)
-			_this.app.UI.Flash().Warn("Please select a valid connection.")
 			return
 		}
 		connName := _this.connList.GetCell(row, 0).Text
@@ -54,7 +53,6 @@ func (_this *DatabaseBrowser) Init(ctx context.Context) error {
 		slog.Info("Selection changed", "row", row, "col", column)
 		if row < 1 || row >= _this.connList.GetRowCount() {
 			slog.Warn("Selection changed row is out of range", "row", row)
-			_this.app.UI.Flash().Warn("Please select a valid connection.")
 			return
 		}
 	})

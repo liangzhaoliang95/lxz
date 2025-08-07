@@ -15,6 +15,7 @@ import (
 	"lxz/internal/helper"
 	"lxz/internal/model"
 	"lxz/internal/redis_drivers"
+	"lxz/internal/ui/dialog"
 	"lxz/internal/view/base"
 )
 
@@ -40,6 +41,24 @@ type RedisDataComponent struct {
 	KeyType     *tview.TextView // 键类型
 	keyTTL      *tview.TextView // 键的TTL
 	KeyValue    *tview.TextView // 键的内容
+}
+
+func (_this *RedisDataComponent) deleteKey() {
+	// 获取当前选中的键
+	selectedNode := _this.keyGroupTree.GetCurrentNode()
+	slog.Info("deleteKey", "selectedNode", selectedNode)
+	key := selectedNode.GetReference().(string)
+	dialog.ShowDelete(&config.Dialog{}, _this.app.Content.Pages, key, func(force bool) {
+		_this.rdbClient.DeleteKey(key)
+		parent := selectedNode.GetParentNode()
+		parent.RemoveChild(selectedNode)
+
+		_this.focusKeyGroupTree()
+	}, func() {
+
+		_this.focusKeyGroupTree()
+	})
+
 }
 
 func (_this *RedisDataComponent) focusSearch() {
@@ -154,7 +173,13 @@ func (_this *RedisDataComponent) Init(ctx context.Context) error {
 	_this.keyGroupTree.SetTopLevel(1)
 	_this.keyGroupTree.SetSelectedFunc(func(node *tview.TreeNode) {
 		selectName := node.GetText()
-		slog.Info("redis key group selected Node", "selectName", selectName, "level", node.GetLevel())
+		slog.Info(
+			"redis key group selected Node",
+			"selectName",
+			selectName,
+			"level",
+			node.GetLevel(),
+		)
 		if len(node.GetChildren()) > 0 {
 			// 如果节点已经有子节点，直接返回
 			node.SetExpanded(!node.IsExpanded())
@@ -196,11 +221,19 @@ func (_this *RedisDataComponent) Init(ctx context.Context) error {
 
 		}
 	})
+	_this.keyGroupTree.SetFocusFunc(func() {
+		// 设置当前焦点为键分组树
+		_this.keyGroupTree.SetBorderColor(base.ActiveBorderColor)
+	})
+	_this.keyGroupTree.SetBlurFunc(func() {
+		// 设置当前焦点为键分组树
+		_this.keyGroupTree.SetBorderColor(base.InactiveBorderColor)
+	})
 	_this.keyGroupFlex.AddItem(_this.keyGroupTree, 0, 1, true)
 
 	// 初始化keyInfoForm
 	_this.keyInfoFlex = tview.NewFlex()
-	_this.keyInfoFlex.SetBorder(true)
+	_this.keyInfoFlex.SetBorder(false)
 	_this.keyInfoFlex.SetDirection(tview.FlexRow)
 	_this.keyGroupFlex.AddItem(_this.keyInfoFlex, 0, 1, true)
 
@@ -230,6 +263,14 @@ func (_this *RedisDataComponent) Init(ctx context.Context) error {
 	_this.KeyValue.SetBorder(true)
 	_this.KeyValue.SetTitle("CONTENT")
 	_this.KeyValue.SetTitleAlign(tview.AlignCenter)
+	_this.KeyValue.SetFocusFunc(func() {
+		// 设置当前焦点为键分组树
+		_this.KeyValue.SetBorderColor(base.ActiveBorderColor)
+	})
+	_this.KeyValue.SetBlurFunc(func() {
+		// 设置当前焦点为键分组树
+		_this.KeyValue.SetBorderColor(base.InactiveBorderColor)
+	})
 	_this.keyInfoFlex.AddItem(_this.KeyValue, 0, 1, false)
 
 	return nil
@@ -257,12 +298,15 @@ func _setTreeNodeData(node *tview.TreeNode, data *model.RedisGroupTree) {
 			// 如果有根路径，则拼接完整路径
 			fullPath = fmt.Sprintf("%s:%s", rootPath, child.Name)
 		}
-		slog.Info("fullPath", "fullPath", fullPath, "childName", child.Name)
+
 		childNode := tview.NewTreeNode(child.Name).
 			SetColor(tcell.ColorGold).
 			SetSelectable(true).
 			SetExpanded(false)
 		childNode.SetReference(fullPath)
+		if len(child.Children) > 0 {
+			childNode.SetColor(tcell.ColorGreen)
+		}
 		node.AddChild(childNode)
 		_setTreeNodeData(childNode, child)
 	}

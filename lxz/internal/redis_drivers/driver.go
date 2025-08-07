@@ -12,6 +12,7 @@ import (
 	"log/slog"
 	"lxz/internal/config"
 	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/go-redis/redis/v8"
@@ -137,6 +138,35 @@ func (_this *RedisClient) GetRecords(key string) ([]string, error) {
 
 }
 
+// GetHasKeyDbNum 获取有 key 的 Redis 数据库编号（如 0、1、2...）
+func (_this *RedisClient) GetHasKeyDbNum() ([]int, error) {
+	// 使用 INFO keyspace 获取非空数据库信息
+	result, err := _this.rdb.Info(context.Background(), "keyspace").Result()
+	if err != nil {
+		return nil, err
+	}
+
+	var hasKeyDbs []int
+
+	lines := strings.Split(result, "\n")
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if strings.HasPrefix(line, "db") {
+			// 如 "db0:keys=12,expires=0,avg_ttl=0"
+			parts := strings.SplitN(line, ":", 2)
+			if len(parts) != 2 {
+				continue
+			}
+			dbName := parts[0] // e.g. db0
+			dbIndex := strings.TrimPrefix(dbName, "db")
+			dbNum, _ := strconv.Atoi(dbIndex)
+			hasKeyDbs = append(hasKeyDbs, dbNum)
+		}
+	}
+
+	return hasKeyDbs, nil
+}
+
 // GetDBKeyNum 获取指定数据库的键数量
 func (_this *RedisClient) GetDBKeyNum() (int64, error) {
 	val, err := _this.rdb.DBSize(context.Background()).Result()
@@ -180,4 +210,14 @@ func (_this *RedisClient) GetKeyTTL(key string) (int64, error) {
 	}
 	slog.Info("Key TTL retrieved successfully", "key", key, "ttl", ttl.Seconds())
 	return int64(ttl.Seconds()), nil
+}
+
+// DeleteKey 删除指定键
+func (_this *RedisClient) DeleteKey(key string) {
+	keys, err := _this.GetRecords(key)
+	if err != nil {
+		for i := 0; i < len(keys); i++ {
+			_this.rdb.Del(context.Background(), keys[i])
+		}
+	}
 }

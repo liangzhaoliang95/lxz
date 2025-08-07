@@ -58,6 +58,9 @@ func (_this *RedisDbListView) Init(ctx context.Context) error {
 	}
 	_this.dbNum = dbNum
 
+	// 获取真实有key的数据库
+	hasKeyDbs, err := rdbClient.GetHasKeyDbNum()
+
 	// 使用并发处理
 	wg := sync.WaitGroup{}
 
@@ -66,13 +69,19 @@ func (_this *RedisDbListView) Init(ctx context.Context) error {
 		go func(dbIndex int) {
 			defer wg.Done()
 			var dbSize int64
-			// 初始化数据库连接
-			conn, err := redis_drivers.GetConnectOrInit(_this.connConfig, i)
-			if err != nil {
+			// 如果当前数据库没有key，直接跳过
+			if !helper.Contains(hasKeyDbs, dbIndex) {
 				dbSize = 0
 			} else {
-				dbSize, err = conn.GetDBKeyNum()
+				// 初始化数据库连接
+				conn, err := redis_drivers.GetConnectOrInit(_this.connConfig, i)
+				if err != nil {
+					dbSize = 0
+				} else {
+					dbSize, err = conn.GetDBKeyNum()
+				}
 			}
+
 			_this._setDbKeyNumMap(fmt.Sprintf("%d", i), dbSize)
 		}(i)
 	}
@@ -91,7 +100,6 @@ func (_this *RedisDbListView) Init(ctx context.Context) error {
 		slog.Info("Selection changed", "row", row, "col", column)
 		if row < 1 || row >= _this.dbListUI.GetRowCount() {
 			slog.Warn("Selection changed row is out of range", "row", row)
-			_this.app.UI.Flash().Warn("Please select a valid connection.")
 			return
 		}
 	})

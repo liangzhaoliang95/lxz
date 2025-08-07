@@ -150,7 +150,7 @@ func (a *App) menuPageChange(evt *tcell.EventKey) *tcell.EventKey {
 
 // PrevCmd pops the command stack.
 func (a *App) PrevCmd(*tcell.EventKey) *tcell.EventKey {
-	if !a.Content.IsLast() {
+	if !a.Content.IsLast() && !a.Content.IsTopDialog() {
 		a.Content.Pop()
 	}
 

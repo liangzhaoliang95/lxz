@@ -75,7 +75,7 @@ func (p *Pages) StackTop(top model.Component) {
 func (p *Pages) IsTopDialog() bool {
 	_, pa := p.GetFrontPage()
 	switch pa.(type) {
-	case *tview.Modal, *ModalList:
+	case *tview.Modal, *ModalList, *tview.ModalForm:
 		return true
 	default:
 		return false

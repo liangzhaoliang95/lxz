@@ -30,8 +30,6 @@ func ShowCreateRedisConnection(
 ) {
 	f := newBaseModelForm(styles)
 
-	modal := tview.NewModalForm("<"+opts.Title+">", f)
-
 	f.AddInputField("Name:", opts.Config.Name, 0, nil, func(v string) {
 		opts.Config.Name = v
 	})
@@ -89,6 +87,8 @@ func ShowCreateRedisConnection(
 	f.SetFocus(0)
 
 	message := opts.Message
+
+	modal := tview.NewModalForm("<"+opts.Title+">", f)
 	modal.SetText(message)
 	modal.SetTextColor(styles.FgColor.Color())
 	modal.SetDoneFunc(func(int, string) {

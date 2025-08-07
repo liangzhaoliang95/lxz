@@ -6,7 +6,6 @@ package dialog
 import (
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"lxz/internal/config"
 	"lxz/internal/ui"
 )
@@ -17,59 +16,22 @@ const (
 )
 
 type (
-	okFunc     func(propagation *metav1.DeletionPropagation, force bool)
+	okFunc     func(force bool)
 	cancelFunc func()
 )
 
-var propagationOptions []string = []string{
-	string(metav1.DeletePropagationBackground),
-	string(metav1.DeletePropagationForeground),
-	string(metav1.DeletePropagationOrphan),
-	noDeletePropagation,
-}
-
 // ShowDelete pops a resource deletion dialog.
 func ShowDelete(styles *config.Dialog, pages *ui.Pages, msg string, ok okFunc, cancel cancelFunc) {
-	propagation, force := "", false
-	f := tview.NewForm()
+	force := false
+	f := newBaseModelForm(styles)
 	f.SetItemPadding(0)
-	f.SetButtonsAlign(tview.AlignCenter).
-		SetButtonBackgroundColor(styles.ButtonBgColor.Color()).
-		SetButtonTextColor(styles.ButtonFgColor.Color()).
-		SetLabelColor(styles.LabelFgColor.Color()).
-		SetFieldTextColor(styles.FieldFgColor.Color())
-	f.AddDropDown(
-		"Propagation:",
-		propagationOptions,
-		defaultPropagationIdx,
-		func(_ string, optionIndex int) {
-			propagation = propagationOptions[optionIndex]
-		},
-	)
-	propField := f.GetFormItemByLabel("Propagation:").(*tview.DropDown)
-	unselectedStyle := tcell.Style{}.Foreground(styles.FgColor.Color()).
-		Background(styles.BgColor.Color())
-	selectedStyle := tcell.Style{}.Foreground(styles.FgColor.Color()).
-		Background(styles.BgColor.Color())
-	propField.SetListStyles(
-		unselectedStyle,
-		selectedStyle,
-	)
-	f.AddCheckbox("Force:", force, func(checked bool) {
-		force = checked
-	})
+
 	f.AddButton("Cancel", func() {
 		dismiss(pages)
 		cancel()
 	})
 	f.AddButton("OK", func() {
-		switch propagation {
-		case noDeletePropagation:
-			ok(nil, force)
-		default:
-			p := metav1.DeletionPropagation(propagation)
-			ok(&p, force)
-		}
+		ok(force)
 		dismiss(pages)
 		cancel()
 	})
@@ -78,13 +40,13 @@ func ShowDelete(styles *config.Dialog, pages *ui.Pages, msg string, ok okFunc, c
 		if b == nil {
 			continue
 		}
-		b.SetBackgroundColorActivated(styles.ButtonFocusBgColor.Color())
-		b.SetLabelColorActivated(styles.ButtonFocusFgColor.Color())
+		b.SetBackgroundColor(tcell.ColorYellow)
 	}
 	f.SetFocus(2)
 
 	confirm := tview.NewModalForm("<Delete>", f)
 	confirm.SetText(msg)
+	confirm.SetTextColor(styles.FgColor.Color())
 	confirm.SetDoneFunc(func(int, string) {
 		dismiss(pages)
 		cancel()

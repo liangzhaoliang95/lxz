@@ -28,8 +28,35 @@ type RedisMainPage struct {
 
 }
 
+func (_this *RedisMainPage) bindKeys() {
+	_this.Actions().Bulk(ui.KeyMap{
+		ui.KeyF:         ui.NewKeyAction("FullScreen", _this.ToggleFullScreenCmd, true),
+		ui.KeySlash:     ui.NewKeyAction("Search", _this.ToggleSearch, true),
+		tcell.KeyEscape: ui.NewKeyAction("Last Page", _this.EmptyKeyEvent, true),
+		tcell.KeyTAB:    ui.NewKeyAction("Focus Change", _this.TabFocusChange, true),
+		tcell.KeyCtrlD:  ui.NewKeyAction("Delete Key", _this.DeleteKey, true),
+	})
+}
+
+// DeleteKey 删除当前选中的键
+func (_this *RedisMainPage) DeleteKey(event *tcell.EventKey) *tcell.EventKey {
+	currentCompPage := _this.dataViewUI.redisDataComponents[_this.dataViewUI.currentPageKey]
+	if _this.app.UI.GetFocus() != currentCompPage.keyGroupTree {
+		_this.app.UI.Flash().Err(fmt.Errorf("please select a key first"))
+		return nil
+	}
+	// 当前焦点在键列表上，可以执行删除操作
+	// 给keyGroupTree组件发送删除键的命令
+	currentCompPage.deleteKey()
+	return nil
+}
+
 func (_this *RedisMainPage) TabFocusChange(event *tcell.EventKey) *tcell.EventKey {
-	if _this.app.UI.GetFocus() == _this.dbListViewUI.dbListUI || _this.app.UI.GetFocus() == _this.dbListViewUI {
+	currentCompPage := _this.dataViewUI.redisDataComponents[_this.dataViewUI.currentPageKey]
+	if _this.app.UI.GetFocus() == _this.dbListViewUI.dbListUI ||
+		_this.app.UI.GetFocus() == _this.dbListViewUI {
+		_this.dataViewUI.selfFocus()
+	} else if _this.app.UI.GetFocus() == currentCompPage.KeyValue {
 		_this.dataViewUI.selfFocus()
 	} else {
 		_this.dbListViewUI.selfFocus()
@@ -50,15 +77,6 @@ func (_this *RedisMainPage) ToggleSearch(evt *tcell.EventKey) *tcell.EventKey {
 	}
 	return nil
 
-}
-
-func (_this *RedisMainPage) bindKeys() {
-	_this.Actions().Bulk(ui.KeyMap{
-		ui.KeyF:         ui.NewKeyAction("FullScreen", _this.ToggleFullScreenCmd, true),
-		ui.KeySlash:     ui.NewKeyAction("Search", _this.ToggleSearch, true),
-		tcell.KeyEscape: ui.NewKeyAction("Last Page", _this.EmptyKeyEvent, true),
-		tcell.KeyTAB:    ui.NewKeyAction("Focus Change", _this.TabFocusChange, true),
-	})
 }
 
 func (_this *RedisMainPage) Init(ctx context.Context) error {
