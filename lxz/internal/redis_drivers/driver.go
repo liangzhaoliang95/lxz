@@ -18,6 +18,13 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
+type RedisData struct {
+	KeyName  string
+	KetType  string
+	KeyTTL   int
+	KeyValue string
+}
+
 var connMap sync.Map
 
 func connMapKey(name string, db int) string {
