@@ -137,6 +137,14 @@ func (a *App) menuPageChange(evt *tcell.EventKey) *tcell.EventKey {
 			changeSuccess = true
 			pageName = comp.Name()
 		}
+	case tcell.KeyF5:
+		comp := NewDockerBrowser(a)
+		if err := a.inject(comp, true); err != nil {
+			slog.Error("Failed to inject DockerBrowser component", slogs.Error, err)
+		} else {
+			changeSuccess = true
+			pageName = comp.Name()
+		}
 	default:
 		slog.Warn("Unknown menu page change key", "key", evt.Rune())
 		return evt
@@ -165,6 +173,7 @@ func (a *App) bindKeys() {
 		tcell.KeyF2:     ui.NewSharedKeyAction("File Browser", a.menuPageChange, false),
 		tcell.KeyF3:     ui.NewSharedKeyAction("Redis Browser", a.menuPageChange, false),
 		tcell.KeyF4:     ui.NewSharedKeyAction("DB Browser", a.menuPageChange, false),
+		tcell.KeyF5:     ui.NewSharedKeyAction("Docker Browser", a.menuPageChange, false),
 	}))
 }
 

@@ -18,10 +18,11 @@ import (
 const maxRow = 4
 
 const (
-	SSH_CONNECT_ID   = "SSH_CONNECT"
-	FILE_BROWSER_ID  = "FILE_BROWSER"
-	DB_BROWSER_ID    = "DB_BROWSER"
-	REDIS_BROWSER_ID = "REDIS_BROWSER"
+	SSH_CONNECT_ID    = "SSH_CONNECT"
+	FILE_BROWSER_ID   = "FILE_BROWSER"
+	DB_BROWSER_ID     = "DB_BROWSER"
+	REDIS_BROWSER_ID  = "REDIS_BROWSER"
+	DOCKER_BROWSER_ID = "DOCKER_BROWSER_ID"
 )
 
 var menuMap = map[string]map[string]string{
@@ -44,6 +45,11 @@ var menuMap = map[string]map[string]string{
 		"name": "📊 DB Browser",
 		"id":   DB_BROWSER_ID,
 		"sort": "4",
+	},
+	"<F5>": {
+		"name": "🐳 Docker Browser",
+		"id":   DOCKER_BROWSER_ID,
+		"sort": "5",
 	},
 }
 
@@ -121,7 +127,7 @@ func (c *Menu) refresh(compId string) {
 		item := menuMap[menuKeys[i]]
 		id := item["id"]
 		c.SetCell(row, col, &tview.TableCell{
-			Text:            helper.If(id == compId, "👉", ""),
+			Text:            helper.If(id == compId, "👉", "  "),
 			Color:           tcell.ColorGreen,
 			Align:           tview.AlignLeft,
 			BackgroundColor: tcell.ColorBlack,
