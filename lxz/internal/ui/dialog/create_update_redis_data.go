@@ -30,13 +30,19 @@ func ShowCreateUpdateRedisData(
 ) {
 	f := newBaseModelForm(styles)
 
-	f.AddTextView("Type:", opts.Config.Name, 0, 0, true, false)
+	f.AddTextView("Type:", opts.Data.KetType, 0, 0, true, false)
 
-	f.AddInputField("TTL:", opts.Config.Host, 0, nil, func(v string) {
-		opts.Config.Host = v
-	})
+	f.AddInputField(
+		"TTL:",
+		fmt.Sprintf("%d", opts.Data.KeyTTL),
+		0,
+		tview.InputFieldInteger,
+		func(v string) {
+			opts.Config.Host = v
+		},
+	)
 
-	f.AddTextView("Value:", opts.Config.Host, 0, nil, func(v string) {
+	f.AddTextView("Value:", opts.Data.KeyValue, 0, nil, func(v string) {
 		opts.Config.Host = v
 	})
 
