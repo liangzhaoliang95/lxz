@@ -40,7 +40,7 @@ func (k *LXZ) IsSplashless() bool {
 	return k.UI.Splashless
 }
 
-// Override overrides k9s config from cli args.
+// Override overrides lxz config from cli args.
 func (k *LXZ) Override(lxzFlags *Flags) {
 	// 可以使用将命令行配置覆盖到k上
 }

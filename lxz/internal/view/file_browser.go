@@ -11,13 +11,11 @@ import (
 	"fmt"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
-	"k8s.io/apimachinery/pkg/labels"
 	"log/slog"
 	"lxz/internal/config"
 	"lxz/internal/ui"
 	"lxz/internal/ui/dialog"
 	"lxz/internal/view/base"
-	"lxz/internal/view/cmd"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -127,31 +125,6 @@ func (_this *FileBrowser) Stop() {
 	//if _this.stopDebounceCh != nil {
 	//	close(_this.stopDebounceCh) // 停止防抖协程
 	//}
-}
-
-func (_this *FileBrowser) ExtraHints() map[string]string {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (_this *FileBrowser) InCmdMode() bool {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (_this *FileBrowser) SetFilter(s string) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (_this *FileBrowser) SetLabelSelector(selector labels.Selector) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (_this *FileBrowser) SetCommand(interpreter *cmd.Interpreter) {
-	//TODO implement me
-	panic("implement me")
 }
 
 func (_this *FileBrowser) addChildren(node *tview.TreeNode, path string) {

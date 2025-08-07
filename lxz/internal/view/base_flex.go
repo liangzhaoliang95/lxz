@@ -9,12 +9,10 @@ import (
 	"fmt"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
-	"k8s.io/apimachinery/pkg/labels"
 	"log/slog"
 	"lxz/internal/model"
 	"lxz/internal/ui"
 	"lxz/internal/view/base"
-	"lxz/internal/view/cmd"
 )
 
 type BaseFlex struct {
@@ -39,25 +37,6 @@ func (_this *BaseFlex) Hints() model.MenuHints {
 
 func (_this *BaseFlex) ExtraHints() map[string]string {
 	return nil
-}
-
-func (_this *BaseFlex) InCmdMode() bool {
-	return false
-}
-
-func (_this *BaseFlex) SetFilter(s string) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (_this *BaseFlex) SetLabelSelector(selector labels.Selector) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (_this *BaseFlex) SetCommand(interpreter *cmd.Interpreter) {
-	//TODO implement me
-	panic("implement me")
 }
 
 func (_this *BaseFlex) ToggleFullScreenCmd(evt *tcell.EventKey) *tcell.EventKey {

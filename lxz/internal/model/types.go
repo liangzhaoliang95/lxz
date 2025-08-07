@@ -8,8 +8,6 @@ package model
 import (
 	"context"
 	"github.com/rivo/tview"
-	"k8s.io/apimachinery/pkg/labels"
-	"lxz/internal/view/cmd"
 )
 
 // Primitive represents a UI primitive.
@@ -41,23 +39,6 @@ type Hinter interface {
 	ExtraHints() map[string]string
 }
 
-// Commander tracks prompt status.
-type Commander interface {
-	// InCmdMode checks if prompt is active.
-	InCmdMode() bool
-}
-
-// Viewer represents a resource viewer.
-type Viewer interface {
-	// SetCommand sets the current command.
-	SetCommand(*cmd.Interpreter)
-}
-
-type Filterer interface {
-	SetFilter(string)
-	SetLabelSelector(labels.Selector)
-}
-
 type Identifier interface {
 	SetIdentifier(string)
 	GetIdentifier() string
@@ -68,8 +49,5 @@ type Component interface {
 	Primitive
 	Igniter
 	Hinter
-	Commander
-	Filterer
-	Viewer
 	Identifier
 }

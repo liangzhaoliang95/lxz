@@ -11,11 +11,9 @@ import (
 	"fmt"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
-	"k8s.io/apimachinery/pkg/labels"
 	"log/slog"
 	"lxz/internal/ui"
 	"lxz/internal/view/base"
-	"lxz/internal/view/cmd"
 	"os"
 	"os/exec"
 	"os/user"
@@ -168,29 +166,6 @@ func (_this *SshConnect) Start() {
 
 func (_this *SshConnect) Stop() {
 	slog.Info("SshConnect Stop")
-}
-
-func (_this *SshConnect) ExtraHints() map[string]string {
-	return nil
-}
-
-func (_this *SshConnect) InCmdMode() bool {
-	return false
-}
-
-func (_this *SshConnect) SetFilter(s2 string) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (_this *SshConnect) SetLabelSelector(selector labels.Selector) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (_this *SshConnect) SetCommand(interpreter *cmd.Interpreter) {
-	//TODO implement me
-	panic("implement me")
 }
 
 func (_this *SshConnect) TabFocusChange(event *tcell.EventKey) *tcell.EventKey {
