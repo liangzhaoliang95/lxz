@@ -41,7 +41,11 @@ func (_this *DatabaseMainPage) TabFocusChange(event *tcell.EventKey) *tcell.Even
 // ToggleSearch 触发搜索功能
 func (_this *DatabaseMainPage) ToggleSearch(evt *tcell.EventKey) *tcell.EventKey {
 	// 触发搜索功能
-	slog.Info("Search triggered", "event", evt)
+	slog.Info("DatabaseMainPage Search triggered", "event", evt)
+	if ui.IsInputPrimitive(appUiInstance.GetFocus()) {
+		slog.Info("Search input is already focused, ignoring toggle search event")
+		return evt
+	}
 	currentPage := _this.tableView.tableComponents[_this.tableView.currentPageKey]
 	if currentPage == nil {
 		appUiInstance.Flash().Err(fmt.Errorf("select one table first"))

@@ -74,7 +74,7 @@ func ShowCreateUpdateRedisData(
 
 	message := opts.Message
 
-	modal := tview.NewModalForm("<"+opts.Title+">", f)
+	modal := tview.NewModalForm("<"+opts.Title+">", f.Form)
 	modal.SetText(message)
 	modal.SetTextColor(styles.FgColor.Color())
 	modal.SetDoneFunc(func(int, string) {

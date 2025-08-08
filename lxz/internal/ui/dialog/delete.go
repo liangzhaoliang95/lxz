@@ -7,11 +7,6 @@ import (
 	"lxz/internal/ui"
 )
 
-const (
-	noDeletePropagation   = "None"
-	defaultPropagationIdx = 0
-)
-
 type (
 	okFunc     func(force bool)
 	cancelFunc func()
@@ -41,7 +36,7 @@ func ShowDelete(styles *config.Dialog, pages *ui.Pages, msg string, ok okFunc, c
 	}
 	f.SetFocus(2)
 
-	confirm := tview.NewModalForm("<Delete>", f)
+	confirm := tview.NewModalForm("<Delete>", f.Form)
 	confirm.SetText(msg)
 	confirm.SetTextColor(styles.FgColor.Color())
 	confirm.SetDoneFunc(func(int, string) {

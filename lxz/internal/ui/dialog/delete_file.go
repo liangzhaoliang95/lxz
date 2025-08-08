@@ -24,7 +24,7 @@ func ShowDeleteFile(styles *config.Dialog, pages *ui.Pages, opts *DeleteFileOpts
 		opts.Cancel()
 	})
 
-	modal := tview.NewModalForm("<"+opts.Title+">", f)
+	modal := tview.NewModalForm("<"+opts.Title+">", f.Form)
 
 	f.AddButton("OK", func() {
 		if !opts.Ack() {

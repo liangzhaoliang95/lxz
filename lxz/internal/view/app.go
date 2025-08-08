@@ -299,7 +299,7 @@ func (a *App) Run() error {
 			a.UI.Main.SwitchToPage("main")
 
 			// 定位到第一个功能
-			a.inject(NewRedisBrowser(a), true)
+			a.inject(NewDockerBrowser(a), true)
 		})
 	}()
 

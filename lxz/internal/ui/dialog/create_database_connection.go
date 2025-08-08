@@ -30,7 +30,7 @@ func ShowCreateCreateDatabaseConnection(styles *config.Dialog, pages *ui.Pages, 
 	}
 	slog.Info("providerMap", "providerMap", providerMap)
 
-	modal := tview.NewModalForm("<"+opts.Title+">", f)
+	modal := tview.NewModalForm("<"+opts.Title+">", f.Form)
 	f.AddDropDown("Provider:", config.DatabaseProviderList, providerMap[opts.DBConnection.Provider], func(s string, i int) {
 		opts.DBConnection.Provider = s
 	})

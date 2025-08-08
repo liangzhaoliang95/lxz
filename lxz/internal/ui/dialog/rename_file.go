@@ -25,7 +25,7 @@ func ShowRenameFile(styles *config.Dialog, pages *ui.Pages, opts *RenameFileOpts
 		opts.Cancel()
 	})
 
-	modal := tview.NewModalForm("<"+opts.Title+">", f)
+	modal := tview.NewModalForm("<"+opts.Title+">", f.Form)
 
 	f.AddInputField("FileName:", opts.FileName, 0, nil, func(v string) {
 		opts.FileName = v

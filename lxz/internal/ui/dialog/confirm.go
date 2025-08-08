@@ -8,7 +8,7 @@ import (
 
 const dialogKey = "dialog"
 
-type confirmFunc func()
+type confirmFunc func(force bool)
 
 func ShowConfirmAck(
 	app *ui.App,
@@ -21,7 +21,7 @@ func ShowConfirmAck(
 ) {
 	styles := app.Styles.Dialog()
 
-	f := tview.NewForm()
+	f := newBaseModelForm(&styles)
 	f.SetItemPadding(0)
 	f.SetButtonsAlign(tview.AlignCenter).
 		SetButtonBackgroundColor(styles.ButtonBgColor.Color()).
@@ -47,7 +47,7 @@ func ShowConfirmAck(
 		if !accept {
 			return
 		}
-		ack()
+		ack(f.force)
 		dismissConfirm(pages)
 		cancel()
 	})
@@ -60,7 +60,7 @@ func ShowConfirmAck(
 		b.SetLabelColorActivated(styles.ButtonFocusFgColor.Color())
 	}
 	f.SetFocus(0)
-	modal := tview.NewModalForm("<"+title+">", f)
+	modal := tview.NewModalForm("<"+title+">", f.Form)
 	modal.SetText(msg)
 	modal.SetTextColor(styles.FgColor.Color())
 	modal.SetDoneFunc(func(int, string) {
@@ -79,20 +79,16 @@ func ShowConfirm(
 	ack confirmFunc,
 	cancel cancelFunc,
 ) {
-	f := tview.NewForm().
-		SetItemPadding(0).
-		SetButtonsAlign(tview.AlignCenter).
-		SetButtonBackgroundColor(styles.ButtonBgColor.Color()).
-		SetButtonTextColor(styles.ButtonFgColor.Color()).
-		SetLabelColor(styles.LabelFgColor.Color()).
-		SetFieldTextColor(styles.FieldFgColor.Color()).
-		SetFieldBackgroundColor(styles.BgColor.Color())
+	f := newBaseModelForm(styles)
+	f.AddCheckbox("Force", false, func(checked bool) {
+		f.force = checked
+	})
 	f.AddButton("Cancel", func() {
 		dismiss(pages)
 		cancel()
 	})
 	f.AddButton("OK", func() {
-		ack()
+		ack(f.force)
 		dismiss(pages)
 		cancel()
 	})
@@ -103,7 +99,7 @@ func ShowConfirm(
 		}
 	}
 	f.SetFocus(0)
-	modal := tview.NewModalForm("<"+title+">", f)
+	modal := tview.NewModalForm("<"+title+">", f.Form)
 	modal.SetText(msg)
 	modal.SetTextColor(styles.FgColor.Color())
 	modal.SetDoneFunc(func(int, string) {

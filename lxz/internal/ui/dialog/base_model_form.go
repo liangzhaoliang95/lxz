@@ -6,7 +6,13 @@ import (
 	"lxz/internal/config"
 )
 
-func newBaseModelForm(styles *config.Dialog) *tview.Form {
+type baseModelForm struct {
+	*tview.Form
+	force bool
+}
+
+func newBaseModelForm(styles *config.Dialog) *baseModelForm {
+
 	f := tview.NewForm()
 	f.SetItemPadding(0)
 	f.SetButtonsAlign(tview.AlignCenter).
@@ -14,5 +20,8 @@ func newBaseModelForm(styles *config.Dialog) *tview.Form {
 		SetButtonTextColor(tcell.ColorBlack).
 		SetLabelColor(styles.LabelFgColor.Color()).
 		SetFieldTextColor(styles.FieldFgColor.Color())
-	return f
+	b := &baseModelForm{
+		Form: f,
+	}
+	return b
 }

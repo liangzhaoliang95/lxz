@@ -9,7 +9,7 @@ import "github.com/rivo/tview"
 
 func IsInputPrimitive(p tview.Primitive) bool {
 	switch p.(type) {
-	case *tview.InputField, *tview.TextArea, *tview.TextView:
+	case *tview.InputField, *tview.TextArea:
 		return true
 	default:
 		return false

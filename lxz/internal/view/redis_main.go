@@ -114,7 +114,11 @@ func (_this *RedisMainPage) TabFocusChange(event *tcell.EventKey) *tcell.EventKe
 // ToggleSearch 触发搜索功能
 func (_this *RedisMainPage) ToggleSearch(evt *tcell.EventKey) *tcell.EventKey {
 	// 触发搜索功能
-	slog.Info("Search triggered", "event", evt)
+	slog.Info("RedisMainPage Search triggered", "event", evt)
+	if ui.IsInputPrimitive(appUiInstance.GetFocus()) {
+		slog.Info("Search input is already focused, ignoring toggle search event")
+		return evt
+	}
 	currentPage := _this.dataViewUI.redisDataComponents[_this.dataViewUI.currentPageKey]
 	if currentPage == nil {
 		appUiInstance.Flash().Err(fmt.Errorf("select one table first"))
