@@ -39,6 +39,7 @@ type App struct {
 
 	Content *PageStack
 
+	cancelFn   context.CancelFunc
 	showHeader bool
 	showLogo   bool
 }
@@ -145,8 +146,17 @@ func (a *App) menuPageChange(evt *tcell.EventKey) *tcell.EventKey {
 			changeSuccess = true
 			pageName = comp.Name()
 		}
+	case tcell.KeyF6:
+		comp := NewK9SBrowser(a)
+		if err := a.inject(comp, true); err != nil {
+			slog.Error("Failed to inject DockerBrowser component", slogs.Error, err)
+		} else {
+			changeSuccess = true
+			pageName = comp.Name()
+		}
 	default:
 		slog.Warn("Unknown menu page change key", "key", evt.Rune())
+		a.UI.Flash().Err(fmt.Errorf("unknown menu page change key: %s", evt.Rune()))
 		return evt
 	}
 	if changeSuccess {
@@ -174,6 +184,7 @@ func (a *App) bindKeys() {
 		tcell.KeyF3:     ui.NewSharedKeyAction("Redis Browser", a.menuPageChange, false),
 		tcell.KeyF4:     ui.NewSharedKeyAction("DB Browser", a.menuPageChange, false),
 		tcell.KeyF5:     ui.NewSharedKeyAction("Docker Browser", a.menuPageChange, false),
+		tcell.KeyF6:     ui.NewSharedKeyAction("K9S", a.menuPageChange, false),
 	}))
 }
 
@@ -252,6 +263,34 @@ func (*App) initSignals() {
 		<-sig
 		os.Exit(0)
 	}(sig)
+}
+
+// Halt stop the application event loop.
+func (a *App) Halt() {
+	if a.cancelFn != nil {
+		a.cancelFn()
+		a.cancelFn = nil
+	}
+}
+
+// Resume restarts the app event loop.
+func (a *App) Resume() {
+	/*var ctx context.Context
+	ctx, a.cancelFn = context.WithCancel(context.Background())
+
+	go a.clusterUpdater(ctx)
+
+	if a.Config.K9s.UI.Reactive {
+		if err := a.ConfigWatcher(ctx, a); err != nil {
+			slog.Warn("ConfigWatcher failed", slogs.Error, err)
+		}
+		if err := a.SkinsDirWatcher(ctx, a); err != nil {
+			slog.Warn("SkinsWatcher failed", slogs.Error, err)
+		}
+		if err := a.CustomViewsWatcher(ctx, a); err != nil {
+			slog.Warn("CustomView watcher failed", slogs.Error, err)
+		}
+	}*/
 }
 
 // Init initializes the application.

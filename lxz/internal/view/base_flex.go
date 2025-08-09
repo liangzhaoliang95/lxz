@@ -40,6 +40,13 @@ func (_this *BaseFlex) ExtraHints() map[string]string {
 }
 
 func (_this *BaseFlex) ToggleFullScreenCmd(evt *tcell.EventKey) *tcell.EventKey {
+	slog.Info(
+		"BaseFlex ToggleFullScreenCmd",
+		"name",
+		_this.name,
+		"key",
+		evt.Key(),
+	)
 	if ui.IsInputPrimitive(appUiInstance.GetFocus()) {
 		slog.Info(
 			"BaseFlex ToggleFullScreenCmd,ignore input primitive",

@@ -7,18 +7,17 @@ package view
 
 import (
 	"context"
+	"fmt"
+	"github.com/fatih/color"
 	"github.com/gdamore/tcell/v2"
-	"github.com/moby/moby/api/types/container"
-	"github.com/moby/moby/client"
 	"github.com/rivo/tview"
-	"io"
-	"log"
 	"log/slog"
 	"lxz/internal/config"
 	"lxz/internal/drivers/docker_drivers"
 	"lxz/internal/helper"
 	"lxz/internal/ui"
 	"lxz/internal/ui/dialog"
+	"time"
 )
 
 type DockerBrowser struct {
@@ -32,9 +31,41 @@ type DockerBrowser struct {
 func (_this *DockerBrowser) bindKeys() {
 	_this.Actions().Bulk(ui.KeyMap{
 		ui.KeyF:        ui.NewKeyAction("FullScreen", _this.ToggleFullScreenCmd, true),
+		ui.KeyI:        ui.NewKeyAction("Detail Info", _this.ShowDetail, true),
+		ui.KeyS:        ui.NewKeyAction("Shell", _this.ShellExec, true),
 		tcell.KeyEnter: ui.NewKeyAction("Logs", _this.EmptyKeyEvent, true),
 		tcell.KeyCtrlR: ui.NewKeyAction("Restart", _this.restartContainer, true),
+		tcell.KeyCtrlD: ui.NewKeyAction("Stop Or Delete", _this.stopDeleteContainer, true),
 	})
+}
+
+// ShellExec 执行容器的Shell
+func (_this *DockerBrowser) ShellExec(evt *tcell.EventKey) *tcell.EventKey {
+	if _this.selectedContainerID == "" {
+		_this.app.UI.Flash().Err(fmt.Errorf("please select a container first"))
+		return nil
+	}
+	// 执行容器的Shell
+	slog.Info("Executing shell in container", "name", _this.selectContainerName, "containerID", _this.selectedContainerID)
+	err := _this.containerShellIn()
+	if err != nil {
+		_this.app.UI.Flash().Err(fmt.Errorf("failed to execute shell in container %s: %w", _this.selectedContainerID, err))
+		return nil
+	}
+
+	return nil
+}
+
+// ShowDetail 显示容器的详细信息
+func (_this *DockerBrowser) ShowDetail(evt *tcell.EventKey) *tcell.EventKey {
+	if _this.selectedContainerID == "" {
+		_this.app.UI.Flash().Err(fmt.Errorf("please select a container first"))
+		return nil
+	}
+	_this.app.inject(NewDockerInspectView(_this.app, "container", _this.selectedContainerID, _this.selectContainerName), false)
+
+	return nil
+
 }
 
 // restartContainer
@@ -62,6 +93,53 @@ func (_this *DockerBrowser) restartContainer(evt *tcell.EventKey) *tcell.EventKe
 
 		})
 
+	return nil
+}
+
+// stopDeleteContainer
+func (_this *DockerBrowser) stopDeleteContainer(evt *tcell.EventKey) *tcell.EventKey {
+
+	detail, err := docker_drivers.InspectContainer(_this.selectedContainerID)
+	if err != nil {
+		_this.app.UI.Flash().Err(fmt.Errorf("failed to inspect container %s: %w", _this.selectedContainerID, err))
+		return nil
+	}
+	operation := "stop"
+	if detail.State.Running {
+		operation = "stop"
+	} else {
+		operation = "delete"
+	}
+
+	dialog.ShowConfirm(&config.Dialog{},
+		_this.app.Content.Pages,
+		fmt.Sprintf("Are you sure you want to %s the container?", operation),
+		_this.selectContainerName,
+		func(force bool) {
+			loading := dialog.ShowLoadingDialog(appViewInstance.Content.Pages, "", appUiInstance.ForceDraw)
+			var timeout *int
+			if force {
+				timeout = helper.Ptr(0)
+			}
+			var err error
+			if operation == "delete" {
+				err = docker_drivers.RemoveContainer(_this.selectedContainerID, force)
+			} else {
+				err = docker_drivers.StopContainer(_this.selectedContainerID, timeout)
+				err = docker_drivers.WaitContainerStopped(_this.selectedContainerID, time.Duration(60)*time.Second)
+			}
+
+			if err != nil {
+				_this.app.UI.Flash().Err(err)
+			} else {
+				_this.app.UI.Flash().Info(fmt.Sprintf("Container:%s %s successfully", _this.selectContainerName, operation))
+				_this._refreshData() // 刷新数据
+			}
+			loading.Hide()
+		},
+		func() {
+
+		})
 	return nil
 }
 
@@ -97,6 +175,11 @@ func (_this *DockerBrowser) _initHeader() {
 		SetAlign(tview.AlignLeft).
 		SetExpansion(1).
 		SetSelectable(false))
+	_this.containerTableUI.SetCell(0, 6, tview.NewTableCell("Port").
+		SetTextColor(tcell.ColorYellow).
+		SetAlign(tview.AlignLeft).
+		SetExpansion(1).
+		SetSelectable(false))
 }
 
 func (_this *DockerBrowser) _refreshData() {
@@ -107,6 +190,10 @@ func (_this *DockerBrowser) _refreshData() {
 	}
 	// 填充容器数据
 	for i, ctr := range ctrList {
+		if i == 0 {
+			_this.selectedContainerID = ctr.ID
+			_this.selectContainerName = ctr.Names[0][1:] // 默认选中
+		}
 		_this.containerTableUI.SetCell(i+1, 0, tview.NewTableCell(ctr.ID[:12]).
 			SetReference(ctr.ID).
 			SetTextColor(tcell.ColorWhite).
@@ -137,6 +224,26 @@ func (_this *DockerBrowser) _refreshData() {
 			SetTextColor(tcell.ColorWhite).
 			SetAlign(tview.AlignLeft).
 			SetExpansion(1))
+		ports := ""
+		if len(ctr.Ports) > 0 {
+			for _, port := range ctr.Ports {
+				if ports != "" {
+					ports += ", "
+				}
+				if port.PublicPort > 0 {
+					ports += fmt.Sprintf("%s:%d -> %d/%s", port.IP, port.PublicPort, port.PrivatePort, port.Type)
+				} else {
+					ports += fmt.Sprintf("%d/%s", port.PrivatePort, port.Type)
+				}
+			}
+		} else {
+			ports = "None"
+		}
+		_this.containerTableUI.SetCell(i+1, 6, tview.NewTableCell(ports).
+			SetReference(ctr.Status).
+			SetTextColor(tcell.ColorWhite).
+			SetAlign(tview.AlignLeft).
+			SetExpansion(1))
 	}
 
 }
@@ -150,6 +257,7 @@ func (_this *DockerBrowser) Init(ctx context.Context) error {
 	_this.containerTableUI.SetTitle("🌍 Connections")
 	_this.containerTableUI.SetBorderPadding(1, 1, 2, 2)
 	_this.containerTableUI.SetSelectable(true, false)
+	_this.containerTableUI.Select(1, 0)
 	// 配置回车函数
 	_this.containerTableUI.SetSelectedFunc(func(row, column int) {
 		slog.Info("Selected connection", "row", row, "col", column)
@@ -196,55 +304,32 @@ func (_this *DockerBrowser) Stop() {
 
 // --- HELPER FUNCTIONS ---
 
-func execIntoContainer(app *tview.Application, containerID string) {
-	cli, _ := client.NewClientWithOpts(client.FromEnv)
+func (_this *DockerBrowser) containerShellIn() error {
 
-	execConfig := container.ExecOptions{
-		Cmd:          []string{"sh"},
-		AttachStdin:  true,
-		AttachStdout: true,
-		AttachStderr: true,
-		Tty:          true,
-	}
+	_this.Stop()
+	defer _this.Start()
 
-	execIDResp, err := cli.ContainerExecCreate(context.TODO(), containerID, execConfig)
+	_this.shellIn()
+	return nil
+
+}
+
+func (_this *DockerBrowser) shellIn() {
+	args := make([]string, 0, 15)
+
+	args = append(args, "exec", "-it", _this.selectedContainerID)
+	args = append(args, "sh", "-c", shellCheck)
+
+	slog.Info("Shell args", "args", args)
+	c := color.New(color.BgGreen).Add(color.FgBlack).Add(color.Bold)
+	err := runDockerExec(_this.app, &shellOpts{
+		clear:  true,
+		banner: c.Sprintf(bannerFmt, ""),
+		args:   args},
+	)
 	if err != nil {
-		log.Fatal(err)
+		_this.app.UI.Flash().Errf("Shell exec failed: %s", err)
 	}
-
-	attachResp, err := cli.ContainerExecAttach(context.TODO(), execIDResp.ID,
-		container.ExecAttachOptions{Tty: true})
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	term := tview.NewTextView().
-		SetDynamicColors(true).
-		SetChangedFunc(func() {
-			app.Draw()
-		})
-
-	go func() {
-		io.Copy(term, attachResp.Reader)
-	}()
-
-	inputField := tview.NewInputField().
-		SetLabel("> ").
-		SetDoneFunc(func(key tcell.Key) {
-			//input := inputField.GetText()
-			//if input == "exit" {
-			//	app.SetRoot(containerTable, true) // 回到主界面
-			//	return
-			//}
-			//attachResp.Conn.Write([]byte(input + "\n"))
-			//inputField.SetText("")
-		})
-
-	layout := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(term, 0, 1, false).
-		AddItem(inputField, 1, 0, true)
-
-	app.SetRoot(layout, true)
 }
 
 func NewDockerBrowser(app *App) *DockerBrowser {

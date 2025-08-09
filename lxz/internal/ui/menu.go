@@ -23,6 +23,7 @@ const (
 	DB_BROWSER_ID     = "DB_BROWSER"
 	REDIS_BROWSER_ID  = "REDIS_BROWSER"
 	DOCKER_BROWSER_ID = "DOCKER_BROWSER_ID"
+	K9S_BROWSER_ID    = "K9S_BROWSER_ID"
 )
 
 var menuMap = map[string]map[string]string{
@@ -50,6 +51,11 @@ var menuMap = map[string]map[string]string{
 		"name": "🐳 Docker Browser",
 		"id":   DOCKER_BROWSER_ID,
 		"sort": "5",
+	},
+	"<F6": {
+		"name": "☸️ K9S Browser",
+		"id":   K9S_BROWSER_ID,
+		"sort": "6",
 	},
 }
 
