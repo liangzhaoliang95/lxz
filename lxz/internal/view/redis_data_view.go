@@ -8,7 +8,7 @@ package view
 import (
 	"context"
 	"fmt"
-	"github.com/rivo/tview"
+	"github.com/liangzhaoliang95/tview"
 	"log/slog"
 	"lxz/internal/config"
 	"lxz/internal/ui/dialog"

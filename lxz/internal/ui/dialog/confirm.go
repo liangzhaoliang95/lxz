@@ -1,7 +1,7 @@
 package dialog
 
 import (
-	"github.com/rivo/tview"
+	"github.com/liangzhaoliang95/tview"
 	"lxz/internal/config"
 	"lxz/internal/ui"
 )

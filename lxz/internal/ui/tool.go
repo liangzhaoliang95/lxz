@@ -5,7 +5,7 @@
 
 package ui
 
-import "github.com/rivo/tview"
+import "github.com/liangzhaoliang95/tview"
 
 func IsInputPrimitive(p tview.Primitive) bool {
 	switch p.(type) {

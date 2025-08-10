@@ -5,7 +5,7 @@ import (
 	"lxz/internal/config"
 	"strings"
 
-	"github.com/rivo/tview"
+	"github.com/liangzhaoliang95/tview"
 )
 
 // LogoSmall LXZ small log.

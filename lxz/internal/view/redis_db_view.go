@@ -9,7 +9,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/gdamore/tcell/v2"
-	"github.com/rivo/tview"
+	"github.com/liangzhaoliang95/tview"
 	"log/slog"
 	"lxz/internal/config"
 	"lxz/internal/drivers/redis_drivers"

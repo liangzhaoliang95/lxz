@@ -7,7 +7,7 @@ package ui
 
 import (
 	"fmt"
-	"github.com/rivo/tview"
+	"github.com/liangzhaoliang95/tview"
 	"log/slog"
 	"lxz/internal/model"
 	"lxz/internal/slogs"

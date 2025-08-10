@@ -6,7 +6,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/rivo/tview"
+	"github.com/liangzhaoliang95/tview"
 	"lxz/internal/config"
 )
 

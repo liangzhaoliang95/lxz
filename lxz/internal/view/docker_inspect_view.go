@@ -8,7 +8,7 @@ package view
 import (
 	"context"
 	"fmt"
-	"github.com/rivo/tview"
+	"github.com/liangzhaoliang95/tview"
 	"lxz/internal/drivers/docker_drivers"
 	"lxz/internal/helper"
 	"lxz/internal/ui"

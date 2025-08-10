@@ -1,8 +1,8 @@
 package render
 
 import (
+	"github.com/liangzhaoliang95/tview"
 	"github.com/mattn/go-runewidth"
-	"github.com/rivo/tview"
 )
 
 // Truncate a string to the given l and suffix ellipsis if needed.

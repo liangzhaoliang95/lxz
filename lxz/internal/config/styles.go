@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/gdamore/tcell/v2"
-	"github.com/rivo/tview"
+	"github.com/liangzhaoliang95/tview"
 	"gopkg.in/yaml.v3"
 	"lxz/internal/config/data"
 	"lxz/internal/config/json"

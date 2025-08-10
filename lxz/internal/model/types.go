@@ -7,7 +7,7 @@ package model
 
 import (
 	"context"
-	"github.com/rivo/tview"
+	"github.com/liangzhaoliang95/tview"
 )
 
 // Primitive represents a UI primitive.
