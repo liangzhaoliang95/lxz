@@ -1,0 +1,149 @@
+name: Release Build
+
+on:
+  push:
+    tags:
+      - 'v*'  # 当推送以v开头的tag时触发
+
+jobs:
+  build:
+    name: Build for ${{ matrix.os }}-${{ matrix.arch }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            arch: amd64
+            goos: linux
+            goarch: amd64
+            artifact_name: lxz-linux-amd64
+          - os: ubuntu-latest
+            arch: arm64
+            goos: linux
+            goarch: arm64
+            artifact_name: lxz-linux-arm64
+          - os: macos-latest
+            arch: x64
+            goos: darwin
+            goarch: amd64
+            artifact_name: lxz-darwin-amd64
+          - os: macos-latest
+            arch: arm64
+            goos: darwin
+            goarch: arm64
+            artifact_name: lxz-darwin-arm64
+          - os: windows-latest
+            arch: x64
+            goos: windows
+            goarch: amd64
+            artifact_name: lxz-windows-amd64.exe
+          - os: windows-latest
+            arch: arm64
+            goos: windows
+            goarch: arm64
+            artifact_name: lxz-windows-arm64.exe
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.24.3'
+          cache: true
+
+      - name: Build binary
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: 0
+        run: |
+          go build -ldflags="-s -w" -o ${{ matrix.artifact_name }} ./main.go
+          
+          # 创建压缩包
+          if [[ "${{ matrix.goos }}" == "windows" ]]; then
+            # Windows使用zip
+            7z a -tzip ${{ matrix.artifact_name }}.zip ${{ matrix.artifact_name }}
+          else
+            # Linux和macOS使用tar.gz
+            tar -czf ${{ matrix.artifact_name }}.tar.gz ${{ matrix.artifact_name }}
+          fi
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: |
+            ${{ matrix.artifact_name }}
+            ${{ matrix.artifact_name }}.*
+
+  create-release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          body: |
+            ## 下载地址
+            
+            ### Linux
+            - **AMD64**: [lxz-linux-amd64.tar.gz](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/lxz-linux-amd64.tar.gz)
+            - **ARM64**: [lxz-linux-arm64.tar.gz](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/lxz-linux-arm64.tar.gz)
+            
+            ### macOS
+            - **AMD64**: [lxz-darwin-amd64.tar.gz](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/lxz-darwin-amd64.tar.gz)
+            - **ARM64**: [lxz-darwin-arm64.tar.gz](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/lxz-darwin-arm64.tar.gz)
+            
+            ### Windows
+            - **AMD64**: [lxz-windows-amd64.exe](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/lxz-windows-amd64.exe)
+            - **ARM64**: [lxz-windows-arm64.exe](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/lxz-windows-arm64.exe)
+            
+            ## 安装说明
+            
+            ### Linux/macOS
+            ```bash
+            # 下载并解压
+            tar -xzf lxz-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m).tar.gz
+            
+            # 移动到PATH目录
+            sudo mv lxz-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m) /usr/local/bin/lxz
+            
+            # 添加执行权限
+            sudo chmod +x /usr/local/bin/lxz
+            ```
+            
+            ### Windows
+            ```cmd
+            # 下载exe文件到任意目录
+            # 将目录添加到PATH环境变量
+            # 或在命令行中直接运行
+            ```
+          files: |
+            artifacts/lxz-linux-amd64/lxz-linux-amd64
+            artifacts/lxz-linux-amd64/lxz-linux-amd64.tar.gz
+            artifacts/lxz-linux-arm64/lxz-linux-arm64
+            artifacts/lxz-linux-arm64/lxz-linux-arm64.tar.gz
+            artifacts/lxz-darwin-amd64/lxz-darwin-amd64
+            artifacts/lxz-darwin-amd64/lxz-darwin-amd64.tar.gz
+            artifacts/lxz-darwin-arm64/lxz-darwin-arm64
+            artifacts/lxz-darwin-arm64/lxz-darwin-arm64.tar.gz
+            artifacts/lxz-windows-amd64/lxz-windows-amd64.exe
+            artifacts/lxz-windows-arm64/lxz-windows-arm64.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
