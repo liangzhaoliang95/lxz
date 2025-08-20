@@ -233,7 +233,7 @@ main() {
     
     # 拉取最新代码
     print_info "拉取最新代码..."
-    if ! git pull origin main; then
+    if ! git pull origin master; then
         print_warning "拉取代码失败，尝试拉取当前分支..."
         current_branch=$(git branch --show-current)
         if ! git pull origin "$current_branch"; then

@@ -7,40 +7,28 @@ on:
 
 jobs:
   build:
-    name: Build for ${{ matrix.os }}-${{ matrix.arch }}
-    runs-on: ${{ matrix.os }}
+    name: Cross-platform build
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest
-            arch: amd64
-            goos: linux
+          - goos: linux
             goarch: amd64
             artifact_name: lxz-linux-amd64
-          - os: ubuntu-latest
-            arch: arm64
-            goos: linux
+          - goos: linux
             goarch: arm64
             artifact_name: lxz-linux-arm64
-          - os: macos-latest
-            arch: x64
-            goos: darwin
+          - goos: darwin
             goarch: amd64
             artifact_name: lxz-darwin-amd64
-          - os: macos-latest
-            arch: arm64
-            goos: darwin
+          - goos: darwin
             goarch: arm64
             artifact_name: lxz-darwin-arm64
-          - os: windows-latest
-            arch: x64
-            goos: windows
+          - goos: windows
             goarch: amd64
             artifact_name: lxz-windows-amd64.exe
-          - os: windows-latest
-            arch: arm64
-            goos: windows
+          - goos: windows
             goarch: arm64
             artifact_name: lxz-windows-arm64.exe
 
@@ -54,40 +42,29 @@ jobs:
           go-version: '1.24.3'
           cache: true
 
-      - name: Build binary (Linux/macOS)
-        if: matrix.os != 'windows-latest'
+      - name: Build binary
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
           CGO_ENABLED: 0
         run: |
+          echo "Building for ${{ matrix.goos }}/${{ matrix.goarch }}"
           go build -ldflags="-s -w" -o ${{ matrix.artifact_name }} ./main.go
-          tar -czf ${{ matrix.artifact_name }}.tar.gz ${{ matrix.artifact_name }}
-
-      - name: Build binary (Windows)
-        if: matrix.os == 'windows-latest'
-        env:
-          GOOS: ${{ matrix.goos }}
-          GOARCH: ${{ matrix.goarch }}
-          CGO_ENABLED: 0
-        shell: pwsh
-        run: |
-          go build -ldflags="-s -w" -o ${{ matrix.artifact_name }} ./main.go
-          Compress-Archive -Path ${{ matrix.artifact_name }} -DestinationPath "${{ matrix.artifact_name }}.zip"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
-          path: |
-            ${{ matrix.artifact_name }}
-            ${{ matrix.artifact_name }}.*
+          path: ${{ matrix.artifact_name }}
 
   create-release:
     name: Create Release
     needs: build
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+      actions: read
     
     steps:
       - name: Checkout code
@@ -107,25 +84,25 @@ jobs:
             ## 下载地址
             
             ### Linux
-            - **AMD64**: [lxz-linux-amd64.tar.gz](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/lxz-linux-amd64.tar.gz)
-            - **ARM64**: [lxz-linux-arm64.tar.gz](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/lxz-linux-arm64.tar.gz)
+            - **AMD64**: [lxz-linux-amd64](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/lxz-linux-amd64)
+            - **ARM64**: [lxz-linux-arm64](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/lxz-linux-arm64)
             
             ### macOS
-            - **AMD64**: [lxz-darwin-amd64.tar.gz](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/lxz-darwin-amd64.tar.gz)
-            - **ARM64**: [lxz-darwin-arm64.tar.gz](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/lxz-darwin-arm64.tar.gz)
+            - **AMD64**: [lxz-darwin-amd64](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/lxz-darwin-amd64)
+            - **ARM64**: [lxz-darwin-arm64](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/lxz-darwin-arm64)
             
             ### Windows
-            - **AMD64**: [lxz-windows-amd64.exe](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/lxz-windows-amd64.exe) | [lxz-windows-amd64.exe.zip](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/lxz-windows-amd64.exe.zip)
-            - **ARM64**: [lxz-windows-arm64.exe](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/lxz-windows-arm64.exe) | [lxz-windows-arm64.exe.zip](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/lxz-windows-arm64.exe.zip)
+            - **AMD64**: [lxz-windows-amd64.exe](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/lxz-windows-amd64.exe)
+            - **ARM64**: [lxz-windows-arm64.exe](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/lxz-windows-arm64.exe)
             
             ## 安装说明
             
             ### Linux/macOS
             ```bash
-            # 下载并解压
-            tar -xzf lxz-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m).tar.gz
+            # 下载二进制文件
+            wget https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/lxz-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m)
             
-            # 移动到PATH目录
+            # 重命名并移动到PATH目录
             sudo mv lxz-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m) /usr/local/bin/lxz
             
             # 添加执行权限
@@ -136,20 +113,8 @@ jobs:
             ```cmd
             # 下载exe文件到任意目录
             # 将目录添加到PATH环境变量
-            # 或在命令行中直接运行
+            # 或在命令行中直接运行exe文件
             ```
-          files: |
-            artifacts/lxz-linux-amd64/lxz-linux-amd64
-            artifacts/lxz-linux-amd64/lxz-linux-amd64.tar.gz
-            artifacts/lxz-linux-arm64/lxz-linux-arm64
-            artifacts/lxz-linux-arm64/lxz-linux-arm64.tar.gz
-            artifacts/lxz-darwin-amd64/lxz-darwin-amd64
-            artifacts/lxz-darwin-amd64/lxz-darwin-amd64.tar.gz
-            artifacts/lxz-darwin-arm64/lxz-darwin-arm64
-            artifacts/lxz-darwin-arm64/lxz-darwin-arm64.tar.gz
-            artifacts/lxz-windows-amd64/lxz-windows-amd64.exe
-            artifacts/lxz-windows-amd64/lxz-windows-amd64.exe.zip
-            artifacts/lxz-windows-arm64/lxz-windows-arm64.exe
-            artifacts/lxz-windows-arm64/lxz-windows-arm64.exe.zip
+          files: artifacts/**/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
