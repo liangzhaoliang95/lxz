@@ -142,7 +142,7 @@ func (l *Logo) refreshVersion(c config.Color) {
 	versionText := fmt.Sprintf("%s", v.Version)
 	if hasUpdate {
 		// 如果有新版本，显示黄色提示和升级箭头
-		_, _ = fmt.Fprintf(l.version, "[%s::b]%s [yellow::b] %s↑",
+		_, _ = fmt.Fprintf(l.version, "[%s::b]%s [red::b] %s↑",
 			"yellow", versionText, updateInfo.LatestVersion)
 	} else {
 		// 如果没有新版本，只显示当前版本

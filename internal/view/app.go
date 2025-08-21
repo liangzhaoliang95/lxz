@@ -8,6 +8,12 @@ package view
 import (
 	"context"
 	"fmt"
+	"log/slog"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/liangzhaoliang95/lxz/internal"
 	"github.com/liangzhaoliang95/lxz/internal/config"
@@ -15,11 +21,6 @@ import (
 	"github.com/liangzhaoliang95/lxz/internal/slogs"
 	"github.com/liangzhaoliang95/lxz/internal/ui"
 	"github.com/liangzhaoliang95/tview"
-	"log/slog"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 )
 
 const (
@@ -338,7 +339,7 @@ func (a *App) Run() error {
 			a.UI.Main.SwitchToPage("main")
 
 			// 定位到第一个功能
-			a.inject(NewDockerBrowser(a), true)
+			a.inject(NewSshConnect(a), true)
 		})
 	}()
 

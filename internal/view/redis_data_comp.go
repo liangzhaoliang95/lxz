@@ -8,6 +8,8 @@ package view
 import (
 	"context"
 	"fmt"
+	"log/slog"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/liangzhaoliang95/lxz/internal/config"
 	"github.com/liangzhaoliang95/lxz/internal/drivers/redis_drivers"
@@ -16,7 +18,6 @@ import (
 	"github.com/liangzhaoliang95/lxz/internal/ui/dialog"
 	"github.com/liangzhaoliang95/lxz/internal/view/base"
 	"github.com/liangzhaoliang95/tview"
-	"log/slog"
 )
 
 type RedisDataComponent struct {
@@ -389,7 +390,9 @@ func (_this *RedisDataComponent) Stop() {
 
 func _setTreeNodeData(node *tview.TreeNode, data *model.RedisGroupTree) {
 	rootPath := node.GetReference()
-	for _, child := range data.Children {
+	// 使用排序后的子节点
+	children := data.GetSortedChildren()
+	for _, child := range children {
 		fullPath := fmt.Sprintf("%s:%s", data.Name, child.Name)
 		if rootPath == nil {
 			// 如果有根路径，则拼接完整路径
@@ -410,7 +413,6 @@ func _setTreeNodeData(node *tview.TreeNode, data *model.RedisGroupTree) {
 		node.AddChild(childNode)
 		_setTreeNodeData(childNode, child)
 	}
-
 }
 
 // SetTreeData 设置树形数据

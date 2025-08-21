@@ -9,12 +9,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/liangzhaoliang95/lxz/internal/config"
 	"log/slog"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/liangzhaoliang95/lxz/internal/config"
 
 	"github.com/go-redis/redis/v8"
 )
@@ -224,9 +225,11 @@ func (_this *RedisClient) GetKeyTTL(key string) (int64, error) {
 func (_this *RedisClient) DeleteKey(key string) {
 	keys, err := _this.GetRecords(key)
 	if err != nil {
-		for i := 0; i < len(keys); i++ {
-			_this.rdb.Del(context.Background(), keys[i])
-		}
+		slog.Error("Failed to get keys for deletion", "error", err)
+		return
+	}
+	for i := 0; i < len(keys); i++ {
+		_this.rdb.Del(context.Background(), keys[i])
 	}
 }
 
