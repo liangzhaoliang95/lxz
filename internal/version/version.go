@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
@@ -88,7 +89,8 @@ func GetLatestGitHubRelease() (*GitHubRelease, error) {
 	// 从环境变量或配置中获取仓库信息
 	repo := getRepositoryInfo()
 	if repo == "" {
-		return nil, fmt.Errorf("无法获取仓库信息")
+		// 如果无法获取仓库信息，使用默认仓库
+		repo = "liangzhaoliang95/lxz"
 	}
 
 	url := fmt.Sprintf("https://api.github.com/repos/%s/releases/latest", repo)
@@ -114,6 +116,8 @@ func GetLatestGitHubRelease() (*GitHubRelease, error) {
 		return nil, fmt.Errorf("解析响应失败: %w", err)
 	}
 
+	slog.Info("GitHub Release", "release", release)
+
 	return &release, nil
 }
 
@@ -134,6 +138,8 @@ func CheckForUpdates() (*UpdateInfo, error) {
 	if latestVersion == nil || current == nil {
 		return nil, fmt.Errorf("版本号格式错误")
 	}
+
+	slog.Info("CheckForUpdates", "current", current, "latest", latestVersion)
 
 	if latestVersion.GreaterThan(current) {
 		return &UpdateInfo{

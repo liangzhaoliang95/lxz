@@ -2,11 +2,15 @@ package ui
 
 import (
 	"fmt"
-	"github.com/gdamore/tcell/v2"
+	"log/slog"
 	"strings"
 	"sync"
+	"time"
+
+	"github.com/gdamore/tcell/v2"
 
 	"github.com/liangzhaoliang95/lxz/internal/config"
+	ver "github.com/liangzhaoliang95/lxz/internal/version"
 	"github.com/liangzhaoliang95/tview"
 )
 
@@ -14,26 +18,32 @@ import (
 type Logo struct {
 	*tview.Flex
 
-	logo, status *tview.TextView
-	styles       *config.Styles
-	mx           sync.Mutex
+	logo, status, version *tview.TextView
+	styles                *config.Styles
+	mx                    sync.Mutex
 }
 
 // NewLogo returns a new logo.
 func NewLogo(styles *config.Styles) *Logo {
 	l := Logo{
-		Flex:   tview.NewFlex(),
-		logo:   logo(),
-		status: status(),
-		styles: styles,
+		Flex:    tview.NewFlex(),
+		logo:    logo(),
+		status:  status(),
+		version: version(),
+		styles:  styles,
 	}
 	l.SetDirection(tview.FlexRow)
 	l.AddItem(l.logo, 0, 7, false)
+	l.AddItem(l.version, 0, 1, false) // 添加version组件
 	//l.AddItem(l.status, 0, 1, false)
 	//	l.refreshLogo(styles.Body().LogoColor)
 	l.refreshLogo("dodgerblue")
+	l.refreshVersion("dodgerblue") // 刷新version组件
 	l.SetBackgroundColor(tcell.ColorBlue)
 	styles.AddListener(&l)
+
+	// 启动时自动检查版本更新
+	go l.autoCheckVersion()
 
 	return &l
 }
@@ -54,7 +64,9 @@ func (l *Logo) StylesChanged(s *config.Styles) {
 	l.SetBackgroundColor(l.styles.BgColor())
 	l.status.SetBackgroundColor(l.styles.BgColor())
 	l.logo.SetBackgroundColor(l.styles.BgColor())
+	l.version.SetBackgroundColor(l.styles.BgColor())
 	l.refreshLogo(l.styles.Body().LogoColor)
+	l.refreshVersion(l.styles.Body().LogoColor)
 }
 
 // IsBenchmarking checks if benchmarking is active or not.
@@ -103,11 +115,58 @@ func (l *Logo) refreshLogo(c config.Color) {
 	l.mx.Lock()
 	defer l.mx.Unlock()
 	l.logo.Clear()
+
+	// 打印logo
 	for i, s := range LogoSmall {
 		_, _ = fmt.Fprintf(l.logo, "[%s::b]%s", c, s)
 		if i+1 < len(LogoSmall) {
 			_, _ = fmt.Fprintf(l.logo, "\n")
 		}
+	}
+}
+
+// refreshVersion 刷新版本信息显示
+func (l *Logo) refreshVersion(c config.Color) {
+	l.mx.Lock()
+	defer l.mx.Unlock()
+	l.version.Clear()
+
+	// 获取版本信息
+	v := ver.GetVersion()
+
+	// 检查是否有新版本
+	updateInfo, err := ver.CheckForUpdates()
+	hasUpdate := err == nil && updateInfo != nil
+
+	// 打印版本信息
+	versionText := fmt.Sprintf("%s", v.Version)
+	if hasUpdate {
+		// 如果有新版本，显示黄色提示和升级箭头
+		_, _ = fmt.Fprintf(l.version, "[%s::b]%s [yellow::b]→ %s ↑",
+			c, versionText, updateInfo.LatestVersion)
+	} else {
+		// 如果没有新版本，只显示当前版本
+		_, _ = fmt.Fprintf(l.version, "[%s::b]%s", c, versionText)
+	}
+}
+
+// autoCheckVersion 自动检查版本更新
+func (l *Logo) autoCheckVersion() {
+	// 延迟2秒后开始检查，避免阻塞启动
+	time.Sleep(2 * time.Second)
+
+	// 检查版本更新
+	updateInfo, err := ver.CheckForUpdates()
+	if err != nil {
+		// 记录错误但不显示给用户
+		slog.Error("自动检查版本更新失败", "error", err)
+		return
+	}
+
+	// 如果有更新，刷新version组件显示
+	if updateInfo != nil {
+		// 使用主线程刷新UI
+		l.refreshVersion(l.styles.Body().LogoColor)
 	}
 }
 
@@ -123,6 +182,15 @@ func logo() *tview.TextView {
 }
 
 func status() *tview.TextView {
+	v := tview.NewTextView()
+	v.SetWordWrap(false)
+	v.SetWrap(false)
+	v.SetTextAlign(tview.AlignCenter)
+	v.SetDynamicColors(true)
+	return v
+}
+
+func version() *tview.TextView {
 	v := tview.NewTextView()
 	v.SetWordWrap(false)
 	v.SetWrap(false)
