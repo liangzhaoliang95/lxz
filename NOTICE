@@ -1,0 +1,15 @@
+LXZ - Go UI Framework
+Copyright 2025 liangzhaoliang95
+
+This product includes software developed by:
+- liangzhaoliang95 (https://github.com/liangzhaoliang95)
+
+Third-party dependencies:
+- tview (https://github.com/rivo/tview) - Terminal UI library
+- tcell (https://github.com/gdamore/tcell) - Terminal cell library
+- go-redis (https://github.com/go-redis/redis) - Redis client for Go
+- gorm (https://gorm.io/) - ORM library for Go
+- cobra (https://github.com/spf13/cobra) - CLI framework for Go
+- yaml (https://gopkg.in/yaml.v3) - YAML parser for Go
+
+For a complete list of dependencies and their licenses, please see go.mod and go.sum files.

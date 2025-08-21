@@ -1,6 +1,6 @@
 <div align="center">
   <img src="https://img.shields.io/badge/Go-1.24.3+-blue.svg" alt="Go Version">
-  <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License">
+  <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License">
   <img src="https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey.svg" alt="Platform">
 </div>
 
@@ -160,7 +160,11 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+
+## 📋 NOTICE
+
+This product includes software developed by liangzhaoliang95 and other contributors. See the [NOTICE](NOTICE) file for additional information about third-party dependencies and their licenses.
 
 ## 🙏 Acknowledgments
 

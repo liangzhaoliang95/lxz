@@ -1,6 +1,6 @@
 <div align="center">
   <img src="https://img.shields.io/badge/Go-1.24.3+-blue.svg" alt="Go Version">
-  <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License">
+  <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License">
   <img src="https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey.svg" alt="Platform">
 </div>
 
@@ -160,7 +160,11 @@ go test ./...
 
 ## 📄 许可证
 
-本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
+本项目采用 Apache 2.0 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
+
+## 📋 声明
+
+本产品包含由 liangzhaoliang95 和其他贡献者开发的软件。查看 [NOTICE](NOTICE) 文件了解第三方依赖及其许可证的更多信息。
 
 ## 🙏 致谢
 
