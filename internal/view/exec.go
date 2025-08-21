@@ -1,6 +1,3 @@
-// SPDX-License-Identifier: Apache-2.0
-// Copyright Authors of K9s
-
 package view
 
 import (
@@ -8,8 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/liangzhaoliang95/lxz/internal/render"
-	"github.com/liangzhaoliang95/lxz/internal/slogs"
 	"io"
 	"log/slog"
 	"os"
@@ -17,6 +12,9 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
+
+	"github.com/liangzhaoliang95/lxz/internal/render"
+	"github.com/liangzhaoliang95/lxz/internal/slogs"
 )
 
 const (
@@ -24,8 +22,6 @@ const (
 	bannerFmt    = "<<LXZ-Shell>> Container: %s \n"
 	outputPrefix = "[output]"
 )
-
-var editorEnvVars = []string{"K9S_EDITOR", "KUBE_EDITOR", "EDITOR"}
 
 type shellOpts struct {
 	clear, background bool
@@ -153,7 +149,10 @@ func execute(opts *shellOpts, statusChan chan<- string) error {
 
 		if bin, err := exec.LookPath(binTokens[0]); err == nil {
 			binTokens[0] = bin
-			cmd.Env = append(os.Environ(), fmt.Sprintf("KUBE_EDITOR=%s", strings.Join(binTokens, " ")))
+			cmd.Env = append(
+				os.Environ(),
+				fmt.Sprintf("KUBE_EDITOR=%s", strings.Join(binTokens, " ")),
+			)
 		}
 	}
 
@@ -186,7 +185,13 @@ func clearScreen() {
 	fmt.Print("\033[H\033[2J")
 }
 
-func pipe(_ context.Context, opts *shellOpts, statusChan chan<- string, w, e *bytes.Buffer, cmds ...*exec.Cmd) error {
+func pipe(
+	_ context.Context,
+	opts *shellOpts,
+	statusChan chan<- string,
+	w, e *bytes.Buffer,
+	cmds ...*exec.Cmd,
+) error {
 	if len(cmds) == 0 {
 		return nil
 	}

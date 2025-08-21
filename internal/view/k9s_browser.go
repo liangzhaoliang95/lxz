@@ -8,12 +8,13 @@ package view
 import (
 	"context"
 	"fmt"
+	"log/slog"
+	"os"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/liangzhaoliang95/lxz/internal/helper"
 	"github.com/liangzhaoliang95/lxz/internal/ui"
 	"github.com/liangzhaoliang95/tview"
-	"log/slog"
-	"os"
 )
 
 type K9SBrowser struct {
