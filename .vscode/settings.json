@@ -1,0 +1,14 @@
+{
+    "problems.decorations.enabled": false,
+    "go.useLanguageServer": true,
+    "gopls": {
+        "analyses": {
+            "unusedparams": false,
+            "shadow": false,
+            "nilness": false,
+            "unusedwrite": false
+        }
+    },
+    "editor.formatOnSave": false,
+    "editor.codeActionsOnSave": {}
+}

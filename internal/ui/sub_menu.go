@@ -7,16 +7,17 @@ package ui
 
 import (
 	"fmt"
-	"github.com/gdamore/tcell/v2"
-	"github.com/liangzhaoliang95/lxz/internal/config"
-	"github.com/liangzhaoliang95/lxz/internal/model"
-	"github.com/liangzhaoliang95/tview"
 	"log/slog"
 	"regexp"
 	"runtime"
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/gdamore/tcell/v2"
+	"github.com/liangzhaoliang95/lxz/internal/config"
+	"github.com/liangzhaoliang95/lxz/internal/model"
+	"github.com/liangzhaoliang95/tview"
 )
 
 const (
@@ -55,9 +56,8 @@ func NewSubMenu(styles *config.Styles) *SubMenu {
 
 // StylesChanged notifies skin changed.
 func (_this *SubMenu) StylesChanged(s *config.Styles) {
-	return
-	_this.styles = s
-	_this.SetBackgroundColor(s.BgColor())
+	//_this.styles = s
+	//_this.SetBackgroundColor(s.BgColor())
 }
 
 // StackPushed indicates a new item was added.

@@ -157,7 +157,7 @@ func (a *App) menuPageChange(evt *tcell.EventKey) *tcell.EventKey {
 		}
 	default:
 		slog.Warn("Unknown menu page change key", "key", evt.Rune())
-		a.UI.Flash().Err(fmt.Errorf("unknown menu page change key: %s", evt.Rune()))
+		a.UI.Flash().Err(fmt.Errorf("unknown menu page change key: %d", evt.Rune()))
 		return evt
 	}
 	if changeSuccess {
