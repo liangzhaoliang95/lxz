@@ -6,7 +6,7 @@
 
 <div align="center">
   <h1>LXZ - DevOps Graphical CLI Tool</h1>
-  <p><strong>A powerful DevOps graphical command-line interface tool supporting database, Docker, Redis, file system, Kubernetes and other resource management</strong></p>
+  <p><strong>🚀 A powerful DevOps graphical command-line interface tool supporting 📊 database, 🐳 Docker, 🎯 Redis, 🗂️ file system, ☸️ Kubernetes and other resource management</strong></p>
   
   <div>
     <a href="README.md" style="background: #007acc; color: white; padding: 8px 16px; margin: 5px; border-radius: 4px; text-decoration: none; display: inline-block;">English</a>
@@ -19,20 +19,20 @@
 ## 🌟 Features
 
 ### 🚀 Core Features
-- **Database Management**: Connect and manage MySQL databases with intuitive UI
-- **Docker Operations**: Container management, logs viewing, shell access, and more
-- **Redis Management**: Redis connection management and data operations
-- **File Browser**: Advanced file system navigation with preview capabilities
-- **Kubernetes Integration**: K9s configuration management and cluster access
-- **SSH Connection Manager**: Centralized SSH host management
-- **Cross-Platform**: Support for Linux, macOS, and Windows (AMD64 & ARM64)
+- **📊 Database Management**: Connect and manage MySQL databases with intuitive UI
+- **🐳 Docker Operations**: Container management, logs viewing, shell access, and more
+- **🎯 Redis Management**: Redis connection management and data operations
+- **🗂️ File Browser**: Advanced file system navigation with preview capabilities
+- **☸️ Kubernetes Integration**: K9s configuration management and cluster access
+- **🖥️ SSH Connection Manager**: Centralized SSH host management
+- **🌐 Cross-Platform**: Support for Linux, macOS, and Windows (AMD64 & ARM64)
 
 ### 🎯 Key Benefits
-- **Terminal-Based UI**: Rich TUI built with tview for excellent terminal experience
-- **Hotkey Support**: Comprehensive keyboard shortcuts for efficient navigation
-- **Plugin System**: Extensible architecture for custom functionality
-- **Configuration Management**: YAML-based configuration with validation
-- **Logging & Monitoring**: Built-in logging system with configurable levels
+- **🖥️ Terminal-Based UI**: Rich TUI built with tview for excellent terminal experience
+- **⌨️ Hotkey Support**: Comprehensive keyboard shortcuts for efficient navigation
+- **🔌 Plugin System**: Extensible architecture for custom functionality
+- **⚙️ Configuration Management**: YAML-based configuration with validation
+- **📊 Logging & Monitoring**: Built-in logging system with configurable levels
 
 ## 🖼️ Screenshots
 
@@ -97,14 +97,14 @@ LXZ uses YAML configuration files located in:
 - Linux/macOS: `~/.config/lxz/`
 - Windows: `%APPDATA%\lxz\`
 
-### Key Bindings
-- `F` - Toggle fullscreen mode
-- `Ctrl+R` - Refresh data
-- `Ctrl+N` - Create new item
-- `Ctrl+D` - Delete item
-- `Enter` - Select/Execute
-- `Tab` - Switch focus
-- `Escape` - Exit fullscreen/Go back
+### ⌨️ Key Bindings
+- `F` - 🔄 Toggle fullscreen mode
+- `Ctrl+R` - 🔄 Refresh data
+- `Ctrl+N` - ➕ Create new item
+- `Ctrl+D` - 🗑️ Delete item
+- `Enter` - ✅ Select/Execute
+- `Tab` - 🔀 Switch focus
+- `Escape` - ↩️ Exit fullscreen/Go back
 
 ## 🏗️ Architecture
 

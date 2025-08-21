@@ -6,7 +6,7 @@
 
 <div align="center">
   <h1>LXZ - DevOps 图形化 CLI 工具</h1>
-  <p><strong>一个强大的 DevOps 图形化命令行界面工具，支持数据库、Docker、Redis、文件系统、Kubernetes 等多种资源管理</strong></p>
+  <p><strong>🚀 一个强大的 DevOps 图形化命令行界面工具，支持 📊 数据库、🐳 Docker、🎯 Redis、🗂️ 文件系统、☸️ Kubernetes 等多种资源管理</strong></p>
   
   <div>
     <a href="README.md" style="background: #f0f0f0; color: #333; padding: 8px 16px; margin: 5px; border-radius: 4px; text-decoration: none; display: inline-block;">English</a>
@@ -19,20 +19,20 @@
 ## 🌟 功能特性
 
 ### 🚀 核心功能
-- **数据库管理**: 连接和管理 MySQL 数据库，提供直观的用户界面
-- **Docker 操作**: 容器管理、日志查看、Shell 访问等
-- **Redis 管理**: Redis 连接管理和数据操作
-- **文件浏览器**: 高级文件系统导航，支持文件预览
-- **Kubernetes 集成**: K9s 配置管理和集群访问
-- **SSH 连接管理**: 集中式 SSH 主机管理
-- **跨平台支持**: 支持 Linux、macOS 和 Windows (AMD64 & ARM64)
+- **📊 数据库管理**: 连接和管理 MySQL 数据库，提供直观的用户界面
+- **🐳 Docker 操作**: 容器管理、日志查看、Shell 访问等
+- **🎯 Redis 管理**: Redis 连接管理和数据操作
+- **🗂️ 文件浏览器**: 高级文件系统导航，支持文件预览
+- **☸️ Kubernetes 集成**: K9s 配置管理和集群访问
+- **🖥️ SSH 连接管理**: 集中式 SSH 主机管理
+- **🌐 跨平台支持**: 支持 Linux、macOS 和 Windows (AMD64 & ARM64)
 
 ### 🎯 主要优势
-- **终端界面**: 基于 tview 构建的丰富 TUI，提供出色的终端体验
-- **热键支持**: 全面的键盘快捷键，提高导航效率
-- **插件系统**: 可扩展架构，支持自定义功能
-- **配置管理**: 基于 YAML 的配置，支持验证
-- **日志监控**: 内置日志系统，支持可配置级别
+- **🖥️ 终端界面**: 基于 tview 构建的丰富 TUI，提供出色的终端体验
+- **⌨️ 热键支持**: 全面的键盘快捷键，提高导航效率
+- **🔌 插件系统**: 可扩展架构，支持自定义功能
+- **⚙️ 配置管理**: 基于 YAML 的配置，支持验证
+- **📊 日志监控**: 内置日志系统，支持可配置级别
 
 ## 🖼️ 界面截图
 
@@ -97,14 +97,14 @@ LXZ 使用 YAML 配置文件，位置在：
 - Linux/macOS: `~/.config/lxz/`
 - Windows: `%APPDATA%\lxz\`
 
-### 快捷键
-- `F` - 切换全屏模式
-- `Ctrl+R` - 刷新数据
-- `Ctrl+N` - 创建新项目
-- `Ctrl+D` - 删除项目
-- `Enter` - 选择/执行
-- `Tab` - 切换焦点
-- `Escape` - 退出全屏/返回
+### ⌨️ 快捷键
+- `F` - 🔄 切换全屏模式
+- `Ctrl+R` - 🔄 刷新数据
+- `Ctrl+N` - ➕ 创建新项目
+- `Ctrl+D` - 🗑️ 删除项目
+- `Enter` - ✅ 选择/执行
+- `Tab` - 🔀 切换焦点
+- `Escape` - ↩️ 退出全屏/返回
 
 ## 🏗️ 架构
 
