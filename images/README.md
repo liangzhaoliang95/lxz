@@ -18,7 +18,7 @@
 ## 在README中引用
 
 ```markdown
-![描述](https://raw.githubusercontent.com/liangzhaoliang95/lxz/main/images/ui/图片名.png)
+![描述](https://raw.githubusercontent.com/liangzhaoliang95/lxz/master/images/ui/图片名.png)
 ```
 
 ## 注意事项

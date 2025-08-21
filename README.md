@@ -37,22 +37,22 @@
 ## 🖼️ Screenshots
 
 ### Database Browser
-![Database Browser](https://raw.githubusercontent.com/liangzhaoliang95/lxz/main/images/ui/db-browser.png)
+![Database Browser](https://raw.githubusercontent.com/liangzhaoliang95/lxz/master/images/ui/db-browser.png)
 
 ### Docker Browser
-![Docker Browser](https://raw.githubusercontent.com/liangzhaoliang95/lxz/main/images/ui/docker-browser.png)
+![Docker Browser](https://raw.githubusercontent.com/liangzhaoliang95/lxz/master/images/ui/docker-browser.png)
 
 ### Redis Browser
-![Redis Browser](https://raw.githubusercontent.com/liangzhaoliang95/lxz/main/images/ui/redis-browser.png)
+![Redis Browser](https://raw.githubusercontent.com/liangzhaoliang95/lxz/master/images/ui/redis-browser.png)
 
 ### File Browser
-![File Browser](https://raw.githubusercontent.com/liangzhaoliang95/lxz/main/images/ui/filt-browser.png)
+![File Browser](https://raw.githubusercontent.com/liangzhaoliang95/lxz/master/images/ui/filt-browser.png)
 
 ### K9s Browser
-![K9s Browser](https://raw.githubusercontent.com/liangzhaoliang95/lxz/main/images/ui/k9s-browser.png)
+![K9s Browser](https://raw.githubusercontent.com/liangzhaoliang95/lxz/master/images/ui/k9s-browser.png)
 
 ### SSH Connection
-![SSH Connection](https://raw.githubusercontent.com/liangzhaoliang95/lxz/main/images/ui/ssh-connect.png)
+![SSH Connection](https://raw.githubusercontent.com/liangzhaoliang95/lxz/master/images/ui/ssh-connect.png)
 
 ## 📦 Installation
 

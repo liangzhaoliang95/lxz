@@ -37,22 +37,22 @@
 ## 🖼️ 界面截图
 
 ### 数据库浏览器
-![数据库浏览器](https://raw.githubusercontent.com/liangzhaoliang95/lxz/main/images/ui/db-browser.png)
+![数据库浏览器](https://raw.githubusercontent.com/liangzhaoliang95/lxz/master/images/ui/db-browser.png)
 
 ### Docker浏览器
-![Docker浏览器](https://raw.githubusercontent.com/liangzhaoliang95/lxz/main/images/ui/docker-browser.png)
+![Docker浏览器](https://raw.githubusercontent.com/liangzhaoliang95/lxz/master/images/ui/docker-browser.png)
 
 ### Redis浏览器
-![Redis浏览器](https://raw.githubusercontent.com/liangzhaoliang95/lxz/main/images/ui/redis-browser.png)
+![Redis浏览器](https://raw.githubusercontent.com/liangzhaoliang95/lxz/master/images/ui/redis-browser.png)
 
 ### 文件浏览器
-![文件浏览器](https://raw.githubusercontent.com/liangzhaoliang95/lxz/main/images/ui/filt-browser.png)
+![文件浏览器](https://raw.githubusercontent.com/liangzhaoliang95/lxz/master/images/ui/filt-browser.png)
 
 ### K9s浏览器
-![K9s浏览器](https://raw.githubusercontent.com/liangzhaoliang95/lxz/main/images/ui/k9s-browser.png)
+![K9s浏览器](https://raw.githubusercontent.com/liangzhaoliang95/lxz/master/images/ui/k9s-browser.png)
 
 ### SSH连接
-![SSH连接](https://raw.githubusercontent.com/liangzhaoliang95/lxz/main/images/ui/ssh-connect.png)
+![SSH连接](https://raw.githubusercontent.com/liangzhaoliang95/lxz/master/images/ui/ssh-connect.png)
 
 ## 📦 安装
 
