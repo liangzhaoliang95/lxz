@@ -2,8 +2,10 @@ package ui
 
 import (
 	"fmt"
-	"github.com/liangzhaoliang95/lxz/internal/config"
 	"strings"
+
+	"github.com/liangzhaoliang95/lxz/internal/config"
+	ver "github.com/liangzhaoliang95/lxz/internal/version"
 
 	"github.com/liangzhaoliang95/tview"
 )
@@ -71,5 +73,21 @@ func (*Splash) layoutLogo(t *tview.TextView, styles *config.Styles) {
 }
 
 func (*Splash) layoutRev(t *tview.TextView, rev string, styles *config.Styles) {
-	_, _ = fmt.Fprintf(t, "[%s::b]Revision [red::b]%s", styles.Body().FgColor, rev)
+	// 获取版本信息
+	v := ver.GetVersion()
+
+	// 检查是否有新版本
+	updateInfo, err := ver.CheckForUpdates()
+	hasUpdate := err == nil && updateInfo != nil
+
+	// 显示版本信息
+	if hasUpdate {
+		// 如果有新版本，显示黄色提示和升级箭头
+		_, _ = fmt.Fprintf(t, "[%s::b]Version [yellow::b]%s [yellow::b]→ %s ↑",
+			styles.Body().FgColor, v.Version, updateInfo.LatestVersion)
+	} else {
+		// 如果没有新版本，只显示当前版本
+		_, _ = fmt.Fprintf(t, "[%s::b]Version [yellow::b]%s",
+			styles.Body().FgColor, v.Version)
+	}
 }
