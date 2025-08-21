@@ -8,6 +8,11 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"log/slog"
+	"os"
+	"runtime/debug"
+	"time"
+
 	"github.com/liangzhaoliang95/lxz/internal/color"
 	"github.com/liangzhaoliang95/lxz/internal/config"
 	"github.com/liangzhaoliang95/lxz/internal/config/data"
@@ -15,10 +20,6 @@ import (
 	"github.com/liangzhaoliang95/lxz/internal/view"
 	"github.com/lmittmann/tint"
 	"github.com/spf13/cobra"
-	"log/slog"
-	"os"
-	"runtime/debug"
-	"time"
 
 	"github.com/mattn/go-colorable"
 )
@@ -30,8 +31,7 @@ const (
 )
 
 var (
-	version, commit, date = "dev", "dev", "0"
-	lxzFlags              *config.Flags
+	lxzFlags *config.Flags
 
 	rootCmd = &cobra.Command{
 		Use:   appName,
@@ -117,7 +117,7 @@ func run(*cobra.Command, []string) error {
 	// 新建lxz应用实例
 	app := view.NewApp(cfg)
 	// 应用初始化
-	if err := app.Init(version, 2); err != nil {
+	if err := app.Init("", 2); err != nil {
 		return err
 	}
 

@@ -49,7 +49,25 @@ jobs:
           CGO_ENABLED: 0
         run: |
           echo "Building for ${{ matrix.goos }}/${{ matrix.goarch }}"
-          go build -ldflags="-s -w" -o ${{ matrix.artifact_name }} ./main.go
+          
+          # 获取版本信息
+          VERSION="${{ github.ref_name }}"
+          COMMIT="${{ github.sha }}"
+          DATE=$(date -u +%Y-%m-%d)
+          GO_VERSION=$(go version | awk '{print $3}')
+          
+          # 构建ldflags
+          LDFLAGS="-X 'github.com/liangzhaoliang95/lxz/internal/version.Version=$VERSION'"
+          LDFLAGS="$LDFLAGS -X 'github.com/liangzhaoliang95/lxz/internal/version.Commit=$COMMIT'"
+          LDFLAGS="$LDFLAGS -X 'github.com/liangzhaoliang95/lxz/internal/version.Date=$DATE'"
+          LDFLAGS="$LDFLAGS -X 'github.com/liangzhaoliang95/lxz/internal/version.GoVersion=$GO_VERSION'"
+          LDFLAGS="$LDFLAGS -X 'github.com/liangzhaoliang95/lxz/internal/version.Platform=${{ matrix.goos }}'"
+          LDFLAGS="$LDFLAGS -X 'github.com/liangzhaoliang95/lxz/internal/version.Arch=${{ matrix.goarch }}'"
+          LDFLAGS="$LDFLAGS -X 'github.com/liangzhaoliang95/lxz/internal/version.BuildTime=$(date -u +%Y-%m-%dT%H:%M:%SZ)'"
+          LDFLAGS="$LDFLAGS -s -w"
+          
+          echo "Build flags: $LDFLAGS"
+          go build -ldflags="$LDFLAGS" -o ${{ matrix.artifact_name }} ./main.go
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4

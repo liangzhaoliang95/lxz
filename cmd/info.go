@@ -2,9 +2,11 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/liangzhaoliang95/lxz/internal/color"
 	"github.com/liangzhaoliang95/lxz/internal/config"
 	"github.com/liangzhaoliang95/lxz/internal/ui"
+	ver "github.com/liangzhaoliang95/lxz/internal/version"
 	"github.com/spf13/cobra"
 )
 
@@ -23,7 +25,8 @@ func printInfo(*cobra.Command, []string) error {
 
 	const fmat = "%-27s %s\n"
 	printLogo(color.Cyan)
-	printTuple(fmat, "Version", version, color.Cyan)
+	v := ver.GetVersion()
+	printTuple(fmat, "Version", v.Version, color.Cyan)
 	printTuple(fmat, "Config", config.AppConfigFile, color.Cyan)
 	printTuple(fmat, "Custom Views", config.AppViewsFile, color.Cyan)
 	printTuple(fmat, "Plugins", config.AppPluginsFile, color.Cyan)
