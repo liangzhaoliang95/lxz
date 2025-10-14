@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
+	"strconv"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/liangzhaoliang95/lxz/internal/config"
 	"github.com/liangzhaoliang95/lxz/internal/drivers/redis_drivers"
@@ -11,8 +14,6 @@ import (
 	"github.com/liangzhaoliang95/lxz/internal/ui"
 	"github.com/liangzhaoliang95/lxz/internal/ui/dialog"
 	"github.com/liangzhaoliang95/tview"
-	"log/slog"
-	"strconv"
 )
 
 type RedisBrowser struct {
@@ -246,7 +247,7 @@ func (_this *RedisBrowser) createRedisConfigModel(evt *tcell.EventKey) *tcell.Ev
 				}
 			},
 			Config: &config.RedisConnConfig{
-				Port: 6379,
+				Port: opts.Config.Port,
 			},
 			Cancel: func() {},
 		}

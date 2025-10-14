@@ -8,14 +8,15 @@ package view
 import (
 	"context"
 	"fmt"
+	"log/slog"
+	"sync"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/liangzhaoliang95/lxz/internal/config"
 	"github.com/liangzhaoliang95/lxz/internal/drivers/redis_drivers"
 	"github.com/liangzhaoliang95/lxz/internal/helper"
 	"github.com/liangzhaoliang95/lxz/internal/view/base"
 	"github.com/liangzhaoliang95/tview"
-	"log/slog"
-	"sync"
 )
 
 type RedisDbListView struct {
@@ -143,7 +144,7 @@ func (_this *RedisDbListView) Start() {
 		keySize := _this.dbKeyNumMap[fmt.Sprintf("%d", i)]
 		_this.dbListUI.SetCell(i+1, 1,
 			tview.NewTableCell(fmt.Sprintf("%d", keySize)).
-				SetTextColor(helper.If(keySize > 0, tcell.ColorRed, tcell.ColorGreen)).
+				SetTextColor(helper.If[tcell.Color](keySize > 0, tcell.ColorRed, tcell.ColorGreen)).
 				SetAlign(tview.AlignCenter).
 				SetExpansion(1).
 				SetSelectable(true))
