@@ -1,31 +1,17 @@
 package config
 
 import (
-	"github.com/liangzhaoliang95/lxz/internal/slogs"
 	"log/slog"
 	"os"
 	"os/user"
 	"path/filepath"
-)
 
-const (
-	envPFAddress          = "LXZ_DEFAULT_PF_ADDRESS"
-	defaultPortFwdAddress = "localhost"
+	"github.com/liangzhaoliang95/lxz/internal/slogs"
 )
 
 // IsBoolSet checks if a bool ptr is set.
 func IsBoolSet(b *bool) bool {
 	return b != nil && *b
-}
-
-func isStringSet(s *string) bool {
-	return s != nil && *s != ""
-}
-
-func isYamlFile(file string) bool {
-	ext := filepath.Ext(file)
-
-	return ext == ".yml" || ext == ".yaml"
 }
 
 // isEnvSet checks if env var is set.
@@ -61,12 +47,4 @@ func MustLXZUser() string {
 		os.Exit(1)
 	}
 	return usr.Username
-}
-
-func defaultPFAddress() string {
-	if a := os.Getenv(envPFAddress); a != "" {
-		return a
-	}
-
-	return defaultPortFwdAddress
 }

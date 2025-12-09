@@ -63,37 +63,41 @@ func (_this *RedisDataComponent) refreshData() error {
 
 // newKey
 func (_this *RedisDataComponent) newKey() {
-	dialog.ShowCreateUpdateRedisData(&config.Dialog{}, _this.app.Content.Pages, &dialog.CreateUpdateRedisDataOpts{
-		Title:   "New Key",
-		Message: "",
-		Data: &redis_drivers.RedisData{
-			KetType: "string",
-			KeyTTL:  -1,
-		},
-		Ack: func(data *redis_drivers.RedisData) bool {
-			// 创建新键
-			slog.Info("Creating new key", "data", data)
-			if err := _this.rdbClient.CreateKeyData(data); err != nil {
-				slog.Error("Failed to create new key", "error", err)
-				_this.app.UI.Flash().Err(fmt.Errorf("failed to create new key: %w", err))
-				return false
-			}
-			// 刷新数据
-			err := _this.refreshRedisData()
-			if err != nil {
+	dialog.ShowCreateUpdateRedisData(
+		&config.Dialog{},
+		_this.app.Content.Pages,
+		&dialog.CreateUpdateRedisDataOpts{
+			Title:   "New Key",
+			Message: "",
+			Data: &redis_drivers.RedisData{
+				KetType: "string",
+				KeyTTL:  -1,
+			},
+			Ack: func(data *redis_drivers.RedisData) bool {
+				// 创建新键
+				slog.Info("Creating new key", "data", data)
+				if err := _this.rdbClient.CreateKeyData(data); err != nil {
+					slog.Error("Failed to create new key", "error", err)
+					_this.app.UI.Flash().Err(fmt.Errorf("failed to create new key: %w", err))
+					return false
+				}
+				// 刷新数据
+				err := _this.refreshRedisData()
+				if err != nil {
+					return true
+				}
+				// 刷新树形数据
+				_this.SetTreeData()
+				// 焦点切换到键分组树
+				_this.focusKeyGroupTree()
 				return true
-			}
-			// 刷新树形数据
-			_this.SetTreeData()
-			// 焦点切换到键分组树
-			_this.focusKeyGroupTree()
-			return true
+			},
+			Cancel: func() {
+				// 取消操作，焦点切换到键分组树
+				_this.focusKeyGroupTree()
+			},
 		},
-		Cancel: func() {
-			// 取消操作，焦点切换到键分组树
-			_this.focusKeyGroupTree()
-		},
-	})
+	)
 }
 
 // editKey
@@ -109,31 +113,35 @@ func (_this *RedisDataComponent) editKey() {
 		return
 	}
 
-	dialog.ShowCreateUpdateRedisData(&config.Dialog{}, _this.app.Content.Pages, &dialog.CreateUpdateRedisDataOpts{
-		Title:   "Edit Key",
-		Message: "",
-		Data:    keyData,
-		Ack: func(data *redis_drivers.RedisData) bool {
-			// 更新键数据
-			slog.Info("Updating key data", "key", key, "data", data)
-			if err := _this.rdbClient.EditKeyData(key, data); err != nil {
-				slog.Error("Failed to edit key data", "key", key, "error", err)
-				_this.app.UI.Flash().Err(fmt.Errorf("failed to edit key data: %w", err))
-				return false
-			}
-			// 刷新数据
-			err = _this.refreshRedisData()
-			if err != nil {
+	dialog.ShowCreateUpdateRedisData(
+		&config.Dialog{},
+		_this.app.Content.Pages,
+		&dialog.CreateUpdateRedisDataOpts{
+			Title:   "Edit Key",
+			Message: "",
+			Data:    keyData,
+			Ack: func(data *redis_drivers.RedisData) bool {
+				// 更新键数据
+				slog.Info("Updating key data", "key", key, "data", data)
+				if err := _this.rdbClient.EditKeyData(key, data); err != nil {
+					slog.Error("Failed to edit key data", "key", key, "error", err)
+					_this.app.UI.Flash().Err(fmt.Errorf("failed to edit key data: %w", err))
+					return false
+				}
+				// 刷新数据
+				err = _this.refreshRedisData()
+				if err != nil {
+					return true
+				}
+				// 刷新树形数据
+				_this.SetTreeData()
+				// 焦点切换到键分组树
+				_this.focusKeyGroupTree()
 				return true
-			}
-			// 刷新树形数据
-			_this.SetTreeData()
-			// 焦点切换到键分组树
-			_this.focusKeyGroupTree()
-			return true
+			},
+			Cancel: func() {},
 		},
-		Cancel: func() {},
-	})
+	)
 }
 
 func (_this *RedisDataComponent) deleteKey() {
@@ -148,10 +156,8 @@ func (_this *RedisDataComponent) deleteKey() {
 
 		_this.focusKeyGroupTree()
 	}, func() {
-
 		_this.focusKeyGroupTree()
 	})
-
 }
 
 func (_this *RedisDataComponent) focusSearch() {
@@ -255,7 +261,6 @@ func (_this *RedisDataComponent) Init(ctx context.Context) error {
 				_this.focusKeyGroupTree()
 			}
 		case tcell.KeyEscape:
-
 		}
 	})
 	_this.filterFlex.AddItem(_this.filterInput, 0, 5, true)
@@ -297,7 +302,7 @@ func (_this *RedisDataComponent) Init(ctx context.Context) error {
 				_this.app.UI.Flash().Err(fmt.Errorf("failed to get key value: %w", err))
 				return
 			}
-			slog.Info(fmt.Sprintf("%s", helper.Prettify(keyValue)))
+			slog.Info(helper.Prettify(keyValue))
 			_this.KeyValue.SetText(helper.Prettify(keyValue))
 			// 获取key类型
 			keyType, err := _this.rdbClient.GetKeyType(fullPath)
@@ -319,7 +324,6 @@ func (_this *RedisDataComponent) Init(ctx context.Context) error {
 
 			slog.Info("Selected key info", "TTL", ttl, "key", fullPath, "type", keyType, "value", keyValue)
 			_this.focusKeyInfoFlex()
-
 		}
 	})
 	_this.keyGroupTree.SetFocusFunc(func() {
@@ -393,7 +397,7 @@ func _setTreeNodeData(node *tview.TreeNode, data *model.RedisGroupTree) {
 	// 使用排序后的子节点
 	children := data.GetSortedChildren()
 	for _, child := range children {
-		fullPath := fmt.Sprintf("%s:%s", data.Name, child.Name)
+		var fullPath string
 		if rootPath == nil {
 			// 如果有根路径，则拼接完整路径
 			fullPath = child.Name
@@ -423,7 +427,6 @@ func (_this *RedisDataComponent) SetTreeData() {
 	_this.keyGroupTree.SetRoot(rootNode)
 	_this.keyGroupTree.SetCurrentNode(rootNode)
 	_setTreeNodeData(rootNode, _this.redisData.Tree)
-
 }
 
 func NewRedisDataComponent(

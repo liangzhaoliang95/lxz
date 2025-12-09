@@ -57,7 +57,7 @@ func NewApp(cfg *config.Config) *App {
 
 	// 初始化应用的部分小组件
 	// 集群信息组件
-	//a.UI.Views()["clusterInfo"] = NewClusterInfo(&a)
+	// a.UI.Views()["clusterInfo"] = NewClusterInfo(&a)
 	slog.Info("LXZ 目前只完成了实例的初始化")
 	appViewInstance = &a
 	appUiInstance = a.UI
@@ -90,16 +90,6 @@ func (a *App) keyboard(evt *tcell.EventKey) *tcell.EventKey {
 	}
 
 	return evt
-}
-
-func (a *App) toggleHeaderCmd(evt *tcell.EventKey) *tcell.EventKey {
-
-	a.UI.QueueUpdateDraw(func() {
-		a.showHeader = !a.showHeader
-		a.toggleHeader(a.showHeader, a.showLogo)
-	})
-
-	return nil
 }
 
 func (a *App) menuPageChange(evt *tcell.EventKey) *tcell.EventKey {
@@ -178,7 +168,7 @@ func (a *App) PrevCmd(*tcell.EventKey) *tcell.EventKey {
 
 func (a *App) bindKeys() {
 	a.UI.AddActions(ui.NewKeyActionsFromMap(ui.KeyMap{
-		//tcell.KeyCtrlE: ui.NewSharedKeyAction("ToggleHeader", a.toggleHeaderCmd, false),
+		// tcell.KeyCtrlE: ui.NewSharedKeyAction("ToggleHeader", a.toggleHeaderCmd, false),
 		tcell.KeyEscape: ui.NewSharedKeyAction("Go Back", a.PrevCmd, false),
 		tcell.KeyF1:     ui.NewSharedKeyAction("SSH Connect", a.menuPageChange, false),
 		tcell.KeyF2:     ui.NewSharedKeyAction("File Browser", a.menuPageChange, false),
@@ -203,30 +193,16 @@ func (a *App) buildHeader() tview.Primitive {
 	if a.showLogo {
 		header.AddItem(a.UI.Logo(), 17, 1, false)
 	}
-	//go func() {
+	// go func() {
 	//	for {
 	//		a.UI.Logo().Status().Clear()
 	//		fmt.Fprint(a.UI.Logo().Status(), time.Now().Format("15:04:05"))
 	//		a.UI.QueueUpdateDraw(func() {})
 	//		time.Sleep(1 * time.Second)
-	//	}
-	//}()
+	// }
+	// }()
 
 	return header
-}
-
-func (a *App) toggleHeader(header, logo bool) {
-	a.showHeader, a.showLogo = header, logo
-	flex, ok := a.UI.Main.GetPrimitive("main").(*tview.Flex)
-	if !ok {
-		slog.Error("Expecting flex view main panel. Exiting!")
-		os.Exit(1)
-	}
-	if a.showHeader {
-		flex.AddItemAtIndex(0, a.buildHeader(), 10, 1, false)
-	} else {
-		flex.RemoveItemAtIndex(0)
-	}
 }
 
 func (a *App) layout(ctx context.Context) {
@@ -243,7 +219,7 @@ func (a *App) layout(ctx context.Context) {
 	main.AddItem(a.buildHeader(), 5, 1, false)
 
 	// 状态指示器
-	//main.AddItem(a.UI.Status(), 5, 1, false)
+	// main.AddItem(a.UI.Status(), 5, 1, false)
 	main.AddItem(a.UI.SubMenu(), 5, 1, false)
 
 	// 内容区域 展示集群资源信息
@@ -330,7 +306,6 @@ func (a *App) Init(version string, _ int) error {
 
 // Run starts the application loop.
 func (a *App) Run() error {
-
 	go func() {
 		if !a.UI.Config.LXZ.IsSplashless() {
 			<-time.After(splashDelay)
@@ -339,20 +314,18 @@ func (a *App) Run() error {
 			a.UI.Main.SwitchToPage("main")
 
 			// 定位到第一个功能
-			a.inject(NewSshConnect(a), true)
+			if err := a.inject(NewSshConnect(a), true); err != nil {
+				slog.Error("Failed to inject SshConnect component", slogs.Error, err)
+			}
 		})
 	}()
 
 	slog.Info("🚀 LXZ 开始运行UI-APP")
-	//if err := a.command.defaultCmd(true); err != nil {
+	// if err := a.command.defaultCmd(true); err != nil {
 	//	return err
 	//}
 	a.UI.SetRunning(true)
-	if err := a.UI.Application.Run(); err != nil {
-		return err
-	}
-
-	return nil
+	return a.UI.Application.Run()
 }
 
 // 往应用中注入一个组件 一般用于激活某个页面

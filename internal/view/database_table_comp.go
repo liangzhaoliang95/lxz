@@ -8,13 +8,14 @@ package view
 import (
 	"context"
 	"fmt"
+	"log/slog"
+	"strings"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/liangzhaoliang95/lxz/internal/config"
 	"github.com/liangzhaoliang95/lxz/internal/drivers/database_drivers"
 	"github.com/liangzhaoliang95/lxz/internal/view/base"
 	"github.com/liangzhaoliang95/tview"
-	"log/slog"
-	"strings"
 )
 
 type DatabaseTableComponent struct {
@@ -122,7 +123,6 @@ func (_this *DatabaseTableComponent) Init(ctx context.Context) error {
 				_this.focusTable()
 			}
 		case tcell.KeyEscape:
-
 		}
 	})
 	_this.filterFlex.AddItem(_this.filterInput, 0, 5, true)
@@ -144,7 +144,6 @@ func (_this *DatabaseTableComponent) Init(ctx context.Context) error {
 }
 
 func (_this *DatabaseTableComponent) Start() {
-
 	// 初始化表格数据
 	records, _, err := _this.dbConn.GetRecords(
 		_this.dbName,
@@ -163,7 +162,6 @@ func (_this *DatabaseTableComponent) Start() {
 	// 渲染表格数据 不知道为什么，就是需要刷两遍才能定位到第一行
 	_this.SetTableData(records)
 	_this.SetTableData(records)
-
 }
 
 func (_this *DatabaseTableComponent) Stop() {

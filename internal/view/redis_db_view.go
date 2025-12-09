@@ -28,7 +28,6 @@ type RedisDbListView struct {
 	connConfig  *config.RedisConnConfig // redis连接配置
 	dbKeyNumMap map[string]int64        // 用于存储数据库名称和对应的索引
 	dbKeyMu     sync.Mutex              // 键数量映射的互斥锁，确保线程安全
-	selectDB    string                  // 当前选中的数据库
 	// UI组件
 	dbListUI *tview.Table // 用于显示库列表
 }
@@ -60,7 +59,7 @@ func (_this *RedisDbListView) Init(ctx context.Context) error {
 	_this.dbNum = dbNum
 
 	// 获取真实有key的数据库
-	hasKeyDbs, err := rdbClient.GetHasKeyDbNum()
+	hasKeyDbs, _ := rdbClient.GetHasKeyDbNum()
 
 	// 使用并发处理
 	wg := sync.WaitGroup{}
@@ -79,7 +78,7 @@ func (_this *RedisDbListView) Init(ctx context.Context) error {
 				if err != nil {
 					dbSize = 0
 				} else {
-					dbSize, err = conn.GetDBKeyNum()
+					dbSize, _ = conn.GetDBKeyNum()
 				}
 			}
 

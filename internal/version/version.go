@@ -100,7 +100,9 @@ func GetLatestGitHubRelease() (*GitHubRelease, error) {
 	if err != nil {
 		return nil, fmt.Errorf("请求GitHub API失败: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("GitHub API返回错误状态码: %d", resp.StatusCode)
@@ -228,21 +230,24 @@ func getDownloadURL(release *GitHubRelease, platform, arch string) string {
 	var expectedName string
 	switch platform {
 	case "linux":
-		if arch == "amd64" {
+		switch arch {
+		case "amd64":
 			expectedName = "lxz-linux-amd64"
-		} else if arch == "arm64" {
+		case "arm64":
 			expectedName = "lxz-linux-arm64"
 		}
 	case "darwin":
-		if arch == "amd64" {
+		switch arch {
+		case "amd64":
 			expectedName = "lxz-darwin-amd64"
-		} else if arch == "arm64" {
+		case "arm64":
 			expectedName = "lxz-darwin-arm64"
 		}
 	case "windows":
-		if arch == "amd64" {
+		switch arch {
+		case "amd64":
 			expectedName = "lxz-windows-amd64.exe"
-		} else if arch == "arm64" {
+		case "arm64":
 			expectedName = "lxz-windows-arm64.exe"
 		}
 	}

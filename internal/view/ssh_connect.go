@@ -9,16 +9,17 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"github.com/gdamore/tcell/v2"
-	"github.com/liangzhaoliang95/lxz/internal/ui"
-	"github.com/liangzhaoliang95/lxz/internal/view/base"
-	"github.com/liangzhaoliang95/tview"
 	"log/slog"
 	"os"
 	"os/exec"
 	"os/user"
 	"path/filepath"
 	"strings"
+
+	"github.com/gdamore/tcell/v2"
+	"github.com/liangzhaoliang95/lxz/internal/ui"
+	"github.com/liangzhaoliang95/lxz/internal/view/base"
+	"github.com/liangzhaoliang95/tview"
 )
 
 type SshConnect struct {
@@ -61,7 +62,7 @@ func (_this *SshConnect) Init(ctx context.Context) error {
 		SetBorderAttributes(tcell.AttrNone).
 		SetBorderPadding(0, 1, 1, 1).
 		SetBorderColor(tcell.ColorDefault)
-	//_this.envList.SetTitle(" 🌍 Environments ")
+	// _this.envList.SetTitle(" 🌍 Environments ")
 
 	// 初始化hostTable
 	_this.hostTable = tview.NewTable().
@@ -73,7 +74,7 @@ func (_this *SshConnect) Init(ctx context.Context) error {
 		SetBorderAttributes(tcell.AttrNone).
 		SetBorderPadding(0, 1, 1, 1).
 		SetBorderColor(tcell.ColorDefault)
-	//_this.hostTable.SetTitle(" 🔐 Hosts ")
+	// _this.hostTable.SetTitle(" 🔐 Hosts ")
 	return nil
 }
 
@@ -83,7 +84,7 @@ func (_this *SshConnect) Start() {
 	// 左侧配置源列表项
 	// ✅ 替换 envList.AddItem 中的回调闭包部分：
 	for _, source := range _this.envOrder {
-		//items := hostMap[source]
+		// items := hostMap[source]
 		srcName := source
 		// ⚠️ 闭包要绑定当前 source / items
 		_this.envList.AddItem(srcName, "", 0, nil)
@@ -136,7 +137,6 @@ func (_this *SshConnect) Start() {
 		if selectFunc != nil {
 			selectFunc()
 		}
-
 	}
 
 	// ✅ 设置默认边框颜色 + 焦点 + 强制刷新
@@ -159,7 +159,7 @@ func (_this *SshConnect) Start() {
 			cmd.Stdin = os.Stdin
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
-			cmd.Run()
+			_ = cmd.Run()
 		})
 	})
 }
@@ -169,9 +169,7 @@ func (_this *SshConnect) Stop() {
 }
 
 func (_this *SshConnect) TabFocusChange(event *tcell.EventKey) *tcell.EventKey {
-	if event.Key() == tcell.KeyTAB {
-
-	} else if event.Key() == tcell.KeyLeft {
+	if event.Key() == tcell.KeyLeft {
 		if _this.app.UI.GetFocus() == _this.envList {
 			return nil // 已经在 envList 上了
 		}
@@ -212,7 +210,9 @@ func parseConfigFileWithHostname(path string) ([]HostItem, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 
 	scanner := bufio.NewScanner(file)
 
@@ -310,7 +310,9 @@ func loadAllHostsGrouped() (map[string][]HostItem, []string, error) {
 		if err != nil {
 			continue
 		}
-		defer f.Close()
+		defer func() {
+			_ = f.Close()
+		}()
 
 		scanner := bufio.NewScanner(f)
 		for scanner.Scan() {

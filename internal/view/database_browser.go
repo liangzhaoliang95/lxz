@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
+	"strconv"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/liangzhaoliang95/lxz/internal/config"
 	"github.com/liangzhaoliang95/lxz/internal/drivers/database_drivers"
@@ -11,8 +14,6 @@ import (
 	"github.com/liangzhaoliang95/lxz/internal/ui"
 	"github.com/liangzhaoliang95/lxz/internal/ui/dialog"
 	"github.com/liangzhaoliang95/tview"
-	"log/slog"
-	"strconv"
 )
 
 type DatabaseBrowser struct {
@@ -176,7 +177,6 @@ func (_this *DatabaseBrowser) _refreshTableData() {
 func (_this *DatabaseBrowser) Start() {
 	// 设置数据
 	_this._refreshTableData()
-
 }
 
 func (_this *DatabaseBrowser) Stop() {
@@ -208,7 +208,9 @@ func (_this *DatabaseBrowser) startConnect(evt *tcell.EventKey) *tcell.EventKey 
 	loading := dialog.ShowLoadingDialog(appViewInstance.Content.Pages, "", appUiInstance.ForceDraw)
 
 	mainPage := NewDatabaseMainPage(_this.app, _this.connMap[_this.selectKey])
-	_this.app.inject(mainPage, false)
+	if err := _this.app.inject(mainPage, false); err != nil {
+		_this.app.UI.Flash().Err(fmt.Errorf("failed to inject database main page: %w", err))
+	}
 	loading.Hide()
 	return nil
 }
@@ -251,7 +253,10 @@ func (_this *DatabaseBrowser) createDatabaseConnectionModel(evt *tcell.EventKey)
 				}
 
 				_this.config.DBConnections = append(_this.config.DBConnections, opts)
-				_this.config.Save(true)
+				if err := _this.config.Save(true); err != nil {
+					_this.app.UI.Flash().Warn("Failed to save configuration: " + err.Error())
+					return false
+				}
 				_this._refreshTableData()
 				return true
 			},
@@ -261,11 +266,10 @@ func (_this *DatabaseBrowser) createDatabaseConnectionModel(evt *tcell.EventKey)
 					slog.Error("Failed to test connection", slogs.Error, err)
 					_this.app.UI.Flash().Warn(fmt.Sprintf("Failed to connect: %s", err.Error()))
 					return false
-				} else {
-					slog.Info("Connection test successful", "connection", conn.GetUniqKey())
-					_this.app.UI.Flash().Info("Connection test successful.")
-					return true
 				}
+				slog.Info("Connection test successful", "connection", conn.GetUniqKey())
+				_this.app.UI.Flash().Info("Connection test successful.")
+				return true
 			},
 			DBConnection: &config.DBConnection{
 				Port: 3306,
@@ -274,8 +278,7 @@ func (_this *DatabaseBrowser) createDatabaseConnectionModel(evt *tcell.EventKey)
 		}
 	}
 
-	switch evt.Rune() {
-	case 'e':
+	if evt.Rune() == 'e' {
 		// 编辑连接
 		_this._getCurrentSelectKey()
 		slog.Info("Editing connection", "selectKey", _this.selectKey)
@@ -313,7 +316,10 @@ func (_this *DatabaseBrowser) createDatabaseConnectionModel(evt *tcell.EventKey)
 					return false
 				}
 
-				_this.config.Save(true)
+				if err := _this.config.Save(true); err != nil {
+					_this.app.UI.Flash().Warn("Failed to save configuration: " + err.Error())
+					return false
+				}
 				_this._refreshTableData()
 				return true
 			},
@@ -321,13 +327,12 @@ func (_this *DatabaseBrowser) createDatabaseConnectionModel(evt *tcell.EventKey)
 				err := database_drivers.TestConnection(conn)
 				if err != nil {
 					slog.Error("Failed to test connection", slogs.Error, err)
-					_this.app.UI.Flash().Warn(fmt.Sprintf("Failed to connect"))
+					_this.app.UI.Flash().Warn("Failed to connect")
 					return false
-				} else {
-					slog.Info("Connection test successful", "connection", conn.GetUniqKey())
-					_this.app.UI.Flash().Info("Connect success")
-					return true
 				}
+				slog.Info("Connection test successful", "connection", conn.GetUniqKey())
+				_this.app.UI.Flash().Info("Connect success")
+				return true
 			},
 			DBConnection: _this.connMap[_this.selectKey],
 			Cancel:       func() {},
@@ -359,7 +364,10 @@ func (_this *DatabaseBrowser) deleteDatabaseConnectionModel(evt *tcell.EventKey)
 			}
 			_this.config.DBConnections = newConnections
 
-			_this.config.Save(true)
+			if err := _this.config.Save(true); err != nil {
+				_this.app.UI.Flash().Warn("Failed to save configuration: " + err.Error())
+				return false
+			}
 			_this._refreshTableData()
 			return true
 		},
@@ -383,7 +391,7 @@ func (_this *DatabaseBrowser) testConnect(evt *tcell.EventKey) *tcell.EventKey {
 	err := database_drivers.TestConnection(conn)
 	if err != nil {
 		slog.Error("Failed to test connection", slogs.Error, err)
-		_this.app.UI.Flash().Warn(fmt.Sprintf("Failed to connect"))
+		_this.app.UI.Flash().Warn("Failed to connect")
 	} else {
 		slog.Info("Connection test successful", "connection", conn.GetUniqKey())
 		_this.app.UI.Flash().Info("Connect success")
@@ -412,10 +420,6 @@ func loadConfiguration() (*config.DatabaseConfig, error) {
 	}
 
 	return databaseCfg, errs
-}
-
-func _getDbConnectionKey(name, provider string) string {
-	return fmt.Sprintf("%s@%s", provider, name)
 }
 
 func NewDatabaseBrowser(app *App) *DatabaseBrowser {

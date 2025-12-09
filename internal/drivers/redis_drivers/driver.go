@@ -55,15 +55,13 @@ func _initRedis(cfg *config.RedisConnConfig, dbNum int) *RedisClient {
 		dbNum:  dbNum,
 	}
 	return rdbClient
-
 }
 
 func GetConnect(cfg *config.RedisConnConfig, dbNum int) (*RedisClient, error) {
 	if db, exists := connMap.Load(connMapKey(cfg.Name, dbNum)); exists {
 		return db.(*RedisClient), nil
-	} else {
-		return nil, fmt.Errorf("redis connection not found for key: %s", cfg.Name)
 	}
+	return nil, fmt.Errorf("redis connection not found for key: %s", cfg.Name)
 }
 
 func GetConnectOrInit(cfg *config.RedisConnConfig, dbNum int) (*RedisClient, error) {
@@ -77,9 +75,8 @@ func GetConnectOrInit(cfg *config.RedisConnConfig, dbNum int) (*RedisClient, err
 	if db, exists := connMap.Load(key); exists {
 		if conn, ok := db.(*RedisClient); ok {
 			return conn, nil
-		} else {
-			return nil, fmt.Errorf("invalid type stored in connMap for key %s", key)
 		}
+		return nil, fmt.Errorf("invalid type stored in connMap for key %s", key)
 	}
 
 	iDriver := _initRedis(cfg, dbNum)
@@ -105,7 +102,6 @@ func TestConnection(cfg *config.RedisConnConfig) error {
 }
 
 func (_this *RedisClient) ListDB() (int, error) {
-
 	dbs, err := _this.rdb.ConfigGet(context.Background(), "databases").Result()
 	if err != nil {
 		return 0, fmt.Errorf("failed to list Redis databases: %w", err)
@@ -123,7 +119,7 @@ func (_this *RedisClient) ListDB() (int, error) {
 
 // GetRecords 获取指定数据库的记录
 func (_this *RedisClient) GetRecords(key string) ([]string, error) {
-	var cursor uint64 = 0
+	var cursor uint64
 	var allKeys = make([]string, 0)
 	var search = "*"
 	if key != "" {
@@ -144,7 +140,6 @@ func (_this *RedisClient) GetRecords(key string) ([]string, error) {
 
 	slog.Info("Keys retrieved successfully", "db", _this.dbNum, "search", search, "keys", allKeys)
 	return allKeys, nil
-
 }
 
 // GetHasKeyDbNum 获取有 key 的 Redis 数据库编号（如 0、1、2...）

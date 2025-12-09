@@ -5,11 +5,12 @@ package view
 import (
 	"context"
 	"fmt"
+	"log/slog"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/liangzhaoliang95/lxz/internal/config"
 	"github.com/liangzhaoliang95/lxz/internal/ui"
 	"github.com/liangzhaoliang95/tview"
-	"log/slog"
 )
 
 type tableChangeSubscribe struct {
@@ -54,7 +55,6 @@ func (_this *DatabaseMainPage) ToggleSearch(evt *tcell.EventKey) *tcell.EventKey
 		_this.tableView.tableComponents[_this.tableView.currentPageKey].focusSearch()
 	}
 	return nil
-
 }
 
 func (_this *DatabaseMainPage) bindKeys() {
@@ -68,9 +68,10 @@ func (_this *DatabaseMainPage) bindKeys() {
 }
 
 func (_this *DatabaseMainPage) goToQueryPage(evt *tcell.EventKey) *tcell.EventKey {
-
 	// 跳到手动查询页面
-	_this.app.inject(NewDatabaseQueryView(_this.app, _this.dbConnCfg), false)
+	if err := _this.app.inject(NewDatabaseQueryView(_this.app, _this.dbConnCfg), false); err != nil {
+		_this.app.UI.Flash().Err(fmt.Errorf("failed to inject database query view: %w", err))
+	}
 	return nil
 }
 

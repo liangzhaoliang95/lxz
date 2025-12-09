@@ -125,7 +125,7 @@ func run(*cobra.Command, []string) error {
 	if err := app.Run(); err != nil {
 		return err
 	}
-	//if view.ExitStatus != "" {
+	// if view.ExitStatus != "" {
 	//	return fmt.Errorf("view exit status %s", view.ExitStatus)
 	//}
 

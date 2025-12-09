@@ -8,11 +8,12 @@ package view
 import (
 	"context"
 	"fmt"
+	"log/slog"
+
 	"github.com/liangzhaoliang95/lxz/internal/config"
 	"github.com/liangzhaoliang95/lxz/internal/ui/dialog"
 	"github.com/liangzhaoliang95/lxz/internal/view/base"
 	"github.com/liangzhaoliang95/tview"
-	"log/slog"
 )
 
 type RedisDataView struct {
@@ -26,7 +27,6 @@ type RedisDataView struct {
 }
 
 func (_this *RedisDataView) selfFocus() {
-
 	comp := _this.redisDataComponents[_this.currentPageKey]
 	if comp == nil {
 		_this.app.UI.SetFocus(_this)
@@ -34,7 +34,6 @@ func (_this *RedisDataView) selfFocus() {
 		// 设置当前焦点为表格组件
 		_this.app.UI.SetFocus(comp.keyGroupTree)
 	}
-
 }
 
 func (_this *RedisDataView) LunchPage(dbNum int) error {
@@ -69,7 +68,6 @@ func (_this *RedisDataView) LunchPage(dbNum int) error {
 	_this.selfFocus()
 	appUiInstance.ForceDraw()
 	return nil
-
 }
 
 func (_this *RedisDataView) Init(ctx context.Context) error {

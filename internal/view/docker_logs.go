@@ -3,10 +3,11 @@ package view
 import (
 	"context"
 	"fmt"
+	"log/slog"
+
 	"github.com/liangzhaoliang95/lxz/internal/drivers/docker_drivers"
 	"github.com/liangzhaoliang95/lxz/internal/ui"
 	"github.com/liangzhaoliang95/tview"
-	"log/slog"
 )
 
 type DockerLogsPage struct {
@@ -25,7 +26,6 @@ func (_this *DockerLogsPage) bindKeys() {
 }
 
 func (_this *DockerLogsPage) showLogsForSelectedContainer(containerID string) {
-
 	reader, err := docker_drivers.ContainerLogs(containerID)
 	if err != nil {
 		slog.Error("Failed to get logs for container", "containerID", containerID, "error", err)
@@ -33,13 +33,15 @@ func (_this *DockerLogsPage) showLogsForSelectedContainer(containerID string) {
 	}
 
 	go func() {
-		defer reader.Close()
+		defer func() {
+			_ = reader.Close()
+		}()
 		buf := make([]byte, 4096)
 		for {
 			n, err := reader.Read(buf)
 			slog.Info("Reading logs", "containerID", containerID, "bytesRead", n, "error", err)
 			if n > 0 {
-				fmt.Fprintf(_this.logsView, string(buf[:n]))
+				_, _ = fmt.Fprintf(_this.logsView, "%s", string(buf[:n]))
 			}
 			if err != nil {
 				break
@@ -49,7 +51,13 @@ func (_this *DockerLogsPage) showLogsForSelectedContainer(containerID string) {
 }
 
 func (_this *DockerLogsPage) Init(ctx context.Context) error {
-	slog.Info("Initializing DockerLogsPage", "containerId", _this.containerId, "containerName", _this.containerName)
+	slog.Info(
+		"Initializing DockerLogsPage",
+		"containerId",
+		_this.containerId,
+		"containerName",
+		_this.containerName,
+	)
 	_this.bindKeys()
 	_this.SetInputCapture(_this.Keyboard)
 
@@ -75,7 +83,13 @@ func (_this *DockerLogsPage) Init(ctx context.Context) error {
 }
 
 func (_this *DockerLogsPage) Start() {
-	slog.Info("Starting DockerLogsPage", "containerId", _this.containerId, "containerName", _this.containerName)
+	slog.Info(
+		"Starting DockerLogsPage",
+		"containerId",
+		_this.containerId,
+		"containerName",
+		_this.containerName,
+	)
 	_this.showLogsForSelectedContainer(_this.containerId)
 	_this.app.UI.SetFocus(_this)
 }

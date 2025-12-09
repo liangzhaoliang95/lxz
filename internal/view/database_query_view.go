@@ -8,13 +8,14 @@ package view
 import (
 	"context"
 	"fmt"
+	"log/slog"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/liangzhaoliang95/lxz/internal/config"
 	"github.com/liangzhaoliang95/lxz/internal/drivers/database_drivers"
 	"github.com/liangzhaoliang95/lxz/internal/ui"
 	"github.com/liangzhaoliang95/lxz/internal/view/base"
 	"github.com/liangzhaoliang95/tview"
-	"log/slog"
 )
 
 type DatabaseQueryView struct {
@@ -107,10 +108,10 @@ func (_this *DatabaseQueryView) Init(ctx context.Context) error {
 		case tcell.KeyEnter:
 			whereClause := ""
 			if _this.filterInput.GetText() != "" {
-				whereClause = fmt.Sprintf("%s", _this.filterInput.GetText())
+				whereClause = _this.filterInput.GetText()
 			}
 			// 初始化表格数据
-			//loading := dialog.ShowLoadingDialog(_this.app.Content.Pages, "", _this.app.UI.Draw)
+			// loading := dialog.ShowLoadingDialog(_this.app.Content.Pages, "", _this.app.UI.Draw)
 			records, _, err := _this.dbConn.ExecuteQuery(
 				whereClause,
 			)
@@ -120,13 +121,11 @@ func (_this *DatabaseQueryView) Init(ctx context.Context) error {
 					Err(fmt.Errorf("%w", err))
 				_this.focusSearch()
 			} else {
-
 				_this.SetTableData(records)
 				_this.focusTable()
 			}
-			//loading.Hide()
+			// loading.Hide()
 		case tcell.KeyEscape:
-
 		}
 	})
 
@@ -153,11 +152,9 @@ func (_this *DatabaseQueryView) Init(ctx context.Context) error {
 }
 
 func (_this *DatabaseQueryView) Start() {
-
 	_this.SetTableData([][]string{
 		{"No data", "Please enter a query"},
 	})
-
 }
 
 func (_this *DatabaseQueryView) Stop() {

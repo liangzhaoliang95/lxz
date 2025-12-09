@@ -2,9 +2,10 @@ package database_drivers
 
 import (
 	"fmt"
-	"github.com/liangzhaoliang95/lxz/internal/config"
 	"log/slog"
 	"sync"
+
+	"github.com/liangzhaoliang95/lxz/internal/config"
 )
 
 const (
@@ -42,9 +43,8 @@ func _initDriver(cfg *config.DBConnection) (IDatabaseConn, error) {
 func GetConnect(cfg *config.DBConnection) (IDatabaseConn, error) {
 	if db, exists := connMap.Load(cfg.GetUniqKey()); exists {
 		return db.(IDatabaseConn), nil
-	} else {
-		return nil, fmt.Errorf("database connection not found for key: %s", cfg.GetUniqKey())
 	}
+	return nil, fmt.Errorf("database connection not found for key: %s", cfg.GetUniqKey())
 }
 
 func GetConnectOrInit(cfg *config.DBConnection) (IDatabaseConn, error) {
@@ -58,9 +58,8 @@ func GetConnectOrInit(cfg *config.DBConnection) (IDatabaseConn, error) {
 	if db, exists := connMap.Load(key); exists {
 		if conn, ok := db.(IDatabaseConn); ok {
 			return conn, nil
-		} else {
-			return nil, fmt.Errorf("invalid type stored in connMap for key %s", key)
 		}
+		return nil, fmt.Errorf("invalid type stored in connMap for key %s", key)
 	}
 
 	iDriver, err := _initDriver(cfg)
@@ -92,6 +91,8 @@ func TestConnection(cfg *config.DBConnection) error {
 	if err = sqlDB.Ping(); err != nil {
 		return fmt.Errorf("failed to ping database: %w", err)
 	}
-	conn.CloseConnect()
+	if err = conn.CloseConnect(); err != nil {
+		return fmt.Errorf("failed to close connection: %w", err)
+	}
 	return nil
 }

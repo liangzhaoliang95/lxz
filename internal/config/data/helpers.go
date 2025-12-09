@@ -11,8 +11,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const envFGNodeShell = "LXZ_FEATURE_GATE_NODE_SHELL"
-
 var invalidPathCharsRX = regexp.MustCompile(`[:/]+`)
 
 // SanitizeContextSubpath ensure cluster/context produces a valid path.
@@ -23,14 +21,6 @@ func SanitizeContextSubpath(cluster, context string) string {
 // SanitizeFileName ensure file spec is valid.
 func SanitizeFileName(name string) string {
 	return invalidPathCharsRX.ReplaceAllString(name, "-")
-}
-
-func defaultFGNodeShell() bool {
-	if a := os.Getenv(envFGNodeShell); a != "" {
-		return a == "true"
-	}
-
-	return false
 }
 
 // EnsureDirPath ensures a directory exist from the given path.

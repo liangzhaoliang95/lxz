@@ -8,12 +8,13 @@ package view
 import (
 	"context"
 	"fmt"
+	"log/slog"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/liangzhaoliang95/lxz/internal/config"
 	"github.com/liangzhaoliang95/lxz/internal/drivers/database_drivers"
 	"github.com/liangzhaoliang95/lxz/internal/view/base"
 	"github.com/liangzhaoliang95/tview"
-	"log/slog"
 )
 
 type DatabaseDbTree struct {
@@ -24,7 +25,6 @@ type DatabaseDbTree struct {
 	dbCfg        *config.DBConnection           // 数据库连接配置
 	dbConn       database_drivers.IDatabaseConn // 数据库连接接口
 	databaseList []string                       // 当前连接下的数据库列表
-	tableList    []string                       // 当前数据库下的表列表
 	selectDB     string                         // 当前选中的数据库
 	selectTable  string                         // 当前选中的表
 	// UI组件
@@ -94,11 +94,8 @@ func (_this *DatabaseDbTree) Init(ctx context.Context) error {
 					tableName: tableName,
 				}
 				_this.tableChangeChan <- tableChangeChan
-
 			}
-
 		}
-
 	})
 
 	_this.AddItem(_this.databaseUiTree, 0, 1, true)
@@ -115,14 +112,11 @@ func (_this *DatabaseDbTree) Start() {
 	_this.databaseUiTree.SetCurrentNode(rootNode)
 	// 遍历数据库列表，添加到树视图中
 	for _, dbName := range _this.databaseList {
-
 		dbNode := tview.NewTreeNode(dbName).
 			SetColor(tcell.ColorGold).
 			SetSelectable(true)
 		_this.databaseUiTree.GetRoot().AddChild(dbNode)
-
 	}
-
 }
 
 func (_this *DatabaseDbTree) Stop() {

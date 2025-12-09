@@ -7,12 +7,12 @@ package config
 
 import (
 	_ "embed"
-	"github.com/adrg/xdg"
-	"github.com/liangzhaoliang95/lxz/internal/config/data"
-	"github.com/liangzhaoliang95/lxz/internal/slogs"
 	"log/slog"
 	"os"
 	"path/filepath"
+
+	"github.com/liangzhaoliang95/lxz/internal/config/data"
+	"github.com/liangzhaoliang95/lxz/internal/slogs"
 )
 
 const (
@@ -22,6 +22,7 @@ const (
 	LXZLogsFile     = "lxz.log"
 )
 
+//nolint:unused // Template variables reserved for future use
 var (
 	//go:embed templates/benchmarks.yaml
 	// benchmarkTpl tracks benchmark default config template
@@ -185,57 +186,6 @@ func initHomeLocs() error {
 
 	// Redis配置文件路径
 	AppRedisConfigFile = filepath.Join(AppConfigDir, data.AppRedisConfigFile)
-
-	return nil
-}
-
-// initXDGLocs initializes lxz locations using XDG directory structure (deprecated)
-func initXDGLocs() error {
-	var err error
-
-	AppConfigDir, err = xdg.ConfigFile(AppName)
-	if err != nil {
-		return err
-	}
-
-	// 获取配置文件路径
-	AppConfigFile, err = xdg.ConfigFile(filepath.Join(AppName, data.MainConfigFile))
-	if err != nil {
-		return err
-	}
-
-	// 快捷键配置文件路径
-	AppHotKeysFile = filepath.Join(AppConfigDir, "hotkeys.yaml")
-	// 别名配置文件路径
-	AppAliasesFile = filepath.Join(AppConfigDir, "aliases.yaml")
-	// 插件配置文件路径
-	AppPluginsFile = filepath.Join(AppConfigDir, "plugins.yaml")
-	// 视图配置文件路径
-	AppViewsFile = filepath.Join(AppConfigDir, "views.yaml")
-	// 皮肤配置文件夹路径
-	AppSkinsDir = filepath.Join(AppConfigDir, "skins")
-	if e := data.EnsureFullPath(AppSkinsDir, data.DefaultDirMod); e != nil {
-		slog.Warn("No skins dir detected", slogs.Error, e)
-	}
-	// 堆栈截图保存路径
-	AppDumpsDir, err = xdg.StateFile(filepath.Join(AppName, "screen-dumps"))
-	if err != nil {
-		return err
-	}
-
-	// --- 以下是具体应用的相关配置
-
-	// 数据库管理配置文件路径
-	AppDatabaseConfigFile = filepath.Join(AppConfigDir, data.AppDatabaseConfigFile)
-
-	// Redis配置文件路径
-	AppRedisConfigFile = filepath.Join(AppConfigDir, data.AppRedisConfigFile)
-
-	// 检查配置文件夹
-	_, err = xdg.DataFile(AppName)
-	if err != nil {
-		return err
-	}
 
 	return nil
 }

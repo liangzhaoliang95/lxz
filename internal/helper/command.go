@@ -14,7 +14,7 @@ import (
 func Command(command string, args ...string) (string, error) {
 	cmd := exec.Command(command, args...)
 	cmd.Env = append(os.Environ(), "LC_ALL=C") // 设置环境变量，避免中文乱码
-	//cmd.Args = append(cmd.Args, arg)
+	// cmd.Args = append(cmd.Args, arg)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err := cmd.Run()

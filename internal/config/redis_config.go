@@ -3,14 +3,16 @@ package config
 import (
 	"errors"
 	"fmt"
+
 	"github.com/liangzhaoliang95/lxz/internal/helper"
+
+	"io/fs"
+	"log/slog"
+	"os"
 
 	"github.com/liangzhaoliang95/lxz/internal/config/data"
 	"github.com/liangzhaoliang95/lxz/internal/slogs"
 	"gopkg.in/yaml.v3"
-	"io/fs"
-	"log/slog"
-	"os"
 )
 
 type RedisConnConfig struct {
@@ -58,10 +60,9 @@ func (c *RedisConfig) SaveFile(path string) error {
 }
 
 func (c *RedisConfig) Merge(fileRead *RedisConfig) {
-
 	if len(fileRead.RedisConnConfig) == 0 {
 		slog.Info("[CONFIG] No redis connections found in config, using default connection")
-		//c.DBConnections = append(c.DBConnections, &DBConnection{})
+		// c.DBConnections = append(c.DBConnections, &DBConnection{})
 	} else {
 		c.RedisConnConfig = fileRead.RedisConnConfig
 	}

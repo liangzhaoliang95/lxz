@@ -51,7 +51,6 @@ func (_this *K9SBrowser) Init(ctx context.Context) error {
 			return
 		}
 		_this.selectConfigPath = _this.k9sConfigTableUI.GetCell(row, 1).Text
-
 	})
 	_this._initHeader()
 	_this.AddItem(_this.k9sConfigTableUI, 0, 1, true)
@@ -91,17 +90,15 @@ func (_this *K9SBrowser) _refreshData() {
 			SetAlign(tview.AlignLeft).
 			SetExpansion(1))
 	}
-
 }
 
 func (_this *K9SBrowser) Start() {
 	_this._refreshData()
 	_this.app.UI.SetFocus(_this.k9sConfigTableUI)
-
 }
 
 func (_this *K9SBrowser) Stop() {
-	//if _this.stopDebounceCh != nil {
+	// if _this.stopDebounceCh != nil {
 	//	close(_this.stopDebounceCh) // 停止防抖协程
 	//}
 }
@@ -109,13 +106,11 @@ func (_this *K9SBrowser) Stop() {
 // --- HELPER FUNCTIONS ---
 
 func (_this *K9SBrowser) K9SShellIn(evt *tcell.EventKey) *tcell.EventKey {
-
 	_this.Stop()
 	defer _this.Start()
 
 	_this.shellIn()
 	return nil
-
 }
 
 func (_this *K9SBrowser) shellIn() {

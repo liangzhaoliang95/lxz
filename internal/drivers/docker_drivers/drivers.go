@@ -3,12 +3,13 @@ package docker_drivers
 import (
 	"context"
 	"fmt"
+	"io"
+	"time"
+
 	"github.com/liangzhaoliang95/lxz/internal/helper"
 	"github.com/moby/moby/api/types/container"
 	"github.com/moby/moby/api/types/image"
 	"github.com/moby/moby/client"
-	"io"
-	"time"
 )
 
 var dockerClient *client.Client
@@ -42,7 +43,7 @@ func ListContainers() ([]*container.Summary, error) {
 	}
 	list := make([]*container.Summary, 0, len(containers))
 	for _, item := range containers {
-		fmt.Println(fmt.Sprintf("%s", helper.Prettify(item)))
+		fmt.Println(helper.Prettify(item))
 		list = append(list, &item)
 	}
 	return list, nil
@@ -139,7 +140,7 @@ func WaitContainerStopped(containerID string, timeout time.Duration) error {
 		}
 
 		// 检查状态不是 running
-		if inspect.State != nil && inspect.State.Running == false {
+		if inspect.State != nil && !inspect.State.Running {
 			return nil
 		}
 

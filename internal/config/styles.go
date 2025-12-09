@@ -575,11 +575,7 @@ func (s *Styles) Load(path string) error {
 	if err := data.JSONValidator.Validate(json.SkinSchema, bb); err != nil {
 		return err
 	}
-	if err := yaml.Unmarshal(bb, s); err != nil {
-		return err
-	}
-
-	return nil
+	return yaml.Unmarshal(bb, s)
 }
 
 // Update apply terminal colors based on styles.

@@ -7,13 +7,13 @@ package database_drivers
 
 import (
 	"fmt"
+
 	"github.com/liangzhaoliang95/lxz/internal/config"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
 type DatabaseConnIns struct {
-	dbConn        *config.DBConnection // 数据库连接
 	IDatabaseConn IDatabaseConn
 }
 
@@ -27,8 +27,7 @@ func (_this *DatabaseConn) InitConnect() error {
 		return nil
 	}
 	var dialector gorm.Dialector
-	switch _this.cfg.Provider {
-	case config.DatabaseProviderMySQL:
+	if _this.cfg.Provider == config.DatabaseProviderMySQL {
 		if _this.cfg.DBName != "" {
 			_this.cfg.URL = fmt.Sprintf(
 				"%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=true&loc=Local",

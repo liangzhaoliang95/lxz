@@ -2,9 +2,10 @@ package model
 
 import (
 	"fmt"
-	"github.com/liangzhaoliang95/lxz/internal/helper"
 	"log/slog"
 	"sync"
+
+	"github.com/liangzhaoliang95/lxz/internal/helper"
 
 	"github.com/liangzhaoliang95/lxz/internal/slogs"
 )
@@ -35,7 +36,7 @@ type StackListener interface {
 	StackPushed(Component)
 
 	// StackPopped indicates an item was deleted
-	StackPopped(old, new Component)
+	StackPopped(old, latest Component)
 
 	// StackTop indicates the top of the stack
 	StackTop(Component)

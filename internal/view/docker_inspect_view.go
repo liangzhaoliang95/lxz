@@ -8,6 +8,7 @@ package view
 import (
 	"context"
 	"fmt"
+
 	"github.com/liangzhaoliang95/lxz/internal/drivers/docker_drivers"
 	"github.com/liangzhaoliang95/lxz/internal/helper"
 	"github.com/liangzhaoliang95/lxz/internal/ui"
@@ -78,7 +79,6 @@ func (_this *DockerInspectView) _inspectImage() {
 		output = helper.Prettify(res)
 	}
 	_this.inspectViewUI.SetText(output)
-
 }
 
 func (_this *DockerInspectView) _inspectNetwork() {
@@ -115,7 +115,11 @@ func (_this *DockerInspectView) Stop() {
 
 // --- HELPER FUNCTIONS ---
 
-func NewDockerInspectView(app *App, inspectType string, inspectId, inspectName string) *DockerInspectView {
+func NewDockerInspectView(
+	app *App,
+	inspectType string,
+	inspectId, inspectName string,
+) *DockerInspectView {
 	var name = fmt.Sprintf("Inspect %s: %s", inspectType, inspectName)
 	f := &DockerInspectView{
 		BaseFlex:    NewBaseFlex(name),

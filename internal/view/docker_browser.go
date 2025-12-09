@@ -8,6 +8,9 @@ package view
 import (
 	"context"
 	"fmt"
+	"log/slog"
+	"time"
+
 	"github.com/fatih/color"
 	"github.com/gdamore/tcell/v2"
 	"github.com/liangzhaoliang95/lxz/internal/config"
@@ -16,8 +19,6 @@ import (
 	"github.com/liangzhaoliang95/lxz/internal/ui"
 	"github.com/liangzhaoliang95/lxz/internal/ui/dialog"
 	"github.com/liangzhaoliang95/tview"
-	"log/slog"
-	"time"
 )
 
 type DockerBrowser struct {
@@ -46,10 +47,17 @@ func (_this *DockerBrowser) ShellExec(evt *tcell.EventKey) *tcell.EventKey {
 		return nil
 	}
 	// 执行容器的Shell
-	slog.Info("Executing shell in container", "name", _this.selectContainerName, "containerID", _this.selectedContainerID)
+	slog.Info(
+		"Executing shell in container",
+		"name",
+		_this.selectContainerName,
+		"containerID",
+		_this.selectedContainerID,
+	)
 	err := _this.containerShellIn()
 	if err != nil {
-		_this.app.UI.Flash().Err(fmt.Errorf("failed to execute shell in container %s: %w", _this.selectedContainerID, err))
+		_this.app.UI.Flash().
+			Err(fmt.Errorf("failed to execute shell in container %s: %w", _this.selectedContainerID, err))
 		return nil
 	}
 
@@ -62,10 +70,11 @@ func (_this *DockerBrowser) ShowDetail(evt *tcell.EventKey) *tcell.EventKey {
 		_this.app.UI.Flash().Err(fmt.Errorf("please select a container first"))
 		return nil
 	}
-	_this.app.inject(NewDockerInspectView(_this.app, "container", _this.selectedContainerID, _this.selectContainerName), false)
+	if err := _this.app.inject(NewDockerInspectView(_this.app, "container", _this.selectedContainerID, _this.selectContainerName), false); err != nil {
+		_this.app.UI.Flash().Err(fmt.Errorf("failed to inject docker inspect view: %w", err))
+	}
 
 	return nil
-
 }
 
 // restartContainer
@@ -75,7 +84,11 @@ func (_this *DockerBrowser) restartContainer(evt *tcell.EventKey) *tcell.EventKe
 		"Are you sure you want to restart the container?",
 		_this.selectContainerName,
 		func(force bool) {
-			loading := dialog.ShowLoadingDialog(appViewInstance.Content.Pages, "", appUiInstance.ForceDraw)
+			loading := dialog.ShowLoadingDialog(
+				appViewInstance.Content.Pages,
+				"",
+				appUiInstance.ForceDraw,
+			)
 			var timeout *int
 			if force {
 				timeout = helper.Ptr(0)
@@ -98,10 +111,10 @@ func (_this *DockerBrowser) restartContainer(evt *tcell.EventKey) *tcell.EventKe
 
 // stopDeleteContainer
 func (_this *DockerBrowser) stopDeleteContainer(evt *tcell.EventKey) *tcell.EventKey {
-
 	detail, err := docker_drivers.InspectContainer(_this.selectedContainerID)
 	if err != nil {
-		_this.app.UI.Flash().Err(fmt.Errorf("failed to inspect container %s: %w", _this.selectedContainerID, err))
+		_this.app.UI.Flash().
+			Err(fmt.Errorf("failed to inspect container %s: %w", _this.selectedContainerID, err))
 		return nil
 	}
 	operation := "stop"
@@ -116,7 +129,11 @@ func (_this *DockerBrowser) stopDeleteContainer(evt *tcell.EventKey) *tcell.Even
 		fmt.Sprintf("Are you sure you want to %s the container?", operation),
 		_this.selectContainerName,
 		func(force bool) {
-			loading := dialog.ShowLoadingDialog(appViewInstance.Content.Pages, "", appUiInstance.ForceDraw)
+			loading := dialog.ShowLoadingDialog(
+				appViewInstance.Content.Pages,
+				"",
+				appUiInstance.ForceDraw,
+			)
 			var timeout *int
 			if force {
 				timeout = helper.Ptr(0)
@@ -125,8 +142,9 @@ func (_this *DockerBrowser) stopDeleteContainer(evt *tcell.EventKey) *tcell.Even
 			if operation == "delete" {
 				err = docker_drivers.RemoveContainer(_this.selectedContainerID, force)
 			} else {
-				err = docker_drivers.StopContainer(_this.selectedContainerID, timeout)
-				err = docker_drivers.WaitContainerStopped(_this.selectedContainerID, time.Duration(60)*time.Second)
+				if err = docker_drivers.StopContainer(_this.selectedContainerID, timeout); err == nil {
+					err = docker_drivers.WaitContainerStopped(_this.selectedContainerID, time.Duration(60)*time.Second)
+				}
 			}
 
 			if err != nil {
@@ -231,7 +249,13 @@ func (_this *DockerBrowser) _refreshData() {
 					ports += ", "
 				}
 				if port.PublicPort > 0 {
-					ports += fmt.Sprintf("%s:%d -> %d/%s", port.IP, port.PublicPort, port.PrivatePort, port.Type)
+					ports += fmt.Sprintf(
+						"%s:%d -> %d/%s",
+						port.IP,
+						port.PublicPort,
+						port.PrivatePort,
+						port.Type,
+					)
 				} else {
 					ports += fmt.Sprintf("%d/%s", port.PrivatePort, port.Type)
 				}
@@ -245,7 +269,6 @@ func (_this *DockerBrowser) _refreshData() {
 			SetAlign(tview.AlignLeft).
 			SetExpansion(1))
 	}
-
 }
 
 func (_this *DockerBrowser) Init(ctx context.Context) error {
@@ -269,7 +292,9 @@ func (_this *DockerBrowser) Init(ctx context.Context) error {
 		connName := _this.containerTableUI.GetCell(row, 1).Text
 		// 渲染日志页面
 		connID := _this.containerTableUI.GetCell(row, 0).Text
-		_this.app.inject(NewDockerLogsPage(_this.app, connID, connName), false)
+		if err := _this.app.inject(NewDockerLogsPage(_this.app, connID, connName), false); err != nil {
+			_this.app.UI.Flash().Err(fmt.Errorf("failed to inject docker logs page: %w", err))
+		}
 	})
 	// 设置表格的选择模式
 	_this.containerTableUI.SetSelectionChangedFunc(func(row, column int) {
@@ -280,7 +305,6 @@ func (_this *DockerBrowser) Init(ctx context.Context) error {
 		}
 		_this.selectedContainerID = _this.containerTableUI.GetCell(row, 0).Text
 		_this.selectContainerName = _this.containerTableUI.GetCell(row, 1).Text
-
 	})
 	_this._initHeader()
 
@@ -297,7 +321,7 @@ func (_this *DockerBrowser) Start() {
 }
 
 func (_this *DockerBrowser) Stop() {
-	//if _this.stopDebounceCh != nil {
+	// if _this.stopDebounceCh != nil {
 	//	close(_this.stopDebounceCh) // 停止防抖协程
 	//}
 }
@@ -305,13 +329,11 @@ func (_this *DockerBrowser) Stop() {
 // --- HELPER FUNCTIONS ---
 
 func (_this *DockerBrowser) containerShellIn() error {
-
 	_this.Stop()
 	defer _this.Start()
 
 	_this.shellIn()
 	return nil
-
 }
 
 func (_this *DockerBrowser) shellIn() {

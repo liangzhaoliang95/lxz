@@ -45,7 +45,5 @@ type UI struct {
 	UseFullGVRTitle bool `json:"useFullGVRTitle" yaml:"useFullGVRTitle"`
 
 	manualHeadless   *bool
-	manualLogoless   *bool
-	manualCrumbsless *bool
 	manualSplashless *bool
 }

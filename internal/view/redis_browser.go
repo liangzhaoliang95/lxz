@@ -163,7 +163,6 @@ func (_this *RedisBrowser) _refreshTableData() {
 func (_this *RedisBrowser) Start() {
 	// 设置数据
 	_this._refreshTableData()
-
 }
 
 func (_this *RedisBrowser) Stop() {
@@ -195,7 +194,9 @@ func (_this *RedisBrowser) startConnect(evt *tcell.EventKey) *tcell.EventKey {
 	loading := dialog.ShowLoadingDialog(appViewInstance.Content.Pages, "", appUiInstance.ForceDraw)
 
 	mainPage := NewRedisMainPage(_this.app, _this.connMap[_this.selectKey])
-	_this.app.inject(mainPage, false)
+	if err := _this.app.inject(mainPage, false); err != nil {
+		_this.app.UI.Flash().Err(fmt.Errorf("failed to inject Redis main page: %w", err))
+	}
 	loading.Hide()
 	return nil
 }
@@ -241,10 +242,9 @@ func (_this *RedisBrowser) createRedisConfigModel(evt *tcell.EventKey) *tcell.Ev
 					slog.Error("Failed to test connection", slogs.Error, err)
 					_this.app.UI.Flash().Warn(fmt.Sprintf("Failed to connect: %s", err.Error()))
 					return false
-				} else {
-					_this.app.UI.Flash().Info("Connection successful.")
-					return true
 				}
+				_this.app.UI.Flash().Info("Connection successful.")
+				return true
 			},
 			Config: &config.RedisConnConfig{
 				Port: 6379,
@@ -253,8 +253,7 @@ func (_this *RedisBrowser) createRedisConfigModel(evt *tcell.EventKey) *tcell.Ev
 		}
 	}
 
-	switch evt.Rune() {
-	case 'e':
+	if evt.Rune() == 'e' {
 		// 编辑连接
 		_this._getCurrentSelectKey()
 		slog.Info("Editing connection", "selectKey", _this.selectKey)
@@ -295,12 +294,11 @@ func (_this *RedisBrowser) createRedisConfigModel(evt *tcell.EventKey) *tcell.Ev
 			Test: func(conn *config.RedisConnConfig) bool {
 				err := redis_drivers.TestConnection(conn)
 				if err != nil {
-					_this.app.UI.Flash().Warn(fmt.Sprintf("Failed to connect"))
+					_this.app.UI.Flash().Warn("Failed to connect")
 					return false
-				} else {
-					_this.app.UI.Flash().Info("Connect success")
-					return true
 				}
+				_this.app.UI.Flash().Info("Connect success")
+				return true
 			},
 			Config: _this.connMap[_this.selectKey],
 			Cancel: func() {},
@@ -339,10 +337,9 @@ func (_this *RedisBrowser) deleteRedisConnectionModel(evt *tcell.EventKey) *tcel
 			if err != nil {
 				_this.app.UI.Flash().Warn("Failed to save configuration: " + err.Error())
 				return false
-			} else {
-				slog.Info("Connection deleted successfully", "key", key)
-				_this.app.UI.Flash().Info("Connection deleted successfully.")
 			}
+			slog.Info("Connection deleted successfully", "key", key)
+			_this.app.UI.Flash().Info("Connection deleted successfully.")
 			_this._refreshTableData()
 			return true
 		},
@@ -356,7 +353,7 @@ func (_this *RedisBrowser) deleteRedisConnectionModel(evt *tcell.EventKey) *tcel
 func (_this *RedisBrowser) _getCurrentSelectKey() {
 	row, _ := _this.connListTableUI.GetSelection()
 	currentSelectedName := _this.connListTableUI.GetCell(row, 0).Text
-	_this.selectKey = fmt.Sprintf("%s", currentSelectedName)
+	_this.selectKey = currentSelectedName
 }
 
 func (_this *RedisBrowser) testConnect(evt *tcell.EventKey) *tcell.EventKey {
@@ -364,7 +361,7 @@ func (_this *RedisBrowser) testConnect(evt *tcell.EventKey) *tcell.EventKey {
 	conn := _this.connMap[_this.selectKey]
 	err := redis_drivers.TestConnection(conn)
 	if err != nil {
-		_this.app.UI.Flash().Warn(fmt.Sprintf("Failed to connect"))
+		_this.app.UI.Flash().Warn("Failed to connect")
 	} else {
 		_this.app.UI.Flash().Info("Connect success")
 	}

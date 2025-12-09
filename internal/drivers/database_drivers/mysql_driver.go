@@ -28,7 +28,6 @@ func (_this *MySQLDriver) GetDBConn() (*DatabaseConn, error) {
 		}
 	}
 	return _this.DatabaseConn, nil
-
 }
 
 // GetDbList 获取当前MySQL实例的数据库列表
@@ -49,7 +48,9 @@ func (_this *MySQLDriver) GetDbList() ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to query databases: %w", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 	for rows.Next() {
 		var dbName string
 		if err := rows.Scan(&dbName); err != nil {
@@ -77,7 +78,9 @@ func (_this *MySQLDriver) GetTableList(dbName string) ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to query tables: %w", err)
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 	for rows.Next() {
 		var tableName string
 		if err := rows.Scan(&tableName); err != nil {
@@ -86,7 +89,6 @@ func (_this *MySQLDriver) GetTableList(dbName string) ([]string, error) {
 		tableList = append(tableList, tableName)
 	}
 	return tableList, nil
-
 }
 
 func (_this *MySQLDriver) GetRecords(
@@ -129,13 +131,15 @@ func (_this *MySQLDriver) GetRecords(
 
 	query += " LIMIT ?, ?"
 
-	slog.Debug("Executing query: ", query, " with offset: ", offset, " and limit: ", limit)
+	slog.Debug("Executing query", "query", query, "offset", offset, "limit", limit)
 
 	paginatedRows, err := sqlDB.Query(query, offset, limit)
 	if err != nil {
 		return nil, 0, err
 	}
-	defer paginatedRows.Close()
+	defer func() {
+		_ = paginatedRows.Close()
+	}()
 
 	columns, err := paginatedRows.Columns()
 	if err != nil {
@@ -192,7 +196,6 @@ func (_this *MySQLDriver) GetRecords(
 }
 
 func (_this *MySQLDriver) ExecuteQuery(query string) ([][]string, int, error) {
-
 	if _this.dbConn == nil {
 		err := _this.InitConnect()
 		if err != nil {
@@ -209,7 +212,9 @@ func (_this *MySQLDriver) ExecuteQuery(query string) ([][]string, int, error) {
 	if err != nil {
 		return nil, 0, err
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	columns, err := rows.Columns()
 	if err != nil {

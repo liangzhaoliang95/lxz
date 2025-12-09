@@ -2,18 +2,8 @@ package helper
 
 import (
 	"log/slog"
-	"strconv"
 	"time"
 )
-
-func formatTime(i int64, unit string) string {
-	if i == 1 {
-		return "1 " + unit
-	}
-	slog.Info("formatTime", "value", i, "unit", unit)
-	return strconv.FormatInt(i, 10) + " " + unit + "s"
-
-}
 
 func NowS() int64 {
 	return time.Now().Unix()

@@ -14,6 +14,9 @@ func Prettify(i interface{}) string {
 		i = m // 将i转换为map
 	}
 
-	resp, _ := json.MarshalIndent(i, "", "  ")
+	resp, err := json.MarshalIndent(i, "", "  ")
+	if err != nil {
+		return "{}"
+	}
 	return string(resp)
 }

@@ -8,11 +8,12 @@ package view
 import (
 	"context"
 	"fmt"
+	"log/slog"
+
 	"github.com/liangzhaoliang95/lxz/internal/config"
 	"github.com/liangzhaoliang95/lxz/internal/ui/dialog"
 	"github.com/liangzhaoliang95/lxz/internal/view/base"
 	"github.com/liangzhaoliang95/tview"
-	"log/slog"
 )
 
 type DatabaseTableView struct {
@@ -26,7 +27,6 @@ type DatabaseTableView struct {
 }
 
 func (_this *DatabaseTableView) selfFocus() {
-
 	comp := _this.tableComponents[_this.currentPageKey]
 	if comp == nil {
 		_this.app.UI.SetFocus(_this)
@@ -34,7 +34,6 @@ func (_this *DatabaseTableView) selfFocus() {
 		// 设置当前焦点为表格组件
 		_this.app.UI.SetFocus(comp.dataTable)
 	}
-
 }
 
 func (_this *DatabaseTableView) LunchPage(dbName, tableName string) error {
@@ -69,7 +68,6 @@ func (_this *DatabaseTableView) LunchPage(dbName, tableName string) error {
 	_this.selfFocus()
 	appUiInstance.ForceDraw()
 	return nil
-
 }
 
 func (_this *DatabaseTableView) Init(ctx context.Context) error {

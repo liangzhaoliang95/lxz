@@ -7,19 +7,19 @@ package view
 
 import (
 	"context"
-	"errors"
 	"fmt"
+	"log/slog"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"time"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/liangzhaoliang95/lxz/internal/config"
 	"github.com/liangzhaoliang95/lxz/internal/ui"
 	"github.com/liangzhaoliang95/lxz/internal/ui/dialog"
 	"github.com/liangzhaoliang95/lxz/internal/view/base"
 	"github.com/liangzhaoliang95/tview"
-	"log/slog"
-	"os"
-	"os/exec"
-	"path/filepath"
-	"time"
 )
 
 type FileBrowser struct {
@@ -71,7 +71,7 @@ func (_this *FileBrowser) Init(ctx context.Context) error {
 func (_this *FileBrowser) Start() {
 	// ✅ 设置默认边框颜色 + 焦点 + 强制刷新
 	_this.tree.SetBorderColor(base.ActiveBorderColor)
-	go func(a *FileBrowser) {
+	go func() {
 		ticker := time.NewTicker(100 * time.Millisecond)
 		defer ticker.Stop()
 
@@ -118,11 +118,11 @@ func (_this *FileBrowser) Start() {
 				return
 			}
 		}
-	}(_this)
+	}()
 }
 
 func (_this *FileBrowser) Stop() {
-	//if _this.stopDebounceCh != nil {
+	// if _this.stopDebounceCh != nil {
 	//	close(_this.stopDebounceCh) // 停止防抖协程
 	//}
 }
@@ -158,7 +158,6 @@ func (_this *FileBrowser) initRootNode() {
 
 // initTree
 func (_this *FileBrowser) initTree() {
-
 	_this.tree = tview.NewTreeView().
 		SetRoot(_this.rootNode).
 		SetCurrentNode(_this.rootNode)
@@ -203,10 +202,8 @@ func (_this *FileBrowser) initTree() {
 			} else {
 				node.SetExpanded(!node.IsExpanded())
 			}
-
 		}
 	})
-
 }
 
 // initPreview
@@ -221,10 +218,8 @@ func (_this *FileBrowser) initPreview() {
 }
 
 func (_this *FileBrowser) TabFocusChange(event *tcell.EventKey) *tcell.EventKey {
-	if event.Key() == tcell.KeyTAB {
-
-	} else if event.Key() == tcell.KeyEnter {
-
+	switch event.Key() {
+	case tcell.KeyEnter:
 		ref := _this.tree.GetCurrentNode().GetReference()
 		if ref == nil {
 			_this.preview.SetText("[red]请选择一个文件或目录")
@@ -245,11 +240,11 @@ func (_this *FileBrowser) TabFocusChange(event *tcell.EventKey) *tcell.EventKey 
 		if _this.app.UI.GetFocus() == _this.preview {
 			return nil // 已经在 preview 上了
 		}
-	} else if event.Key() == tcell.KeyLeft {
+	case tcell.KeyLeft:
 		if _this.app.UI.GetFocus() == _this.tree {
 			return nil // 已经在 tree 上了
 		}
-	} else if event.Key() == tcell.KeyRight {
+	case tcell.KeyRight:
 		if _this.app.UI.GetFocus() == _this.preview {
 			return nil // 已经在 preview 上了
 		}
@@ -282,17 +277,18 @@ func (_this *FileBrowser) fileCtrl(event *tcell.EventKey) *tcell.EventKey {
 	path := ref.(string)
 	info, err := os.Stat(path)
 	if err != nil {
-		_this.app.UI.Flash().Err(fmt.Errorf("读取文件信息失败: %v", err))
+		_this.app.UI.Flash().Err(fmt.Errorf("读取文件信息失败: %w", err))
 		return nil
 	}
 
 	slog.Info("[fileCtrl] ", "path", path, "isDir", info.IsDir(), "node", node.GetText())
 
-	if event.Key() == tcell.KeyCtrlD {
+	switch event.Key() {
+	case tcell.KeyCtrlD:
 		slog.Info("Will delete file", "path", path)
 		_this.deleteFileModel(node, path)
 		return nil
-	} else if event.Key() == tcell.KeyCtrlN {
+	case tcell.KeyCtrlN:
 		slog.Info("Will create a new file", "path", path)
 		if info.IsDir() {
 			// 在此目录下新建文件
@@ -302,30 +298,35 @@ func (_this *FileBrowser) fileCtrl(event *tcell.EventKey) *tcell.EventKey {
 			_this.createFileModel(node.GetParentNode(), filepath.Dir(path))
 		}
 		return nil
-	} else if event.Key() == tcell.KeyCtrlR {
+	case tcell.KeyCtrlR:
 		// 文件或者文件夹改名
-		slog.Info("[fileCtrl] Rename File", "path", path, "isDir", info.IsDir(), "node", node.GetText())
-		if info.IsDir() {
-
-		} else {
+		slog.Info(
+			"[fileCtrl] Rename File",
+			"path",
+			path,
+			"isDir",
+			info.IsDir(),
+			"node",
+			node.GetText(),
+		)
+		if !info.IsDir() {
 			_this.renameFileModel(node.GetParentNode(), path)
 		}
 		return nil
 	}
 
-	switch event.Rune() {
-	case 'e':
+	if event.Rune() == 'e' {
 		if info.IsDir() {
 			return nil
 		}
 
-		//🟡 暂停 tview UI 进入外部编辑器（阻塞直到编辑完成）
+		// 🟡 暂停 tview UI 进入外部编辑器（阻塞直到编辑完成）
 		_this.app.UI.Suspend(func() {
 			err := openSystemEditor(path)
 			if err != nil {
 				slog.Error("[编辑器打开失败] %v\n", "err", os.Stderr)
 				_this.app.UI.Flash().Err(fmt.Errorf("open editor failed"))
-				fmt.Scanln()
+				_, _ = fmt.Scanln()
 			}
 		})
 
@@ -374,7 +375,9 @@ func (_this *FileBrowser) createFileModel(node *tview.TreeNode, path string) {
 					_this.app.UI.Flash().Err(fmt.Errorf("[red]<%s>[-] create failed", fileName))
 					return false
 				}
-				defer file.Close()
+				defer func() {
+					_ = file.Close()
+				}()
 			}
 			_this.app.UI.Flash().Info(fmt.Sprintf("[red]<%s>[-] create success", fileName))
 
@@ -409,7 +412,7 @@ func (_this *FileBrowser) renameFileModel(node *tview.TreeNode, path string) {
 			err := os.Rename(path, newFilePath)
 			if err != nil {
 				_this.app.UI.Flash().
-					Err(errors.New(fmt.Sprintf("[red]<%s>[-] rename failed", filepath.Base(path))))
+					Err(fmt.Errorf("[red]<%s>[-] rename failed", filepath.Base(path)))
 				return false
 			}
 			_this.addChildren(node, path)

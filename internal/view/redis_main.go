@@ -5,11 +5,12 @@ package view
 import (
 	"context"
 	"fmt"
+	"log/slog"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/liangzhaoliang95/lxz/internal/config"
 	"github.com/liangzhaoliang95/lxz/internal/ui"
 	"github.com/liangzhaoliang95/tview"
-	"log/slog"
 )
 
 type redisDbChangeSubscribe struct {
@@ -104,12 +105,13 @@ func (_this *RedisMainPage) DeleteKey(event *tcell.EventKey) *tcell.EventKey {
 
 func (_this *RedisMainPage) TabFocusChange(event *tcell.EventKey) *tcell.EventKey {
 	currentCompPage := _this.dataViewUI.redisDataComponents[_this.dataViewUI.currentPageKey]
-	if _this.app.UI.GetFocus() == _this.dbListViewUI.dbListUI ||
-		_this.app.UI.GetFocus() == _this.dbListViewUI {
+	currentFocus := _this.app.UI.GetFocus()
+	switch currentFocus {
+	case _this.dbListViewUI.dbListUI, _this.dbListViewUI:
 		_this.dataViewUI.selfFocus()
-	} else if _this.app.UI.GetFocus() == currentCompPage.KeyValue {
+	case currentCompPage.KeyValue:
 		_this.dataViewUI.selfFocus()
-	} else {
+	default:
 		_this.dbListViewUI.selfFocus()
 	}
 	return nil
@@ -131,7 +133,6 @@ func (_this *RedisMainPage) ToggleSearch(evt *tcell.EventKey) *tcell.EventKey {
 		_this.dataViewUI.redisDataComponents[_this.dataViewUI.currentPageKey].focusSearch()
 	}
 	return nil
-
 }
 
 func (_this *RedisMainPage) Init(ctx context.Context) error {
@@ -167,7 +168,6 @@ func (_this *RedisMainPage) Start() {
 
 	// 启动表格视图的初始化
 	_this.dataViewUI.Start()
-
 }
 
 func (_this *RedisMainPage) Stop() {
