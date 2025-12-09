@@ -1,7 +1,7 @@
 # LXZ Makefile
 # 简化构建和版本管理流程
 
-.PHONY: help build clean test release version check-update
+.PHONY: help build clean test release version check-update install-golangci-lint install-goimports install-golines lint-staged format-staged
 
 # 默认目标
 .DEFAULT_GOAL := help
@@ -79,21 +79,110 @@ release: ## 发布新版本
 	@./release.sh
 
 # 开发工具
-fmt: ## 格式化代码
-	@echo "格式化代码..."
-	@go fmt ./...
+fmt: install-goimports install-golines ## 格式化代码（使用 golines 和 goimports）
+	@echo "✨ 格式化代码..."
+	@if [ -n "$(FILES)" ]; then \
+		echo "格式化指定文件..."; \
+		echo "1. 使用 goimports 优化 import 顺序..."; \
+		for file in $(FILES); do \
+			goimports -w "$$file" || true; \
+		done; \
+		echo "2. 使用 golines 格式化代码..."; \
+		for file in $(FILES); do \
+			golines -w --max-len=100 "$$file" || true; \
+		done; \
+	else \
+		echo "格式化整个项目..."; \
+		echo "1. 使用 goimports 优化 import 顺序..."; \
+		find . -name "*.go" -not -path "./vendor/*" -not -path "./.git/*" -not -path "./bin/*" -not -path "./dist/*" -type f -exec goimports -w {} \; 2>/dev/null || true; \
+		echo "2. 使用 golines 格式化代码..."; \
+		golines -w --max-len=100 --ignored-dirs=vendor,.git,bin,dist . || true; \
+	fi
+	@echo "✅ 代码格式化完成!"
 
 vet: ## 代码静态分析
 	@echo "代码静态分析..."
 	@go vet ./...
 
-lint: ## 代码检查
-	@echo "代码检查..."
-	@if command -v golangci-lint >/dev/null 2>&1; then \
-		golangci-lint run; \
+# 工具安装
+install-golangci-lint: ## 安装 golangci-lint
+	@if ! command -v golangci-lint >/dev/null 2>&1; then \
+		echo "📥 安装 golangci-lint..."; \
+		curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $$(go env GOPATH)/bin latest; \
+		echo "✅ golangci-lint 安装完成"; \
 	else \
-		echo "golangci-lint 未安装，跳过代码检查"; \
+		echo "✅ golangci-lint 已安装"; \
 	fi
+
+install-goimports: ## 安装 goimports
+	@if ! command -v goimports >/dev/null 2>&1; then \
+		echo "📥 安装 goimports..."; \
+		go install golang.org/x/tools/cmd/goimports@latest || exit 1; \
+		echo "✅ goimports 安装完成"; \
+	else \
+		echo "✅ goimports 已安装"; \
+	fi
+	@command -v goimports >/dev/null 2>&1 || (echo "❌ goimports 安装失败或未找到" && exit 1)
+
+install-golines: ## 安装 golines
+	@if ! command -v golines >/dev/null 2>&1; then \
+		echo "📥 安装 golines..."; \
+		go install github.com/segmentio/golines@latest || exit 1; \
+		echo "✅ golines 安装完成"; \
+	else \
+		echo "✅ golines 已安装"; \
+	fi
+	@command -v golines >/dev/null 2>&1 || (echo "❌ golines 安装失败或未找到" && exit 1)
+
+lint: install-golangci-lint ## 代码检查
+	@echo "🔍 运行代码检查..."
+	@if [ -n "$(PACKAGES)" ]; then \
+		for pkg in $(PACKAGES); do \
+			echo "检查包: $$pkg"; \
+			golangci-lint run "$$pkg" || exit 1; \
+		done; \
+	else \
+		golangci-lint run ./...; \
+	fi
+	@echo "✅ 代码检查完成!"
+
+lint-staged: install-golangci-lint ## 检查暂存的 Go 文件
+	@echo "🔍 检查暂存的 Go 文件..."
+	@staged_files=$$(git diff --cached --name-only --diff-filter=ACM | grep '\.go$$' || true); \
+	if [ -z "$$staged_files" ]; then \
+		echo "ℹ️  没有暂存的 Go 文件"; \
+		exit 0; \
+	fi; \
+	packages=$$(echo "$$staged_files" | xargs -n1 dirname | sort -u | grep -v '^\.$$' | sed 's|^|./|' || true); \
+	if [ -z "$$packages" ]; then \
+		echo "ℹ️  没有找到对应的包"; \
+		exit 0; \
+	fi; \
+	echo "发现包: $$(echo "$$packages" | wc -l | tr -d ' ') 个"; \
+	echo "$$packages" | while IFS= read -r pkg; do \
+		if [ -n "$$pkg" ] && [ -d "$$pkg" ]; then \
+			echo "  检查包: $$pkg"; \
+			golangci-lint run "$$pkg" || exit 1; \
+		fi; \
+	done
+	@echo "✅ 检查完成!"
+
+format-staged: install-goimports install-golines ## 格式化暂存的 Go 文件
+	@echo "✨ 格式化暂存的 Go 文件..."
+	@staged_files=$$(git diff --cached --name-only --diff-filter=ACM | grep '\.go$$' || true); \
+	if [ -z "$$staged_files" ]; then \
+		echo "ℹ️  没有暂存的 Go 文件"; \
+		exit 0; \
+	fi; \
+	echo "发现暂存文件: $$(echo "$$staged_files" | wc -l | tr -d ' ') 个"; \
+	echo "$$staged_files" | while IFS= read -r file; do \
+		if [ -n "$$file" ] && [ -f "$$file" ]; then \
+			echo "  格式化: $$file"; \
+			goimports -w "$$file" || true; \
+			golines -w --max-len=100 "$$file" || true; \
+		fi; \
+	done
+	@echo "✅ 格式化完成!"
 
 # 依赖管理
 deps: ## 下载依赖

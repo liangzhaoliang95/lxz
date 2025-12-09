@@ -1,0 +1,119 @@
+# Lefthook Git hooks 配置文件
+# 文档: https://github.com/evilmartians/lefthook
+
+# Pre-commit hooks - 在提交前运行
+pre-commit:
+  parallel: true
+  commands:
+    # 使用 Makefile 的 format-staged 命令格式化暂存的 Go 代码
+    go-fmt:
+      run: make format-staged
+      stage_fixed: true
+      glob: "*.go"
+
+    # 使用 Makefile 的 lint-staged 命令检查暂存的 Go 代码
+    # 注意：golangci-lint 已经包含了 go vet 和 revive 检查，所以不需要单独的 go-vet 和 go-revive hooks
+    go-golangci-lint:
+      run: make lint-staged
+      glob: "*.go"
+      skip:
+        - merge
+        - rebase
+
+    # 检查是否有调试代码（如 fmt.Println, debugger 等）
+    no-debug:
+      run: |
+        debug_patterns="fmt\\.Print|fmt\\.Printf|fmt\\.Println|debugger|console\\.log"
+        debug_files=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(go|js|ts)$' || true)
+        if [ -n "$debug_files" ]; then
+          for file in $debug_files; do
+            if grep -E "$debug_patterns" "$file" >/dev/null 2>&1; then
+              echo "⚠️  $file 中可能包含调试代码，请检查"
+            fi
+          done
+        fi
+      skip:
+        - merge
+        - rebase
+
+# Commit-msg hooks - 检查提交消息格式
+commit-msg:
+  commands:
+    commit-msg-lint:
+      run: |
+        # 检查提交消息格式
+        # 格式: <type>(<scope>): <subject>
+        # type: feat, fix, docs, style, refactor, test, chore, perf, ci, build, revert
+        
+        # 获取提交消息文件路径（Lefthook 会将文件路径作为参数传递）
+        if [ -n "$1" ] && [ -f "$1" ]; then
+          commit_msg_file="$1"
+        else
+          # 尝试从环境变量或默认位置获取
+          commit_msg_file="${LEFTHOOK_COMMIT_MSG_FILE:-.git/COMMIT_EDITMSG}"
+        fi
+        
+        # 读取提交消息
+        if [ -f "$commit_msg_file" ]; then
+          commit_msg=$(cat "$commit_msg_file" 2>/dev/null | head -n 1 || echo "")
+        else
+          # 如果文件不存在，尝试从标准输入读取
+          commit_msg=$(cat 2>/dev/null | head -n 1 || echo "")
+        fi
+        
+        # 跳过空消息
+        if [ -z "$commit_msg" ]; then
+          exit 0
+        fi
+        
+        # 跳过 merge 和 revert 提交
+        if echo "$commit_msg" | grep -qE '^(Merge|Revert)'; then
+          exit 0
+        fi
+        
+        # 检查提交消息格式
+        if ! echo "$commit_msg" | grep -qE '^(feat|fix|docs|style|refactor|test|chore|perf|ci|build|revert)(\(.+\))?: .+'; then
+          echo "❌ 提交消息格式不正确"
+          echo ""
+          echo "当前提交消息: $commit_msg"
+          echo ""
+          echo "正确格式: <type>(<scope>): <subject>"
+          echo ""
+          echo "类型 (type):"
+          echo "  feat:     新功能"
+          echo "  fix:      修复bug"
+          echo "  docs:     文档变更"
+          echo "  style:    代码格式（不影响代码运行的变动）"
+          echo "  refactor: 重构（既不是新增功能，也不是修复bug）"
+          echo "  test:     增加测试"
+          echo "  chore:    构建过程或辅助工具的变动"
+          echo "  perf:     性能优化"
+          echo "  ci:       CI配置文件和脚本的变更"
+          echo "  build:    构建系统或外部依赖的变更"
+          echo "  revert:   回滚"
+          echo ""
+          echo "示例:"
+          echo "  feat(xjyl): 添加获取第三方用户信息接口"
+          echo "  fix(login): 修复登录token验证问题"
+          echo "  docs: 更新README文档"
+          exit 1
+        fi
+
+# Pre-push hooks - 在推送前运行
+pre-push:
+  commands:
+    # go-test 已禁用（测试需要配置环境，可能失败）
+    # go-test:
+    #   run: |
+    #     echo "🧪 运行测试..."
+    #     go test ./... -short
+    #   glob: "*.go"
+    #   skip:
+    #     - merge
+    #     - rebase
+
+    # 使用 Makefile 的 build 命令检查编译
+    go-build:
+      run: make build
+      glob: "*.go"
+
