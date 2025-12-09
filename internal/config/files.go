@@ -81,18 +81,14 @@ func InitLogLoc() error {
 	case isEnvSet(LXZEnvLogsDir):
 		appLogDir = os.Getenv(LXZEnvLogsDir)
 	case isEnvSet(LXZEnvConfigDir):
-		tmpDir, err := UserTmpDir()
-		if err != nil {
-			return err
-		}
-		appLogDir = tmpDir
+		appLogDir = os.Getenv(LXZEnvConfigDir)
 	default:
-		var err error
-		// 使用xfg的StateFile方法获取配置目录
-		appLogDir, err = xdg.StateFile(AppName)
+		// 默认使用 ~/.lxz 目录
+		homeDir, err := os.UserHomeDir()
 		if err != nil {
 			return err
 		}
+		appLogDir = filepath.Join(homeDir, ".lxz")
 	}
 	// 确保日志目录存在 不存在则创建
 	if err := data.EnsureFullPath(appLogDir, data.DefaultDirMod); err != nil {
@@ -111,8 +107,8 @@ func InitLocs() error {
 		return initLxzEnvLocs()
 	}
 
-	// 默认使用 xdg 目录结构
-	return initXDGLocs()
+	// 默认使用 ~/.lxz 目录
+	return initHomeLocs()
 }
 
 func initLxzEnvLocs() error {
@@ -144,6 +140,56 @@ func initLxzEnvLocs() error {
 	return nil
 }
 
+// initHomeLocs initializes lxz locations using ~/.lxz directory
+func initHomeLocs() error {
+	// 获取用户主目录
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+
+	// 设置配置目录为 ~/.lxz
+	AppConfigDir = filepath.Join(homeDir, ".lxz")
+	if err := data.EnsureFullPath(AppConfigDir, data.DefaultDirMod); err != nil {
+		return err
+	}
+
+	// 主配置文件路径
+	AppConfigFile = filepath.Join(AppConfigDir, data.MainConfigFile)
+
+	// 快捷键配置文件路径
+	AppHotKeysFile = filepath.Join(AppConfigDir, "hotkeys.yaml")
+	// 别名配置文件路径
+	AppAliasesFile = filepath.Join(AppConfigDir, "aliases.yaml")
+	// 插件配置文件路径
+	AppPluginsFile = filepath.Join(AppConfigDir, "plugins.yaml")
+	// 视图配置文件路径
+	AppViewsFile = filepath.Join(AppConfigDir, "views.yaml")
+
+	// 皮肤配置文件夹路径
+	AppSkinsDir = filepath.Join(AppConfigDir, "skins")
+	if err := data.EnsureFullPath(AppSkinsDir, data.DefaultDirMod); err != nil {
+		slog.Warn("Unable to create skins dir", slogs.Dir, AppSkinsDir, slogs.Error, err)
+	}
+
+	// 堆栈截图保存路径
+	AppDumpsDir = filepath.Join(AppConfigDir, "screen-dumps")
+	if err := data.EnsureFullPath(AppDumpsDir, data.DefaultDirMod); err != nil {
+		slog.Warn("Unable to create screen-dumps dir", slogs.Dir, AppDumpsDir, slogs.Error, err)
+	}
+
+	// --- 以下是具体应用的相关配置
+
+	// 数据库管理配置文件路径
+	AppDatabaseConfigFile = filepath.Join(AppConfigDir, data.AppDatabaseConfigFile)
+
+	// Redis配置文件路径
+	AppRedisConfigFile = filepath.Join(AppConfigDir, data.AppRedisConfigFile)
+
+	return nil
+}
+
+// initXDGLocs initializes lxz locations using XDG directory structure (deprecated)
 func initXDGLocs() error {
 	var err error
 

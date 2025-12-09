@@ -247,7 +247,7 @@ func (_this *RedisBrowser) createRedisConfigModel(evt *tcell.EventKey) *tcell.Ev
 				}
 			},
 			Config: &config.RedisConnConfig{
-				Port: opts.Config.Port,
+				Port: 6379,
 			},
 			Cancel: func() {},
 		}

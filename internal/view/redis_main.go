@@ -74,6 +74,10 @@ func (_this *RedisMainPage) NewKey(event *tcell.EventKey) *tcell.EventKey {
 
 // EditKey 编辑当前选中的键
 func (_this *RedisMainPage) EditKey(event *tcell.EventKey) *tcell.EventKey {
+	// 如果当前焦点在输入框上，不拦截按键事件，让用户正常输入
+	if ui.IsInputPrimitive(_this.app.UI.GetFocus()) {
+		return event
+	}
 	currentCompPage := _this.dataViewUI.redisDataComponents[_this.dataViewUI.currentPageKey]
 	if _this.app.UI.GetFocus() != currentCompPage.keyGroupTree {
 		_this.app.UI.Flash().Err(fmt.Errorf("please select a key first"))

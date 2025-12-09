@@ -93,9 +93,12 @@ lxz --headless
 ```
 
 ### Configuration
-LXZ uses YAML configuration files located in:
-- Linux/macOS: `~/.config/lxz/`
-- Windows: `%APPDATA%\lxz\`
+LXZ uses YAML configuration files located in `~/.lxz/` directory (all platforms).
+
+To migrate from old configuration locations, run:
+```bash
+./migrate-config.sh
+```
 
 ### ⌨️ Key Bindings
 - `F` - 🔄 Toggle fullscreen mode
