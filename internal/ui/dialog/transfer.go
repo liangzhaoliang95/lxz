@@ -1,11 +1,12 @@
 package dialog
 
 import (
+	"strconv"
+	"strings"
+
 	"github.com/liangzhaoliang95/lxz/internal/config"
 	"github.com/liangzhaoliang95/lxz/internal/ui"
 	"github.com/liangzhaoliang95/tview"
-	"strconv"
-	"strings"
 )
 
 const confirmKey = "confirm"

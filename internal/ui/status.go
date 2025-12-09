@@ -7,11 +7,12 @@ package ui
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/liangzhaoliang95/lxz/internal/config"
 	"github.com/liangzhaoliang95/lxz/internal/model"
 	"github.com/liangzhaoliang95/tview"
-	"strings"
 )
 
 type Status struct {

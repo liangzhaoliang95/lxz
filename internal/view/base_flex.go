@@ -7,12 +7,13 @@ package view
 
 import (
 	"fmt"
+	"log/slog"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/liangzhaoliang95/lxz/internal/model"
 	"github.com/liangzhaoliang95/lxz/internal/ui"
 	"github.com/liangzhaoliang95/lxz/internal/view/base"
 	"github.com/liangzhaoliang95/tview"
-	"log/slog"
 )
 
 type BaseFlex struct {

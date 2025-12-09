@@ -1,10 +1,11 @@
 package ui
 
 import (
-	"github.com/gdamore/tcell/v2"
 	"log/slog"
 	"slices"
 	"sync"
+
+	"github.com/gdamore/tcell/v2"
 
 	"github.com/liangzhaoliang95/lxz/internal/model"
 	"github.com/liangzhaoliang95/lxz/internal/slogs"

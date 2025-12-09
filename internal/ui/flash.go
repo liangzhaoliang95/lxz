@@ -2,11 +2,12 @@ package ui
 
 import (
 	"context"
+	"log/slog"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/liangzhaoliang95/lxz/internal/config"
 	"github.com/liangzhaoliang95/lxz/internal/model"
 	"github.com/liangzhaoliang95/tview"
-	"log/slog"
 )
 
 const (

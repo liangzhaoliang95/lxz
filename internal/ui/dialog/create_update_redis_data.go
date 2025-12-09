@@ -2,13 +2,14 @@ package dialog
 
 import (
 	"fmt"
+	"log/slog"
+	"strconv"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/liangzhaoliang95/lxz/internal/config"
 	"github.com/liangzhaoliang95/lxz/internal/drivers/redis_drivers"
 	"github.com/liangzhaoliang95/lxz/internal/ui"
 	"github.com/liangzhaoliang95/tview"
-	"log/slog"
-	"strconv"
 )
 
 type CreateUpdateRedisDataFn func(data *redis_drivers.RedisData) bool

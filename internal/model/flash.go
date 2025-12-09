@@ -3,9 +3,10 @@ package model
 import (
 	"context"
 	"fmt"
-	"github.com/liangzhaoliang95/lxz/internal/slogs"
 	"log/slog"
 	"time"
+
+	"github.com/liangzhaoliang95/lxz/internal/slogs"
 )
 
 const (

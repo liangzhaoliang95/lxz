@@ -2,12 +2,13 @@ package dialog
 
 import (
 	"fmt"
+	"log/slog"
+	"strconv"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/liangzhaoliang95/lxz/internal/config"
 	"github.com/liangzhaoliang95/lxz/internal/ui"
 	"github.com/liangzhaoliang95/tview"
-	"log/slog"
-	"strconv"
 )
 
 type CreateDatabaseConnectionFn func(connection *config.DBConnection) bool
@@ -20,7 +21,11 @@ type CreateDatabaseConnectionOpts struct {
 	Cancel         cancelFunc
 }
 
-func ShowCreateCreateDatabaseConnection(styles *config.Dialog, pages *ui.Pages, opts *CreateDatabaseConnectionOpts) {
+func ShowCreateCreateDatabaseConnection(
+	styles *config.Dialog,
+	pages *ui.Pages,
+	opts *CreateDatabaseConnectionOpts,
+) {
 	f := newBaseModelForm(styles)
 
 	providerMap := make(map[string]int)
@@ -31,9 +36,14 @@ func ShowCreateCreateDatabaseConnection(styles *config.Dialog, pages *ui.Pages, 
 	slog.Info("providerMap", "providerMap", providerMap)
 
 	modal := tview.NewModalForm("<"+opts.Title+">", f.Form)
-	f.AddDropDown("Provider:", config.DatabaseProviderList, providerMap[opts.DBConnection.Provider], func(s string, i int) {
-		opts.DBConnection.Provider = s
-	})
+	f.AddDropDown(
+		"Provider:",
+		config.DatabaseProviderList,
+		providerMap[opts.DBConnection.Provider],
+		func(s string, i int) {
+			opts.DBConnection.Provider = s
+		},
+	)
 
 	f.AddInputField("Name:", opts.DBConnection.Name, 0, nil, func(v string) {
 		opts.DBConnection.Name = v
@@ -49,13 +59,19 @@ func ShowCreateCreateDatabaseConnection(styles *config.Dialog, pages *ui.Pages, 
 	f.AddInputField("Host:", opts.DBConnection.Host, 0, nil, func(v string) {
 		opts.DBConnection.Host = v
 	})
-	f.AddInputField("Port:", fmt.Sprintf("%d", opts.DBConnection.Port), 0, tview.InputFieldInteger, func(v string) {
-		port, err := strconv.Atoi(v)
-		if err != nil {
-			slog.Error("Invalid port number", "port", v, "error", err)
-		}
-		opts.DBConnection.Port = int64(port)
-	})
+	f.AddInputField(
+		"Port:",
+		fmt.Sprintf("%d", opts.DBConnection.Port),
+		0,
+		tview.InputFieldInteger,
+		func(v string) {
+			port, err := strconv.Atoi(v)
+			if err != nil {
+				slog.Error("Invalid port number", "port", v, "error", err)
+			}
+			opts.DBConnection.Port = int64(port)
+		},
+	)
 	f.AddInputField("DBName:", "", 0, nil, func(v string) {
 		opts.DBConnection.DBName = v
 	})

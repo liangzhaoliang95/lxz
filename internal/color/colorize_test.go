@@ -1,8 +1,9 @@
 package color_test
 
 import (
-	"github.com/liangzhaoliang95/lxz/internal/color"
 	"testing"
+
+	"github.com/liangzhaoliang95/lxz/internal/color"
 
 	"github.com/stretchr/testify/assert"
 )

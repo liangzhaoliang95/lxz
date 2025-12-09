@@ -9,7 +9,7 @@ import (
 type Config struct {
 	Repository string `json:"repository" yaml:"repository"`
 	AutoCheck  bool   `json:"auto_check" yaml:"auto_check"`
-	CheckURL   string `json:"check_url" yaml:"check_url"`
+	CheckURL   string `json:"check_url"  yaml:"check_url"`
 }
 
 // DefaultConfig 默认配置

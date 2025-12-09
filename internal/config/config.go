@@ -3,14 +3,15 @@ package config
 import (
 	"errors"
 	"fmt"
+	"io/fs"
+	"log/slog"
+	"os"
+
 	"github.com/liangzhaoliang95/lxz/internal/config/data"
 	"github.com/liangzhaoliang95/lxz/internal/config/json"
 	"github.com/liangzhaoliang95/lxz/internal/helper"
 	"github.com/liangzhaoliang95/lxz/internal/slogs"
 	"gopkg.in/yaml.v3"
-	"io/fs"
-	"log/slog"
-	"os"
 )
 
 // Config tracks LXZ configuration options.

@@ -7,10 +7,11 @@ package ui
 
 import (
 	"fmt"
+	"log/slog"
+
 	"github.com/liangzhaoliang95/lxz/internal/model"
 	"github.com/liangzhaoliang95/lxz/internal/slogs"
 	"github.com/liangzhaoliang95/tview"
-	"log/slog"
 )
 
 type Pages struct {

@@ -2,12 +2,13 @@ package dialog
 
 import (
 	"fmt"
+	"log/slog"
+	"strconv"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/liangzhaoliang95/lxz/internal/config"
 	"github.com/liangzhaoliang95/lxz/internal/ui"
 	"github.com/liangzhaoliang95/tview"
-	"log/slog"
-	"strconv"
 )
 
 type CreateRedisConnectionFn func(connection *config.RedisConnConfig) bool
