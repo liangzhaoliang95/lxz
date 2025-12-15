@@ -118,11 +118,11 @@ jobs:
             ### Linux/macOS
             ```bash
             # 下载二进制文件
-            wget https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/lxz-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m)
-            
+            wget https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/lxz-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')
+
             # 重命名并移动到PATH目录
-            sudo mv lxz-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m) /usr/local/bin/lxz
-            
+            sudo mv lxz-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/') /usr/local/bin/lxz
+
             # 添加执行权限
             sudo chmod +x /usr/local/bin/lxz
             ```

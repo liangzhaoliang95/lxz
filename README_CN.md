@@ -73,7 +73,25 @@ sudo chmod +x /usr/local/bin/lxz
 ```
 
 ### 下载预构建二进制文件
-访问 [Releases](https://github.com/liangzhaoliang95/lxz/releases) 页面下载适合您平台的预构建二进制文件。
+
+#### Linux/macOS
+```bash
+# 下载二进制文件
+wget https://github.com/liangzhaoliang95/lxz/releases/download/v1.0.7/lxz-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')
+
+# 重命名并移动到PATH目录
+sudo mv lxz-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/') /usr/local/bin/lxz
+
+# 添加执行权限
+sudo chmod +x /usr/local/bin/lxz
+```
+
+#### Windows
+从 [Releases](https://github.com/liangzhaoliang95/lxz/releases) 页面下载对应的可执行文件：
+- AMD64 架构: `lxz-windows-amd64.exe`
+- ARM64 架构: `lxz-windows-arm64.exe`
+
+或访问 [Releases](https://github.com/liangzhaoliang95/lxz/releases) 页面下载适合您平台的预构建二进制文件。
 
 ## 🚀 使用方法
 

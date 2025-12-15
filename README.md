@@ -73,7 +73,25 @@ sudo chmod +x /usr/local/bin/lxz
 ```
 
 ### Download Pre-built Binaries
-Visit [Releases](https://github.com/liangzhaoliang95/lxz/releases) page to download pre-built binaries for your platform.
+
+#### Linux/macOS
+```bash
+# Download binary
+wget https://github.com/liangzhaoliang95/lxz/releases/download/v1.0.7/lxz-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')
+
+# Rename and move to PATH
+sudo mv lxz-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/') /usr/local/bin/lxz
+
+# Add execute permission
+sudo chmod +x /usr/local/bin/lxz
+```
+
+#### Windows
+Download the appropriate executable from the [Releases](https://github.com/liangzhaoliang95/lxz/releases) page:
+- For AMD64: `lxz-windows-amd64.exe`
+- For ARM64: `lxz-windows-arm64.exe`
+
+Or visit [Releases](https://github.com/liangzhaoliang95/lxz/releases) page to download pre-built binaries for your platform.
 
 ## 🚀 Usage
 
